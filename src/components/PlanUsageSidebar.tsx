@@ -82,7 +82,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
     return (
       <aside className="space-y-3" aria-label="Plan usage loading">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-10 rounded-lg bg-pulse-100 dark:bg-[#151C2E] skeleton-shimmer" aria-hidden="true" />
+          <div key={i} className="h-16 rounded-lg bg-pulse-100 dark:bg-[#151C2E] skeleton-shimmer" aria-hidden="true" />
         ))}
       </aside>
     )

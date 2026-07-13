@@ -27,7 +27,7 @@ export default function DeveloperPortalPage() {
 
   return (
     <MainLayout>
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-8 py-24">
         <h1 className="text-3xl font-bold text-pulse-900 dark:text-[#F0F2F8]">Developer portal</h1>
         <p className="mt-2 text-pulse-600 dark:text-[#9AA8C7]">
           Public API v3 explorer. Issue keys from{' '}
@@ -44,7 +44,7 @@ export default function DeveloperPortalPage() {
         )}
 
         {spec && (
-          <Reveal as="section" className="mt-8 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6">
+          <Reveal as="section" className="mt-12 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8">
             <h2 className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
               {spec.info?.title ?? 'API'} · {spec.info?.version ?? 'v3'}
             </h2>

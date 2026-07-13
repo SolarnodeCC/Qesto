@@ -120,7 +120,7 @@ export default function AppShellLayout({
         ].join(' ')}
       >
         {/* Logo */}
-        <div className="flex h-14 shrink-0 items-center px-5 border-b border-pulse-100 dark:border-[#1E2A45]">
+        <div className="flex h-14 shrink-0 items-center px-6 border-b border-pulse-100 dark:border-[#1E2A45]">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
@@ -223,7 +223,7 @@ export default function AppShellLayout({
       {/* ── Right column ── */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#0F1628] px-4 lg:px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#0F1628] px-4 lg:px-8">
           {/* Left: hamburger (mobile only) + compact join form */}
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -235,7 +235,7 @@ export default function AppShellLayout({
               aria-controls="dashboard-sidebar"
               onClick={() => setSidebarOpen(true)}
             >
-              <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6">
                 <path fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" clipRule="evenodd" />
               </svg>
             </button>
@@ -276,7 +276,7 @@ export default function AppShellLayout({
               type="button"
               onClick={toggle}
               aria-label={scheme === 'dark' ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
-              className="flex items-center justify-center w-8 h-8 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+              className="flex items-center justify-center w-12 h-12 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
             >
               {scheme === 'dark' ? (
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -301,7 +301,7 @@ export default function AppShellLayout({
                   aria-expanded={avatarMenuOpen}
                   aria-haspopup="menu"
                   title={userEmail}
-                  className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-xs font-bold hover:bg-teal-100 dark:hover:bg-teal-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-xs font-bold hover:bg-teal-100 dark:hover:bg-teal-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
                   aria-label={`Account: ${userEmail}`}
                 >
                   {initials}

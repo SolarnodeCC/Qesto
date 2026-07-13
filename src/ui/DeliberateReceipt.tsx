@@ -65,7 +65,7 @@ export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyErro
     <article
       ref={printRef}
       aria-label={t('receipt.ariaLabel')}
-      className="rounded-xl border-2 border-teal-300 bg-white p-5 shadow-md dark:border-teal-700 dark:bg-pulse-900/60 print:border-gray-300 print:shadow-none"
+      className="rounded-xl border-2 border-teal-300 bg-white p-6 shadow-md dark:border-teal-700 dark:bg-pulse-900/60 print:border-gray-300 print:shadow-none"
     >
       {/* Header */}
       <header className="mb-4 flex items-center justify-between">
@@ -82,7 +82,7 @@ export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyErro
       </header>
 
       {/* Receipt fields */}
-      <dl className="mb-5 space-y-3 text-sm">
+      <dl className="mb-6 space-y-3 text-sm">
         <ReceiptField label={t('receipt.ballotNonce')} value={receipt.ballotNonce} mono />
         <ReceiptField label={t('receipt.commitment')} value={truncate(receipt.commitment, 32)} mono />
         <ReceiptField label={t('receipt.fingerprint')} value={truncate(receipt.sessionFingerprint, 24)} mono />
@@ -158,7 +158,7 @@ export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyErro
       </div>
 
       {/* QR / verify URL */}
-      <div className="mt-5 border-t border-pulse-100 pt-4 dark:border-pulse-700">
+      <div className="mt-6 border-t border-pulse-100 pt-4 dark:border-pulse-700">
         <p className="mb-3 text-xs font-medium text-pulse-600 dark:text-pulse-400">{t('receipt.verifyUrlLabel')}</p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div

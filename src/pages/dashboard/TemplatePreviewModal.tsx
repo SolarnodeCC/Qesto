@@ -20,7 +20,7 @@ export function TemplatePreviewModal({ modal, onClose, onUse, error }: TemplateP
       aria-labelledby="modal-title"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl dark:shadow-[0_24px_64px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 animate-page-enter space-y-5">
+      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl dark:shadow-[0_24px_64px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 animate-page-enter space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-400">
@@ -64,7 +64,7 @@ export function TemplatePreviewModal({ modal, onClose, onUse, error }: TemplateP
           <ol className="space-y-2">
             {tmpl.questions.slice(0, 5).map((question, index) => (
               <li key={`${question.prompt}-${index}`} className="flex gap-3 rounded-lg border border-pulse-200 dark:border-[#2A3858] p-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
                   {index + 1}
                 </span>
                 <div className="min-w-0">

@@ -56,9 +56,9 @@ export default function DeliberateJoin() {
     }
   }, [code])
 
-  if (lookup.status === 'loading') return <div className="p-8 text-center text-pulse-500">…</div>
+  if (lookup.status === 'loading') return <div className="p-12 text-center text-pulse-500">…</div>
   if (lookup.status === 'error')
-    return <div className="p-8 text-center text-red-600">{lookup.message}</div>
+    return <div className="p-12 text-center text-red-600">{lookup.message}</div>
   return <Ballot sessionId={lookup.sessionId} title={lookup.title} />
 }
 
@@ -108,14 +108,14 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
 
   const choices: string[] = config?.choices ?? []
 
-  if (configError) return <div className="p-8 text-center text-red-600">{configError}</div>
-  if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
+  if (configError) return <div className="p-12 text-center text-red-600">{configError}</div>
+  if (!config) return <div className="p-12 text-center text-pulse-500">…</div>
 
   return (
     <ParticipantShell title={title} subtitle={t('ballot.subtitle')} maxWidth="2xl">
       {/* Session not yet ready */}
       {!config.deliberateReady && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20">
           <p className="text-sm text-amber-800 dark:text-amber-200">{t('ballot.notReady')}</p>
         </div>
       )}
@@ -163,7 +163,7 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
             onClick={() => void handleCast()}
             disabled={!selectedChoice || isCasting}
             aria-disabled={!selectedChoice || isCasting}
-            className="mt-5 min-h-[44px] w-full rounded-lg bg-teal-600 px-5 py-3 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="mt-6 min-h-[44px] w-full rounded-lg bg-teal-600 px-6 py-3 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {isCasting ? t('ballot.casting') : t('ballot.cast')}
           </button>

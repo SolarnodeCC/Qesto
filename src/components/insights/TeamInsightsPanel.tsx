@@ -30,7 +30,7 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
 
   if (planGated) {
     return (
-      <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
+      <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-6 space-y-3">
         <p className="text-body-s text-violet-800 dark:text-violet-300 font-medium">{t('crossSession.planRequired')}</p>
         <p className="text-body-s text-violet-700 dark:text-violet-400">{t('crossSession.planHint')}</p>
         <Link
@@ -59,7 +59,7 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
   const summary = scorecard?.scorecard?.teamSummary
 
   return (
-    <div className="space-y-6" aria-live="polite">
+    <div className="space-y-8" aria-live="polite">
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('crossSession.windowLabel')}>
         {WINDOWS.map((w) => (
           <button

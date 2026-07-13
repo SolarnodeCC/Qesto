@@ -247,7 +247,7 @@ export default function TemplateDetail() {
 
       {/* Back nav */}
       <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6 py-3">
+        <div className="max-w-6xl mx-auto px-8 py-3">
           <Link
             to="/templates"
             className="inline-flex items-center gap-1.5 text-sm text-pulse-600 dark:text-[#8893AD] hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
@@ -260,8 +260,8 @@ export default function TemplateDetail() {
 
       {/* Hero */}
       <section className="py-14 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-24 items-start">
             {/* Left: Content */}
             <div className="lg:col-span-2">
               <span className="inline-block mb-3 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300">
@@ -274,10 +274,10 @@ export default function TemplateDetail() {
               >
                 {title}
               </h1>
-              <p className="text-lg text-pulse-600 dark:text-[#8893AD] mb-8">{purpose}</p>
+              <p className="text-lg text-pulse-600 dark:text-[#8893AD] mb-12">{purpose}</p>
 
               {/* Meta row */}
-              <div className="flex flex-wrap gap-5 text-sm text-pulse-600 dark:text-[#8893AD] mb-10">
+              <div className="flex flex-wrap gap-6 text-sm text-pulse-600 dark:text-[#8893AD] mb-16">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="h-4 w-4 text-teal-500" />
                   {template.questions.length} {t('templates.questions')}
@@ -296,7 +296,7 @@ export default function TemplateDetail() {
 
               {/* Best used for */}
               {bestUsedFor.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-12">
                   <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
                     {t('templates.bestUsedFor')}
                   </h2>
@@ -315,7 +315,7 @@ export default function TemplateDetail() {
 
               {/* What you'll learn */}
               {whatYoullLearn.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-12">
                   <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
                     {t('templates.whatYoullLearn')}
                   </h2>
@@ -336,12 +336,12 @@ export default function TemplateDetail() {
             {/* Right: CTA card */}
             <div className="lg:sticky lg:top-24">
               <div
-                className="rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-6"
+                className="rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-8"
                 style={shadowCard}
               >
-                <div className="h-1 -mx-6 -mt-6 rounded-t-2xl mb-5" style={gradientBrand} />
+                <div className="h-1 -mx-8 -mt-8 rounded-t-2xl mb-6" style={gradientBrand} />
 
-                <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-5">
+                <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-6">
                   {t('templates.ctaCardDescription')}
                 </p>
 
@@ -351,7 +351,7 @@ export default function TemplateDetail() {
                   {t('templates.noAccountNeeded')}
                 </p>
 
-                <hr className="my-5 border-pulse-100 dark:border-white/10" />
+                <hr className="my-6 border-pulse-100 dark:border-white/10" />
 
                 <p className="text-xs text-pulse-500 dark:text-[#8893AD] text-center">
                   {t('templates.wantToCustomize')}{' '}
@@ -366,10 +366,10 @@ export default function TemplateDetail() {
       </section>
 
       {/* Questions preview */}
-      <section className="py-12 bg-pulse-50 dark:bg-[#0D1424]">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-24 bg-pulse-50 dark:bg-[#0D1424]">
+        <div className="max-w-6xl mx-auto px-8">
           <h2
-            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-6"
+            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-8"
             style={displayFont}
           >
             {t('templates.questionsPreview')} ({template.questions.length})
@@ -398,14 +398,14 @@ export default function TemplateDetail() {
 
       {/* Bottom CTA */}
       <section className="py-14 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-xl mx-auto px-6 text-center">
+        <div className="max-w-xl mx-auto px-8 text-center">
           <h2
             className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-3"
             style={displayFont}
           >
             {t('templates.readyToStart')}
           </h2>
-          <p className="text-pulse-600 dark:text-[#8893AD] mb-6">
+          <p className="text-pulse-600 dark:text-[#8893AD] mb-8">
             {t('templates.readyToStartDescription')}
           </p>
           <UseTemplateForm templateId={template.id} variant="inline" />

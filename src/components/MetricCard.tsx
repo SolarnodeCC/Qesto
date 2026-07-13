@@ -29,14 +29,14 @@ export function MetricCard({ label, value, icon: Icon, iconClassName, trend, loa
     : null
 
   return (
-    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 shadow-card">
+    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 shadow-card">
       {/* Header: label + icon well */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0]">
           {label}
         </span>
         <span
-          className={`flex items-center justify-center w-8 h-8 rounded-lg bg-pulse-50 dark:bg-[#1C2540] ${iconClassName ?? 'text-teal-600 dark:text-teal-400'}`}
+          className={`flex items-center justify-center w-12 h-12 rounded-lg bg-pulse-50 dark:bg-[#1C2540] ${iconClassName ?? 'text-teal-600 dark:text-teal-400'}`}
           aria-hidden="true"
         >
           <Icon size={16} />
@@ -45,7 +45,7 @@ export function MetricCard({ label, value, icon: Icon, iconClassName, trend, loa
 
       {/* Value */}
       {loading ? (
-        <div className="h-8 w-20 rounded-lg skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" aria-hidden="true" />
+        <div className="h-12 w-20 rounded-lg skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" aria-hidden="true" />
       ) : (
         <div className="text-[28px] font-bold leading-none text-pulse-900 dark:text-[#F0F2F8] tracking-tight">
           {value}

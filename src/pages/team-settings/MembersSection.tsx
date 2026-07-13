@@ -12,7 +12,7 @@ interface Props {
 
 export function MembersSection({ members, currentUserId, isOwner, ownerId, removingId, onRemove }: Props) {
   return (
-    <section aria-labelledby="section-members" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-members" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-members" className="text-lg font-semibold">Members</h2>
       <ul className="divide-y divide-pulse-100" role="list">
         {members.map((member) => (

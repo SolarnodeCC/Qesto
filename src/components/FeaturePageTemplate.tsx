@@ -123,9 +123,9 @@ export default function FeaturePageTemplate({
     <MainLayout>
       {/* Hero */}
       <section className="animate-page-enter py-20 md:py-28 border-b border-pulse-200">
-        <div className="grid-container px-4 md:px-6">
-          <div className={hasHeroImage ? 'col-span-full max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center' : 'col-span-full max-w-[680px] mx-auto text-center'}>
-            <div className="space-y-6">
+        <div className="grid-container px-4 md:px-8">
+          <div className={hasHeroImage ? 'col-span-full max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center' : 'col-span-full max-w-[680px] mx-auto text-center'}>
+            <div className="space-y-8">
               <div className={hasHeroImage ? 'flex items-center gap-2' : 'flex items-center justify-center gap-2'}>
               {hero.ai && <AIBadge variant="analyzed" label="AI-assisted" />}
               {hero.badge && (
@@ -147,14 +147,14 @@ export default function FeaturePageTemplate({
               <div className={hasHeroImage ? 'flex flex-wrap gap-3' : 'flex flex-wrap justify-center gap-3'}>
                 <Link
                   to={hero.primaryCta.href}
-                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-8 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                 >
                   {hero.primaryCta.label}
                 </Link>
                 {hero.secondaryCta && (
                   <Link
                     to={hero.secondaryCta.href}
-                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-8 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                   >
                     {hero.secondaryCta.label}
                   </Link>
@@ -200,8 +200,8 @@ export default function FeaturePageTemplate({
       {/* Proof */}
       {proof && (
         <section aria-labelledby="feature-proof-heading" className="py-16 md:py-20 border-b border-pulse-200">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
               <h2
                 id="feature-proof-heading"
                 className="text-heading-l font-semibold text-center"
@@ -211,11 +211,11 @@ export default function FeaturePageTemplate({
               </h2>
 
               {proof.metrics && proof.metrics.length > 0 && (
-                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-5" role="list">
+                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
                   {proof.metrics.map((metric, i) => (
                     <li
                       key={metric.label}
-                      className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 space-y-2 text-center shadow-card"
+                      className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 space-y-2 text-center shadow-card"
                       style={{ '--stagger-index': i } as React.CSSProperties}
                     >
                       <p className="text-heading-m font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
@@ -241,7 +241,7 @@ export default function FeaturePageTemplate({
               )}
 
               {proof.testimonial && (
-                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50 to-violet-50 p-6 md:p-8 text-center space-y-3">
+                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50 to-violet-50 p-8 md:p-12 text-center space-y-3">
                   <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
                   <footer className="text-caption text-pulse-600 dark:text-[#A8B3CC]">
                     <strong>{proof.testimonial.author}</strong>
@@ -256,8 +256,8 @@ export default function FeaturePageTemplate({
 
       {/* How it works */}
       <section aria-labelledby="how-it-works-heading" className="py-16 md:py-20 border-b border-pulse-200">
-        <div className="grid-container px-4 md:px-6">
-          <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
+        <div className="grid-container px-4 md:px-8">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-24">
             <h2
               id="how-it-works-heading"
               className="text-heading-l font-semibold text-center"
@@ -265,7 +265,7 @@ export default function FeaturePageTemplate({
             >
               {howItWorks.heading}
             </h2>
-            <ol className="grid grid-cols-1 md:grid-cols-3 gap-8" role="list">
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-12" role="list">
               {howItWorks.steps.map((step, i) => (
                 <li
                   key={step.number}
@@ -273,7 +273,7 @@ export default function FeaturePageTemplate({
                   style={{ '--stagger-index': i } as React.CSSProperties}
                 >
                   <span
-                    className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm"
+                    className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm"
                     aria-hidden="true"
                   >
                     {step.number}
@@ -294,8 +294,8 @@ export default function FeaturePageTemplate({
         aria-labelledby="outcomes-heading"
         className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 border-b border-pulse-200"
       >
-        <div className="grid-container px-4 md:px-6">
-          <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+        <div className="grid-container px-4 md:px-8">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-16">
             <h2
               id="outcomes-heading"
               className="text-heading-l font-semibold text-center"
@@ -303,11 +303,11 @@ export default function FeaturePageTemplate({
             >
               {outcomes.heading}
             </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
+            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-8" role="list">
               {outcomes.items.map((item, i) => (
                 <li
                   key={item.metric}
-                  className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 text-center space-y-3 shadow-card"
+                  className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-8 text-center space-y-3 shadow-card"
                   style={{ '--stagger-index': i } as React.CSSProperties}
                 >
                   <span className="text-3xl" aria-hidden="true">{item.icon}</span>
@@ -325,8 +325,8 @@ export default function FeaturePageTemplate({
       {/* Deep dive */}
       {deepDive && (
         <section aria-labelledby="deep-dive-heading" className="py-16 md:py-20 border-b border-pulse-200">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
               <div className="text-center space-y-3 max-w-3xl mx-auto">
                 <h2
                   id="deep-dive-heading"
@@ -337,11 +337,11 @@ export default function FeaturePageTemplate({
                 </h2>
                 <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{deepDive.intro}</p>
               </div>
-              <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
+              <ul className="grid grid-cols-1 md:grid-cols-3 gap-8" role="list">
                 {deepDive.pillars.map((pillar, i) => (
                   <li
                     key={pillar.title}
-                    className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 space-y-3 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-8 space-y-3 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{pillar.title}</h3>
@@ -356,8 +356,8 @@ export default function FeaturePageTemplate({
 
       {/* Related pages */}
       <section aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200">
-        <div className="grid-container px-4 md:px-6">
-          <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+        <div className="grid-container px-4 md:px-8">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
             <h2
               id="related-heading"
               className="text-heading-l font-semibold text-center"
@@ -365,12 +365,12 @@ export default function FeaturePageTemplate({
             >
               {related.heading}
             </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-5" role="list">
+            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
               {related.links.map((link, i) => (
                 <li key={link.href} className="animate-list-item" style={{ '--stagger-index': i } as React.CSSProperties}>
                   <Link
                     to={link.href}
-                    className="block rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="block rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
                     <p className="text-caption text-pulse-500">{link.desc}</p>
@@ -385,8 +385,8 @@ export default function FeaturePageTemplate({
       {/* FAQ */}
       {faq && (
         <section aria-labelledby="feature-faq-heading" className="py-16 md:py-20 border-b border-pulse-200">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[900px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[900px] mx-auto space-y-12">
               <h2
                 id="feature-faq-heading"
                 className="text-heading-l font-semibold text-center"
@@ -398,7 +398,7 @@ export default function FeaturePageTemplate({
                 {faq.items.map((item, i) => (
                   <li
                     key={item.question}
-                    className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 md:p-6 space-y-2 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 md:p-8 space-y-2 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold">{item.question}</h3>
@@ -418,8 +418,8 @@ export default function FeaturePageTemplate({
 
       {/* Bottom CTA */}
       <section aria-labelledby="feature-cta-heading" className="py-16 md:py-24">
-        <div className="grid-container px-4 md:px-6">
-          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
+        <div className="grid-container px-4 md:px-8">
+          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-8 py-24 px-12 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
             <h2
               id="feature-cta-heading"
               className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
@@ -431,14 +431,14 @@ export default function FeaturePageTemplate({
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 to={bottomCta.primaryCta.href}
-                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-8 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
               >
                 {bottomCta.primaryCta.label}
               </Link>
               {bottomCta.secondaryCta && (
                 <Link
                   to={bottomCta.secondaryCta.href}
-                  className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                  className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-8 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                 >
                   {bottomCta.secondaryCta.label}
                 </Link>

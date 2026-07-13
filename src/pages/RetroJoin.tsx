@@ -33,8 +33,8 @@ export default function RetroJoin() {
     }
   }, [code])
 
-  if (lookup.status === 'loading') return <div className="p-8 text-center text-pulse-500">…</div>
-  if (lookup.status === 'error') return <div className="p-8 text-center text-red-600">{lookup.message}</div>
+  if (lookup.status === 'loading') return <div className="p-12 text-center text-pulse-500">…</div>
+  if (lookup.status === 'error') return <div className="p-12 text-center text-red-600">{lookup.message}</div>
   return <Board sessionId={lookup.sessionId} title={lookup.title} />
 }
 

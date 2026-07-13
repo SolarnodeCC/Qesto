@@ -69,7 +69,7 @@ export default function SimilarSessionsResultsPanel({ sessionId }: { sessionId: 
     return (
       <section
         aria-label={t('similarSessions.title')}
-        className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3"
+        className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-6 space-y-3"
       >
         <p className="text-sm text-violet-800 dark:text-violet-300 font-medium">
           {t('similarSessions.planRequired')}
@@ -91,7 +91,7 @@ export default function SimilarSessionsResultsPanel({ sessionId }: { sessionId: 
   return (
     <section
       aria-label={t('similarSessions.title')}
-      className="rounded-xl border border-pulse-200 dark:border-[#2A3858] p-5 space-y-3"
+      className="rounded-xl border border-pulse-200 dark:border-[#2A3858] p-6 space-y-3"
     >
       <h2 className="text-lg font-semibold dark:text-pulse-100">{t('similarSessions.title')}</h2>
       {similar.length > 0 ? (

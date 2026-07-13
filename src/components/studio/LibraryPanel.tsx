@@ -13,7 +13,7 @@ type Props = {
 
 export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork, onDelete }: Props) {
   return (
-    <section aria-labelledby="studio-library-heading" className="rounded-lg border border-pulse-200 bg-white p-5 dark:border-[#2A3858] dark:bg-pulse-900/40">
+    <section aria-labelledby="studio-library-heading" className="rounded-lg border border-pulse-200 bg-white p-6 dark:border-[#2A3858] dark:bg-pulse-900/40">
       <h2 id="studio-library-heading" className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
         {t('library.heading')}
       </h2>
@@ -21,7 +21,7 @@ export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork,
       {loading && (
         <div className="mt-3 space-y-2" aria-hidden="true">
           {[1, 2].map((i) => (
-            <div key={i} className="h-12 rounded bg-pulse-100 skeleton-shimmer dark:bg-pulse-800" />
+            <div key={i} className="h-24 rounded bg-pulse-100 skeleton-shimmer dark:bg-pulse-800" />
           ))}
         </div>
       )}

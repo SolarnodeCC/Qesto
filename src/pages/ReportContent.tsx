@@ -62,8 +62,8 @@ export default function ReportContent() {
       />
 
       {/* Hero */}
-      <div className="border-b border-pulse-200 pb-6 pt-14">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="border-b border-pulse-200 pb-8 pt-14">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Legal</div>
           <h1
             className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3"
@@ -77,10 +77,10 @@ export default function ReportContent() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12 pb-24">
+      <div className="max-w-6xl mx-auto px-8 py-24 pb-24">
         <div className="max-w-2xl">
           {formState === 'success' ? (
-            <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-6">
+            <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-8">
               <div className="flex items-start gap-3">
                 <svg
                   aria-hidden="true"
@@ -117,12 +117,12 @@ export default function ReportContent() {
             </div>
           ) : (
             <>
-              <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-6">
+              <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-8">
                 Any person or entity may use this form to notify Qesto of alleged illegal content hosted on our
                 platform. We will review every notice and respond with our decision within 5 business days. You will
                 receive an acknowledgement with a reference ID immediately after submission.
               </p>
-              <p className="text-[14px] text-pulse-500 dark:text-[#8A96B0] mb-8">
+              <p className="text-[14px] text-pulse-500 dark:text-[#8A96B0] mb-12">
                 Alternatively, you can email{' '}
                 <a href="mailto:abuse@qesto.cc" className="text-teal-600 hover:underline">
                   abuse@qesto.cc
@@ -133,13 +133,13 @@ export default function ReportContent() {
               {formState === 'error' && (
                 <div
                   role="alert"
-                  className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 text-[14px] text-red-700 dark:text-red-400"
+                  className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8 text-[14px] text-red-700 dark:text-red-400"
                 >
                   {errorMessage}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              <form onSubmit={handleSubmit} noValidate className="space-y-8">
                 <div>
                   <label
                     htmlFor="content-location"
@@ -227,13 +227,13 @@ export default function ReportContent() {
                 <button
                   type="submit"
                   disabled={formState === 'submitting'}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-medium rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-[14px] font-medium rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                 >
                   {formState === 'submitting' ? 'Submitting…' : 'Submit report'}
                 </button>
               </form>
 
-              <div className="border-t border-pulse-200 dark:border-white/10 mt-10 pt-6">
+              <div className="border-t border-pulse-200 dark:border-white/10 mt-16 pt-8">
                 <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0]">
                   Related:{' '}
                   <Link to="/legal" className="text-teal-600 hover:underline">Legal Information</Link>

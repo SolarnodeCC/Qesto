@@ -24,7 +24,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
       className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
+      <div className="flex items-center gap-2 px-6 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
         {loading
           ? <Loader2 size={17} className="text-pulse-400 animate-spin shrink-0" aria-hidden="true" />
           : <CircleCheckBig
@@ -49,7 +49,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
       {/* Check rows */}
       <ul className="divide-y divide-[var(--surface-border,#E5E5E5)] dark:divide-[#1E2A45]">
         {items.map((item) => (
-          <li key={item.key} className="flex items-center gap-3 px-5 py-3">
+          <li key={item.key} className="flex items-center gap-3 px-6 py-3">
             {/* Status icon */}
             <span
               className={`w-[18px] h-[18px] shrink-0 rounded-full flex items-center justify-center ${
@@ -80,7 +80,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
 
       {/* Error banner */}
       {error && (
-        <p role="alert" className="px-5 py-2.5 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
+        <p role="alert" className="px-6 py-2.5 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
           {error}
         </p>
       )}

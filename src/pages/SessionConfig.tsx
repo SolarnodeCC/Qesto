@@ -50,7 +50,7 @@ export default function SessionConfig() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-12 text-pulse-500">
         {t('loading')}
       </MainLayout>
     )
@@ -61,14 +61,14 @@ export default function SessionConfig() {
 
   if (loading) {
     return (
-      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-12 text-pulse-500">
         {t('loadingSession')}
       </MainLayout>
     )
   }
   if (error || !data) {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12 space-y-4">
         <p role="alert" className="text-red-600">
           {error?.message ?? t('sessionNotFound')}
         </p>

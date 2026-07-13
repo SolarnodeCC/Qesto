@@ -190,7 +190,7 @@ export default function TeamQuizEnergizerView({
   const myRank = scores.find((s) => s.voter_id === voterId)?.rank
 
   return (
-    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
+    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
@@ -436,7 +436,7 @@ function ScoreBoard({
               isMe ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800' : 'bg-pulse-50 dark:bg-pulse-800',
             ].join(' ')}
           >
-            <span className="w-5 text-xs font-bold text-pulse-500 tabular-nums">{s.rank}.</span>
+            <span className="w-6 text-xs font-bold text-pulse-500 tabular-nums">{s.rank}.</span>
             <span className="flex-1 truncate text-pulse-700 dark:text-pulse-300">
               {isMe ? 'You' : `Player ${s.rank}`}
             </span>

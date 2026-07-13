@@ -14,10 +14,10 @@ export function WaitingScreen({ code, lookup }: { code?: string; lookup: Waiting
   return (
     <main id="main" className="min-h-screen flex flex-col">
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3">
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-6 py-3">
         <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
       </div>
-      <div className="flex-1 max-w-lg w-full mx-auto px-5 py-12 flex flex-col items-center justify-center gap-8 text-center">
+      <div className="flex-1 max-w-lg w-full mx-auto px-6 py-24 flex flex-col items-center justify-center gap-12 text-center">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center shadow-lg" aria-hidden="true">
           <Clock size={28} stroke="white" strokeWidth={2.5} aria-hidden="true" />
         </div>
@@ -25,7 +25,7 @@ export function WaitingScreen({ code, lookup }: { code?: string; lookup: Waiting
           <h1 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{lookup.title}</h1>
           <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] max-w-xs">{t('waiting_intro')}</p>
         </div>
-        <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1525] px-6 py-5 w-full max-w-sm space-y-3">
+        <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1525] px-8 py-6 w-full max-w-sm space-y-3">
           <div className="flex items-center justify-center gap-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]" role="status" aria-live="polite">
             <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('waiting_status')}

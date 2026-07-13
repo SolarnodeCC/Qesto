@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
 import { useT } from '../i18n'
@@ -165,12 +166,33 @@ export default function MainLayout({
     { label: t('navLinks.training'), href: '/use-cases/training' },
   ]
 
+  // LAYOUT-002: below md the marketing nav collapses behind a hamburger — the
+  // inline dropdown row does not fit a phone viewport.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const mobileNavId = useId()
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [location.pathname])
+
+  const mobileNavSections = [
+    { heading: t('nav.solutions'), links: solutionLinks },
+    { heading: t('nav.features'), links: featureLinks },
+    { heading: t('nav.useCases'), links: useCaseLinks },
+    {
+      heading: null,
+      links: [
+        { label: t('footer.pricing'), href: '/pricing' },
+        { label: t('footer.privacyPolicy'), href: '/privacy' },
+      ],
+    },
+  ]
+
   return (
     <>
       <SkipLink />
 
       <header className="border-b border-pulse-200 dark:border-white/7 bg-[var(--color-surface)]">
-        <div className="grid-container flex items-center justify-between py-3 px-4 md:px-6">
+        <div className="grid-container flex items-center justify-between py-3 px-4 md:px-8">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-base font-extrabold uppercase tracking-widest text-teal-700 dark:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
@@ -194,7 +216,7 @@ export default function MainLayout({
             {showTeamSwitcher && <TeamSwitcher />}
             <nav aria-label="Site navigation" className="flex items-center gap-1">
               {isMarketingPage && (
-                <>
+                <div className="hidden md:flex items-center gap-1">
                   <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
                   <NavDropdown label={t('nav.features')} links={featureLinks} />
                   <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
@@ -210,16 +232,28 @@ export default function MainLayout({
                   >
                     {t('footer.privacyPolicy')}
                   </Link>
-                </>
+                </div>
               )}
               {!isMarketingPage && <LanguageSwitcher />}
               {navSlot}
             </nav>
+            {isMarketingPage && (
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen((open) => !open)}
+                aria-expanded={mobileNavOpen}
+                aria-controls={mobileNavId}
+                aria-label={mobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+                className="md:hidden flex h-11 w-11 items-center justify-center rounded-lg text-pulse-600 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors"
+              >
+                {mobileNavOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+              </button>
+            )}
             <button
               type="button"
               onClick={toggle}
               aria-label={scheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="ml-1 flex items-center justify-center w-8 h-8 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors duration-200"
+              className="ml-1 flex items-center justify-center w-12 h-12 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors duration-200"
             >
               {scheme === 'dark' ? (
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -241,6 +275,37 @@ export default function MainLayout({
             </button>
           </div>
         </div>
+
+        {/* LAYOUT-002: stacked mobile menu — every row is a ≥44px touch target */}
+        {isMarketingPage && mobileNavOpen && (
+          <nav
+            id={mobileNavId}
+            aria-label="Mobile site navigation"
+            className="md:hidden border-t border-pulse-200 dark:border-white/7 px-4 py-3"
+          >
+            {mobileNavSections.map((section, i) => (
+              <div key={section.heading ?? `section-${i}`} className={i > 0 ? 'mt-2 pt-2 border-t border-pulse-100 dark:border-white/5' : ''}>
+                {section.heading && (
+                  <p className="px-2 pt-1 pb-0.5 text-xs font-semibold uppercase tracking-wide text-pulse-500 dark:text-[#8A96B0]">
+                    {section.heading}
+                  </p>
+                )}
+                <ul>
+                  {section.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        to={link.href}
+                        className="flex items-center min-h-11 px-2 rounded-lg text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-500/10 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        )}
       </header>
 
       {showJoinBar && <JoinBar />}
@@ -260,8 +325,8 @@ export default function MainLayout({
       </main>
 
       {!noFooter && (
-        <footer className="border-t border-pulse-200 dark:border-white/7 py-6">
-          <div className="grid-container px-4 md:px-6 text-xs text-pulse-500 dark:text-[#8A96B0] flex flex-wrap items-center justify-between gap-2">
+        <footer className="border-t border-pulse-200 dark:border-white/7 py-8">
+          <div className="grid-container px-4 md:px-8 text-xs text-pulse-500 dark:text-[#8A96B0] flex flex-wrap items-center justify-between gap-2">
             <span>
               &copy; {new Date().getFullYear()} Qesto. Edge-first, privacy-by-default.
             </span>

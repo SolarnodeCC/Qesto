@@ -112,7 +112,7 @@ export default function EmojiPollEnergizerView({
   const max = Math.max(...Object.values(results), 1)
 
   return (
-    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
+    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
@@ -183,7 +183,7 @@ export default function EmojiPollEnergizerView({
             const barWidth = max === 0 ? 0 : Math.round((count / max) * 100)
             return (
               <div key={emoji} className="flex items-center gap-2 text-sm">
-                <span className="w-6 text-center" aria-hidden="true">{emoji}</span>
+                <span className="w-8 text-center" aria-hidden="true">{emoji}</span>
                 <div className="flex-1 h-2 bg-pulse-100 dark:bg-pulse-800 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-teal-400 to-violet-400 transition-[width] duration-500"
@@ -191,7 +191,7 @@ export default function EmojiPollEnergizerView({
                     role="presentation"
                   />
                 </div>
-                <span className="w-10 text-right text-pulse-500 tabular-nums">{count} · {pct}%</span>
+                <span className="w-16 text-right text-pulse-500 tabular-nums">{count} · {pct}%</span>
               </div>
             )
           })}

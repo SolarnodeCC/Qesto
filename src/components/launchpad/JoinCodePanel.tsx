@@ -78,7 +78,7 @@ export default function JoinCodePanel({
       {/* Unified join-code card — gradient-brand-subtle background */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-6 text-center space-y-4 shadow-card"
+        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-8 text-center space-y-4 shadow-card"
         style={{ background: 'var(--gradient-brand-subtle, linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%))' }}
       >
         {/* Eyebrow */}
@@ -155,7 +155,7 @@ export default function JoinCodePanel({
           type="button"
           onClick={isEnergizing ? onTransitionToLive : onStart}
           disabled={(!isEnergizing && !allValid) || starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] bg-gradient-brand text-white px-5 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] bg-gradient-brand text-white px-6 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
           style={{ boxShadow: 'var(--shadow-teal)' }}
         >
           {starting

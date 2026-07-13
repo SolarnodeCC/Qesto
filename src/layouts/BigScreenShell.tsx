@@ -44,7 +44,7 @@ export default function BigScreenShell({
 }: BigScreenShellProps) {
   return (
     <div className={STAGE_CLASS}>
-      <header className="mb-8 flex items-center justify-between">
+      <header className="mb-12 flex items-center justify-between">
         <h1 className="text-3xl font-bold">{title}</h1>
         {badgeLabel && (
           <span className="inline-flex items-center gap-2 text-sm text-teal-400" role="status">
@@ -59,7 +59,7 @@ export default function BigScreenShell({
       </main>
 
       {code && (
-        <footer className="mt-8 text-center text-white/50">
+        <footer className="mt-12 text-center text-white/50">
           {joinLabel}{' '}
           <span className="text-white">
             qesto.cc/{pathPrefix ? `${pathPrefix}/` : ''}

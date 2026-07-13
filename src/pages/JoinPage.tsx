@@ -102,10 +102,10 @@ export default function JoinPage() {
 
   if (lookup.status === 'loading') {
     return (
-      <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
+      <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-12 text-pulse-500 focus:outline-none">
         <svg
           aria-hidden="true"
-          className="animate-spin w-6 h-6 text-teal-500"
+          className="animate-spin w-8 h-8 text-teal-500"
           viewBox="0 0 24 24"
           fill="none"
         >
@@ -123,8 +123,8 @@ export default function JoinPage() {
 
   if (lookup.status === 'error') {
     return (
-      <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+      <main id="main" className="min-h-screen flex flex-col items-center justify-center p-12 text-center space-y-4">
+        <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center">
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -279,7 +279,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       />
       {/* Top brand bar */}
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3 flex items-center justify-between">
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-6 py-3 flex items-center justify-between">
         <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
         {state.connection === 'open' ? (
           <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[#A8B3CC]">
@@ -302,7 +302,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         )}
       </div>
 
-      <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
+      <div className="flex-1 max-w-lg w-full mx-auto px-6 py-12 flex flex-col gap-8">
         <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
           {title}
         </h1>
@@ -324,7 +324,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Connecting skeleton */}
         {state.connection === 'connecting' && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-5 bg-pulse-100 dark:bg-white/10 rounded w-3/4" />
+            <div className="h-6 bg-pulse-100 dark:bg-white/10 rounded w-3/4" />
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-14 bg-pulse-100 dark:bg-white/10 rounded-xl" />
             ))}
@@ -333,7 +333,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
         {/* Inter-question countdown */}
         {countdown !== null && (
-          <div className="flex flex-col items-center justify-center gap-3 py-8" aria-live="polite" aria-atomic="true">
+          <div className="flex flex-col items-center justify-center gap-3 py-12" aria-live="polite" aria-atomic="true">
             <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
             <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('next_question_countdown', { seconds: countdown })}</p>
@@ -342,7 +342,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
         {/* All questions done */}
         {state.allDone && !isEnded && countdown === null && (
-          <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+          <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
             <div className="text-6xl" aria-hidden="true">🎉</div>
             <h2 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('allDone.heading')}</h2>
             <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{title}</p>

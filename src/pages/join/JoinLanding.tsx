@@ -19,11 +19,11 @@ export function JoinLanding() {
   return (
     <main id="main" className="min-h-screen flex flex-col">
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3">
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-6 py-3">
         <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
-        <div className="w-full max-w-sm space-y-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-24">
+        <div className="w-full max-w-sm space-y-8">
           <div className="text-center space-y-2">
             <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">{t('heading')}</h1>
             <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('subtitle')}</p>

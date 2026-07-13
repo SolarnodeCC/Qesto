@@ -49,7 +49,7 @@ function Screen({ sessionId, title, code }: { sessionId: string; title: string; 
           {state.items.slice(0, 8).map((item) => (
             <li
               key={item.id}
-              className={`flex items-center gap-5 rounded-2xl px-6 py-5 ${
+              className={`flex items-center gap-6 rounded-2xl px-8 py-6 ${
                 item.isSpotlit ? 'bg-teal-500/20 ring-2 ring-teal-400' : 'bg-white/5'
               }`}
             >

@@ -75,8 +75,8 @@ export default function EventAgendaJoin() {
     setSearchParams({ track: id })
   }
 
-  if (loading && !data) return <div className="p-8 text-center text-pulse-500">…</div>
-  if (error) return <div className="p-8 text-center text-red-600">{error}</div>
+  if (loading && !data) return <div className="p-12 text-center text-pulse-500">…</div>
+  if (error) return <div className="p-12 text-center text-red-600">{error}</div>
   if (!data) return null
 
   return (

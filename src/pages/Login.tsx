@@ -104,10 +104,10 @@ export default function Login() {
     'w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
 
   return (
-    <main id="main" className="min-h-screen flex items-center justify-center p-6">
+    <main id="main" className="min-h-screen flex items-center justify-center p-8">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-12 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1

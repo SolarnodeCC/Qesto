@@ -31,8 +31,8 @@ export default function IdeateJoin() {
     }
   }, [code])
 
-  if (lookup.status === 'loading') return <div className="p-8 text-center text-pulse-500">…</div>
-  if (lookup.status === 'error') return <div className="p-8 text-center text-red-600">{lookup.message}</div>
+  if (lookup.status === 'loading') return <div className="p-12 text-center text-pulse-500">…</div>
+  if (lookup.status === 'error') return <div className="p-12 text-center text-red-600">{lookup.message}</div>
   return <Board sessionId={lookup.sessionId} title={lookup.title} />
 }
 
@@ -96,7 +96,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
           <ol className="mt-3 space-y-2">
             {state.ranking.map((entry) => (
               <li key={entry.ideaId} className="flex items-start gap-3 text-sm">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
                   {entry.rank}
                 </span>
                 <span className="flex-1 text-pulse-800 dark:text-pulse-100">{entry.body}</span>

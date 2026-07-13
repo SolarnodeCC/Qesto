@@ -5,9 +5,9 @@ import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
 
 const btnPrimary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -73,17 +73,17 @@ export default function HRPage() {
 
       {/* Hero */}
       <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Qesto for HR</div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-6 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Honest pulse.{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   Without a witch hunt.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-12">
                 Run quarterly climate checks, manager 360s, and open-comment sessions where people actually speak.
                 Consent rounds mean every attendee picks their visibility before the first vote — and no result is
                 shown until the floor is large enough to protect them.
@@ -102,9 +102,9 @@ export default function HRPage() {
             </div>
 
             {/* Mode card */}
-            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-6" style={shadowElevated}>
+            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-8" style={shadowElevated}>
               {/* Tabs */}
-              <div className="flex gap-1.5 p-1 bg-pulse-100 dark:bg-[#1E2A45] rounded-xl mb-5">
+              <div className="flex gap-1.5 p-1 bg-pulse-100 dark:bg-[#1E2A45] rounded-xl mb-6">
                 {([['anon', 'Anonymous'], ['cohort', 'Cohort-visible'], ['ident', 'Identified']] as [Mode, string][]).map(
                   ([key, label]) => (
                     <button
@@ -167,7 +167,7 @@ export default function HRPage() {
                     <div className="flex-1 h-2.5 bg-white dark:bg-[#1E2A45] rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, ...gradientBrand }} />
                     </div>
-                    <span className="w-8 text-right text-pulse-500" style={{ fontFamily: 'var(--font-family-mono)', fontVariantNumeric: 'tabular-nums' }}>
+                    <span className="w-12 text-right text-pulse-500" style={{ fontFamily: 'var(--font-family-mono)', fontVariantNumeric: 'tabular-nums' }}>
                       {n}
                     </span>
                   </div>
@@ -180,19 +180,19 @@ export default function HRPage() {
 
       {/* Proof stats */}
       <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Proof</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-12 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             HR teams run Qesto when results have to be defensible.
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { label: 'Consent opt-in rate', value: '94%', note: 'Avg across deployed pulses — measured at the start of every session.' },
               { label: 'Free-text response rate', value: '3.1×', note: 'vs. identified surveys among the same cohorts.' },
               { label: 'Minimum tally threshold', value: '5', note: 'Results stay hidden until five voices are in. No single-voter exposure.' },
               { label: 'Recap source readiness', value: 'Same day', note: 'Session exports and reviewed themes support the follow-up package.' },
             ].map(({ label, value, note }) => (
-              <div key={label} className="bg-white dark:bg-[#151C2E] rounded-2xl p-6" style={shadowCard}>
+              <div key={label} className="bg-white dark:bg-[#151C2E] rounded-2xl p-8" style={shadowCard}>
                 <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mb-2">{label}</div>
                 <div className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>{value}</div>
                 <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] leading-snug">{note}</div>
@@ -204,15 +204,15 @@ export default function HRPage() {
 
       {/* Use cases */}
       <section className="py-16 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Where it fits</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Four HR moments Qesto was built for.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 text-lg">
             Each one demands a different consent posture. Qesto is the only tool that lets the room choose.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {useCases.map(({ tag, title, desc, items }) => (
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{tag}</div>
@@ -231,9 +231,9 @@ export default function HRPage() {
 
       {/* Quote */}
       <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <blockquote className="max-w-3xl mx-auto text-center">
-            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[#F0F2F8] mb-6 italic">
+            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[#F0F2F8] mb-8 italic">
               "We used to spend two weeks arguing about whether the engagement survey was honest. Now we run the
               pulse in the room, see the tally, and the argument is about what to do about it."
             </p>
@@ -247,12 +247,12 @@ export default function HRPage() {
 
       {/* Compliance */}
       <section className="py-16 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Compliance posture</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-12 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Built to survive your legal team.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 icon: <ShieldCheck size={22} />,
@@ -271,7 +271,7 @@ export default function HRPage() {
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
+                <div className="w-24 h-24 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
@@ -283,12 +283,12 @@ export default function HRPage() {
       </section>
 
       {/* CTA band */}
-      <div className="py-10 px-6">
-        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+      <div className="py-16 px-8">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-12">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Pilot one pulse. Keep it if the room does.
           </h2>
-          <p className="text-slate-400 mb-8">
+          <p className="text-slate-400 mb-12">
             Run your next climate check on Qesto. If the response rate doesn't beat your last survey, we'll refund
             the quarter.
           </p>

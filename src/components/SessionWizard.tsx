@@ -371,7 +371,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         className="bg-white dark:bg-[#1C2540] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">
+        <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">
           <div className="space-y-1">
             <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
               {STEP_LABELS[step]}
@@ -391,7 +391,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         </div>
 
         {/* Step indicator */}
-        <div className="px-6 pt-3 pb-0 flex-shrink-0">
+        <div className="px-8 pt-3 pb-0 flex-shrink-0">
           <div className="flex gap-1" role="list" aria-label="Progress steps">
             {([1, 2, 3, 4, 5] as WizardStep[]).map((s) => (
               <div
@@ -408,7 +408,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         </div>
 
         {/* Step content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
           {step === 1 && (
             <SessionWizardStep1
               title={title}

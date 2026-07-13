@@ -38,7 +38,7 @@ export function AllSessionsSection({
           {t('allSessions')}
         </h2>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-pulse-500" />
           <input
@@ -59,7 +59,7 @@ export function AllSessionsSection({
       ) : state.status === 'error' ? (
         <p role="alert" className="text-sm text-red-600">{state.error.message}</p>
       ) : sessions.length === 0 ? (
-        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] py-6 text-center">
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] py-8 text-center">
           {search || statusFilter !== 'all' ? t('noMatchingSearch') : t('noSessionsYet')}
         </p>
       ) : (

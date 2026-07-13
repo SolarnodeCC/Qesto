@@ -61,7 +61,7 @@ export function DeliberateVerifyView({ result, t }: Props) {
   return (
     <section
       aria-label={t('verify.sectionLabel')}
-      className={`rounded-xl border-2 p-5 ${
+      className={`rounded-xl border-2 p-6 ${
         allOk
           ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20'
           : 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20'

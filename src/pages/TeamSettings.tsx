@@ -100,7 +100,7 @@ export default function TeamSettings() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12">
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-20 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
@@ -308,7 +308,7 @@ export default function TeamSettings() {
 
   if (loading) {
     return (
-      <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+      <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-12">
         <div className="space-y-4 animate-pulse">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-24 rounded-xl bg-pulse-200" aria-hidden="true" />
@@ -320,7 +320,7 @@ export default function TeamSettings() {
 
   if (loadError || !team) {
     return (
-      <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+      <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-12">
         <p role="alert" className="text-red-600">
           {loadError ?? 'Team not found.'}
         </p>

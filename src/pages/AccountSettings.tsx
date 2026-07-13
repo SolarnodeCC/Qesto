@@ -93,7 +93,7 @@ export default function AccountSettings() {
   if (auth.status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
-        <div className="h-8 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
+        <div className="h-12 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
       </div>
     )
   }
@@ -150,7 +150,7 @@ export default function AccountSettings() {
       onSectionChange={handleSectionChange}
       isSuperuser={isSuperuser}
     >
-      <div className="density-stack-8 max-w-[720px] mx-auto px-6 lg:px-10 py-10 animate-page-enter">
+      <div className="density-stack-8 max-w-[720px] mx-auto px-8 lg:px-16 py-16 animate-page-enter">
         <header>
           <h1 className="text-3xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('pageTitle')}</h1>
           <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('pageIntro')}</p>
@@ -189,7 +189,7 @@ export default function AccountSettings() {
           <div className="mt-4">
             <HighContrastToggle />
           </div>
-          <p className="mt-6 text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.densityLabel')}</p>
+          <p className="mt-8 text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.densityLabel')}</p>
           <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t('appearance.densityLabel')}>
             {DENSITY_OPTIONS.map((option) => {
               const selected = density === option
@@ -276,7 +276,7 @@ export default function AccountSettings() {
               <div>
                 <h3 className="text-sm font-semibold text-pulse-800 dark:text-[#F0F2F8]">{t('billing.invoices')}</h3>
                 {invoicesLoading ? (
-                  <div className="mt-2 h-12 rounded bg-pulse-100 dark:bg-pulse-800/60 skeleton-shimmer" aria-hidden="true" />
+                  <div className="mt-2 h-24 rounded bg-pulse-100 dark:bg-pulse-800/60 skeleton-shimmer" aria-hidden="true" />
                 ) : invoices.length > 0 ? (
                   <ul className="mt-2 divide-y divide-pulse-100 dark:divide-[#1E2A45] rounded-lg border border-pulse-200 dark:border-[#1E2A45]">
                     {invoices.map((inv) => (

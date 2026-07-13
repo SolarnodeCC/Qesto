@@ -34,7 +34,7 @@ export function SessionWizardFooter({
 }: WizardFooterProps) {
   const t = useT('wizard')
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] flex-shrink-0 gap-3">
+    <div className="flex items-center justify-between px-8 py-4 border-t border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] flex-shrink-0 gap-3">
       {step > 1 && !jumpedFrom5 ? (
         <button
           type="button"
@@ -61,7 +61,7 @@ export function SessionWizardFooter({
             type="button"
             onClick={onNextStep1}
             disabled={!step1Valid || creatingSession}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
           >
             {creatingSession ? 'Creating…' : jumpedFrom5 ? '← Overview' : t('nav.next')}
           </button>
@@ -71,7 +71,7 @@ export function SessionWizardFooter({
             type="button"
             onClick={onNextStep2}
             disabled={!step2Valid}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
           >
             {jumpedFrom5 ? '← Overview' : t('nav.next')}
           </button>
@@ -80,7 +80,7 @@ export function SessionWizardFooter({
           <button
             type="button"
             onClick={onNextStep34}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
           >
             {jumpedFrom5 ? '← Overview' : t('nav.next')}
           </button>
@@ -90,7 +90,7 @@ export function SessionWizardFooter({
             type="button"
             onClick={onLaunch}
             disabled={launching || activeQuestionsCount === 0}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 shadow-teal btn-motion"
+            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 shadow-teal btn-motion"
           >
             {launching ? (
               <>
