@@ -560,6 +560,7 @@ export class D1PreparedStatementMock {
     if (this.sql.startsWith('INSERT INTO sessions')) {
       const [id, owner_id, code, title] = this.args as [string, string, string, string]
       const isWorkspaceInstance = this.sql.includes('workspace_id, workspace_seq')
+      const isTemplateInstance = this.sql.includes('vote_policy, session_mode')
       const hasExplicitAnonymity = this.sql.includes("VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6)")
       const anonymity = hasExplicitAnonymity
         ? (this.args[4] as SessionRow['anonymity'])
@@ -597,6 +598,9 @@ export class D1PreparedStatementMock {
       if (isWorkspaceInstance) {
         const mode = this.args[4] as SessionRow['session_mode']
         if (mode) row.session_mode = mode
+      } else if (isTemplateInstance) {
+        row.vote_policy = 'once'
+        row.session_mode = 'reflection'
       }
       this.db.sessions.set(id, row)
       return { meta: { changes: 1 } }
