@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireFeature } from '../middleware/feature-gate'
-import { readKvJson, writeKvJson } from '../lib/kv'
+import { readKvJson, writeKvJson, deleteKv } from '../lib/kv'
 import { namespacedKey } from '../lib/tenant-namespace'
 import { writeEvent } from '../lib/observability'
 import {
@@ -29,6 +29,7 @@ import type { ParentApp } from './parent-app'
 import { buildInsightsExport, insightsExportToCsv } from '../lib/team-insights-export'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../lib/constants'
 
@@ -42,9 +43,6 @@ function trendsCacheKey(teamId: string, window: string): string {
   return namespacedKey(teamId, `insights:trends:${window}`)
 }
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 export function mountTeamInsightsRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -257,7 +255,7 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
     for (const window of INSIGHT_TREND_WINDOWS) {
       await recomputeTeamInsightRollups(env, c.env.DB, teamId, window)
       await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
-      if (c.env.TEAMS_KV) await c.env.TEAMS_KV.delete(trendsCacheKey(teamId, window))
+      if (c.env.TEAMS_KV) await deleteKv(c.env.TEAMS_KV, trendsCacheKey(teamId, window))
     }
 
     return c.json({ ok: true, data: { refreshed: true, windows: [...INSIGHT_TREND_WINDOWS] }, trace_id: c.get('trace_id') })

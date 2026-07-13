@@ -1,16 +1,21 @@
 // Client-side WebSocket state machine for LIVE sessions.
 //
-// Pattern: reducer + imperative WS client. Reconnect uses exponential
-// backoff (1s, 2s, 4s, 8s, 16s) capped at 5 attempts per outage; a
-// successful `init` resets the counter. Server is single source of truth —
-// we always rehydrate from the `init` payload on reconnect.
+// Pattern: reducer + shared reconnecting-WS transport (liveSessionWsTransport).
+// Reconnect uses exponential backoff (1s, 2s, 4s, 8s, 16s) capped at 5
+// attempts. Server is single source of truth — we always rehydrate from the
+// `init` payload on reconnect.
 
 import type { PollOption, QuestionKind } from '@api/types'
 import type { EnergizerBackendKind } from '../types/session'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { enqueueOfflineVote, flushOfflineVoteQueue } from '../lib/offline-vote-queue'
 import { parseInitPayload, parseServerEnvelope } from '../lib/live-session-protocol'
-import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
+import {
+  buildLiveSessionWsUrl,
+  buildLiveSessionSubprotocols,
+  createReconnectingWs,
+  sendWsJson,
+} from './liveSessionWsTransport'
 import type { CaptionSegment } from './useCaptions'
 
 export type ReactionDelta = {
@@ -74,6 +79,10 @@ export type LiveEnergizerState = {
       awardedAt: number
     }[]
   >
+  // Aggregate value→count tally (emoji_poll / word_cloud) — the only
+  // cross-voter result data participants receive; raw answers are redacted
+  // server-side to the viewer's own.
+  optionCounts?: Record<string, number>
 }
 
 /** Wire-level option row — same shape as REST `PollOption`. */
@@ -257,9 +266,6 @@ export type XrAvatarSync = {
 export function useLiveSession(sessionId: string | undefined, opts: Options = {}) {
   const [state, dispatch] = useReducer(reducer, INITIAL)
   const wsRef = useRef<WebSocket | null>(null)
-  const attemptRef = useRef(0)
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const closedByClientRef = useRef(false)
 
   const { fingerprint, presenterToken, enabled = true, onCaptionSegment, onReactionDelta, onXrAvatarSync } = opts
   // Stable ref so the message handler closure never captures a stale callback.
@@ -270,33 +276,8 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   const onXrAvatarSyncRef = useRef(onXrAvatarSync)
   onXrAvatarSyncRef.current = onXrAvatarSync
 
-  const clearRetryTimer = () => {
-    if (retryTimerRef.current) {
-      clearTimeout(retryTimerRef.current)
-      retryTimerRef.current = null
-    }
-  }
-
-  const connect = useCallback(() => {
-    if (!sessionId || !enabled) return
-    closedByClientRef.current = false
-    dispatch({ kind: 'connecting' })
-
-    const url = buildLiveSessionWsUrl(sessionId, fingerprint)
-    // Always offer 'qesto-v1' so the server can legally echo it back (RFC 6455
-    // requires the server to choose from the offered list). The bearer token is
-    // offered alongside it so the server can identify the presenter role.
-    const subprotocols = presenterToken
-      ? [`qesto.bearer.${presenterToken}`, 'qesto-v1']
-      : ['qesto-v1']
-    const ws = new WebSocket(url, subprotocols)
-    wsRef.current = ws
-
-    ws.addEventListener('open', () => {
-      flushOfflineVoteQueue(sessionId, (payload) => sendWsJson(ws, payload))
-      dispatch({ kind: 'open' })
-    })
-    ws.addEventListener('message', (ev) => {
+  const handleMessage = useCallback(
+    (ev: MessageEvent) => {
       try {
         const text = typeof ev.data === 'string' ? ev.data : String(ev.data)
         const rawUnknown: unknown = JSON.parse(text)
@@ -428,40 +409,51 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
       } catch {
         /* ignore unparseable frames */
       }
-    })
-    ws.addEventListener('close', (ev) => {
-      if (closedByClientRef.current || ev.code === 1000) {
-        dispatch({ kind: 'closed' })
-        return
-      }
-      const attempt = attemptRef.current + 1
-      attemptRef.current = attempt
-      if (attempt > 5) {
-        dispatch({
-          kind: 'failed',
-          error: 'Unable to connect to the live session. Please refresh the page and try again.',
-        })
-        return
-      }
-      const delay = Math.min(16000, 1000 * Math.pow(2, attempt - 1))
-      const waitSeconds = Math.round(delay / 1000)
-      dispatch({ kind: 'reconnecting', attempt, message: `Reconnecting in ${waitSeconds} seconds...` })
-      retryTimerRef.current = setTimeout(connect, delay)
-    })
-    ws.addEventListener('error', () => {
-      // Close handler handles the reconnect logic.
-    })
-  }, [sessionId, enabled, fingerprint, presenterToken])
+    },
+    [],
+  )
 
   useEffect(() => {
-    connect()
+    if (!sessionId || !enabled) return
+    const handle = createReconnectingWs({
+      url: buildLiveSessionWsUrl(sessionId, fingerprint),
+      subprotocols: buildLiveSessionSubprotocols(presenterToken),
+      onSocket: (ws) => {
+        wsRef.current = ws
+      },
+      onOpen: (ws) => flushOfflineVoteQueue(sessionId, (payload) => sendWsJson(ws, payload)),
+      onMessage: handleMessage,
+      onStatus: (s) => {
+        switch (s.kind) {
+          case 'connecting':
+            dispatch({ kind: 'connecting' })
+            break
+          case 'open':
+            dispatch({ kind: 'open' })
+            break
+          case 'reconnecting':
+            dispatch({
+              kind: 'reconnecting',
+              attempt: s.attempt,
+              message: `Reconnecting in ${Math.round(s.delayMs / 1000)} seconds...`,
+            })
+            break
+          case 'closed':
+            dispatch({ kind: 'closed' })
+            break
+          case 'failed':
+            dispatch({
+              kind: 'failed',
+              error: 'Unable to connect to the live session. Please refresh the page and try again.',
+            })
+            break
+        }
+      },
+    })
     return () => {
-      closedByClientRef.current = true
-      clearRetryTimer()
-      wsRef.current?.close(1000, 'unmount')
-      wsRef.current = null
+      handle.close()
     }
-  }, [connect])
+  }, [sessionId, enabled, fingerprint, presenterToken, handleMessage])
 
   const sendVote = useCallback(
     (optionId: string) => {

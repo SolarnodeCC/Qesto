@@ -121,5 +121,8 @@
   "connection.connecting": "Verbindung wird hergestellt…",
   "connection.reconnecting": "Verbindung wird wiederhergestellt…",
   "connection.closed": "Getrennt",
-  "connection.failed": "Verbindung verloren"
+  "connection.failed": "Verbindung verloren",
+  "anonymity_full": "Vollständige Anonymität",
+  "anonymity_partial": "Teilweise Anonymität",
+  "anonymity_zero_knowledge": "Zero-Knowledge-Anonymität"
 }

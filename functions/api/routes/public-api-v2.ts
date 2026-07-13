@@ -7,7 +7,12 @@ import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
-import { fetchSessionForTeam } from '../repositories/sessionRepository'
+import {
+  fetchSessionForTeam,
+  fetchSessionRowBasic,
+  fetchSessionResultsData,
+  createDraftSessionForTeam,
+} from '../repositories/sessionRepository'
 import { errorResponse } from '../lib/error-handler'
 import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
@@ -28,17 +33,17 @@ export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: 
     const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 200) : 'API session'
     const id = ulid()
     const code = generateJoinCode()
-    const now = Date.now()
-    await c.env.DB.prepare(
-      `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at, team_id)
-       VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5, ?6)`,
-    )
-      .bind(id, createdBy, code, title, now, teamId)
-      .run()
+    const { createdAt } = await createDraftSessionForTeam(c.env.DB, {
+      id,
+      teamId,
+      ownerId: createdBy,
+      title,
+      code,
+    })
     return c.json(
       {
         ok: true,
-        data: { id, code, title, status: 'draft', teamId, createdAt: now },
+        data: { id, code, title, status: 'draft', teamId, createdAt },
       },
       201,
     )
@@ -47,25 +52,16 @@ export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: 
   app.get('/sessions/:id/results', async (c) => {
     const { teamId } = c.get('apiKey')
     const sessionId = c.req.param('id')
-    const session = await c.env.DB.prepare(`SELECT id, team_id, title, status FROM sessions WHERE id = ?1`)
-      .bind(sessionId)
-      .first<{ id: string; team_id: string | null; title: string; status: string }>()
+    const session = await fetchSessionRowBasic(c.env.DB, sessionId)
     if (!session || session.team_id !== teamId) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
-    const questions = await c.env.DB.prepare(
-      `SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`,
-    )
-      .bind(sessionId)
-      .all()
-    const votes = await c.env.DB.prepare(
-      `SELECT question_id, option_id, COUNT(*) as count FROM votes WHERE session_id = ?1 GROUP BY question_id, option_id`,
-    )
-      .bind(sessionId)
-      .all()
+    const { questions, voteCounts } = await fetchSessionResultsData(c.env.DB, sessionId)
+    // v2 contract: the field is named `votes` (v1/v3 call it `vote_counts`).
+    // Kept as-is — renaming would break existing v2 integrators.
     return c.json({
       ok: true,
-      data: { session, questions: questions.results ?? [], votes: votes.results ?? [] },
+      data: { session, questions, votes: voteCounts },
     })
   })
 

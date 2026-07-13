@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { safeLogContext } from '../../lib/log'
+import { readKvJson, writeKvJson } from '../../lib/kv'
 import type { Env } from '../../types'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
@@ -259,12 +260,12 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
 
       // Record sync timestamp for monitoring
       if (c.env.ACTIONS_KV) {
-        await c.env.ACTIONS_KV.put('kb_sync_metadata', JSON.stringify({
+        await writeKvJson(c.env.ACTIONS_KV, 'kb_sync_metadata', {
           last_sync_at: Date.now(),
           vectors_upserted: totalUpserted,
           documents_upserted: documentsUpserted,
           chunks_upserted: chunksUpserted,
-        }))
+        })
       }
 
       return c.json(
@@ -384,13 +385,12 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
 
       // Record sync timestamp for monitoring
       if (c.env.ACTIONS_KV && totalDeleted > 0) {
-        const current = await c.env.ACTIONS_KV.get('kb_sync_metadata')
-        const metadata = current ? JSON.parse(current) : {}
-        await c.env.ACTIONS_KV.put('kb_sync_metadata', JSON.stringify({
+        const metadata = (await readKvJson<Record<string, unknown>>(c.env.ACTIONS_KV, 'kb_sync_metadata')) ?? {}
+        await writeKvJson(c.env.ACTIONS_KV, 'kb_sync_metadata', {
           ...metadata,
           last_sync_at: Date.now(),
           last_operation: 'delete',
-        }))
+        })
       }
 
       return c.json(
@@ -435,7 +435,7 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       )
     }
 
-    const metadata = await c.env.ACTIONS_KV.get('kb_sync_metadata')
+    const metadata = await readKvJson<Record<string, unknown>>(c.env.ACTIONS_KV, 'kb_sync_metadata')
     if (!metadata) {
       return c.json(
         {
@@ -449,7 +449,7 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
     return c.json(
       {
         ok: true,
-        data: JSON.parse(metadata),
+        data: metadata,
       },
       200,
     )

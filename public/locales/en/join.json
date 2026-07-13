@@ -73,5 +73,15 @@
   "vote_unavailable_offline": "Connection lost — reconnecting. Voting resumes automatically once you're back online.",
   "not_found_help": "Double-check the code and try again.",
   "try_again": "Try again",
-  "code_length_hint": "Enter the 6-character code"
+  "code_length_hint": "Enter the 6-character code",
+  "energizer_updates_unavailable": "Energizer updates are currently unavailable. We keep retrying automatically.",
+  "emojiPoll.title": "Emoji Poll",
+  "emojiPoll.option_aria": "{emoji}: {count} votes",
+  "emojiPoll.change_hint": "Tap another emoji to change your vote.",
+  "wordCloud.title": "Word Cloud",
+  "wordCloud.placeholder": "One word…",
+  "wordCloud.submit": "Submit",
+  "wordCloud.submitted": "Your word: {word}. Submit another to replace it.",
+  "wordCloud.single_word_hint": "Single words only — no spaces.",
+  "wordCloud.top_words": "Top words"
 }

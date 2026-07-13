@@ -34,6 +34,7 @@ import {
   deleteLibraryItem,
 } from '../repositories/studioLibraryRepository'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -47,9 +48,6 @@ const SaveSchema = z.object({
   title: z.string().trim().min(1).max(200),
 })
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 /** Clamp a query-string positive int into [0, max] with a fallback. */
 function parseBoundedInt(raw: string | undefined, fallback: number, min: number, max: number): number {

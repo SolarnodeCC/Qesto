@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import type { Env, Session } from '../../types'
 import type { SessionVars } from './shared'
 
-import { rateLimit } from '../../lib/rate-limit'
 import { readKvText, writeKvJson } from '../../lib/kv'
 import { validateBody } from '../../lib/request-validation'
 import {
@@ -11,11 +10,26 @@ import {
   RefineQuestionsSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
+  AddQuestionsBatchSchema,
   autoPopulateOptions,
 } from '../../lib/domain-schemas'
 import { ensurePersonalTeam } from '../teams'
-import { WizardAIError, WizardValidationError, generateQuestions, streamQuestions } from '../../lib/ai-wizard'
-import { sanitizeError } from '../../lib/error-handler'
+import {
+  WizardAIError,
+  WizardValidationError,
+  generateQuestions,
+  streamQuestions,
+  FAST_MODEL,
+  QUALITY_FALLBACK_MODEL,
+} from '../../lib/ai-wizard'
+import { errorResponse } from '../../lib/error-handler'
+import {
+  enforceWizardAiRateLimit,
+  loadDraftSessionForAi,
+  recordWizardAiInference,
+  wizardAiErrorPayload,
+} from './wizard-ai'
+import { insertQuestionsBatch, updateSessionGroundingHash } from '../../repositories/sessionRepository'
 import { requireFeature } from '../../middleware/feature-gate'
 import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { hardDeleteSession } from '../../lib/session-delete'
@@ -25,7 +39,6 @@ import { ulid } from '../../lib/ulid'
 import { generateJoinCode } from '../../lib/code'
 import { incrementSessionQuota } from '../../lib/quota'
 import { WIZARD_DRAFT_TTL_SECONDS } from '../../lib/constants'
-import { writeEvent } from '../../lib/observability'
 import { logEvent } from '../../lib/log'
 import {
   fetchOwnerSessionTitles,
@@ -35,6 +48,26 @@ import {
   deniedQuestionFeature,
   recordSprint19JourneyEvent,
 } from './shared'
+
+// WIZ-CACHE-01: repeated identical generations (same title/goal/focus/language)
+// are common while a host iterates on a draft — serve them from KV instead of
+// re-running two model batches. Key is per-user so one user's generations are
+// never replayed to another. Same 24 h TTL as the refine cache.
+async function generationCacheKey(
+  userId: string,
+  input: { sessionTitle: string; sessionGoal: string; focusArea?: string | undefined },
+  language: string,
+): Promise<string> {
+  const hash = await hashGrounding(
+    JSON.stringify({
+      sessionTitle: input.sessionTitle,
+      sessionGoal: input.sessionGoal,
+      focusArea: input.focusArea ?? null,
+      language,
+    }),
+  )
+  return `wizard:gen:${userId}:${hash}`
+}
 
 export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   // ──────────────────────────────────────────────────────────────────────────
@@ -49,48 +82,15 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const user = c.get('user')
     const id = c.req.param('id')
 
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+    const limited = await enforceWizardAiRateLimit(c, id, {
       max: 20,
-      windowSeconds: 3600,
       prefix: 'ai-wizard',
+      message: 'Too many AI generations. Try again in an hour.',
     })
-    if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, {
-        name: 'ai.rate_limited',
-        userId: user.sub,
-        sessionId: id,
-        plan: c.get('plan'),
-        count: 20,
-        traceId: c.get('trace_id'),
-      })
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'rate_limited',
-            message: 'Too many AI generations. Try again in an hour.',
-            details: { reset_at: rl.resetAt, limit: 20 },
-          },
-          trace_id: c.get('trace_id'),
-        },
-        429,
-      )
-    }
+    if (limited) return limited
 
-    const genLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
-    if (!genLoaded.ok) {
-      return c.json(
-        { ok: false, error: { code: genLoaded.error.code, message: genLoaded.error.message }, trace_id: c.get('trace_id') },
-        genLoaded.error.status,
-      )
-    }
-    const genDraft = requireDraft(genLoaded.session, 'generate_questions')
-    if (!genDraft.ok) {
-      return c.json(
-        { ok: false, error: { code: genDraft.error.code, message: genDraft.error.message }, trace_id: c.get('trace_id') },
-        genDraft.error.status,
-      )
-    }
+    const loaded = await loadDraftSessionForAi(c, id, 'generate_questions')
+    if (!loaded.ok) return loaded.res
 
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = GenerateQuestionsSchema.safeParse(body)
@@ -107,49 +107,37 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
 
     try {
       const language = c.req.header('accept-language') ?? 'en'
+      const cacheKey = await generationCacheKey(user.sub, parsed.data, language)
+      const cachedRaw = await readKvText(c.env.SESSIONS_KV, cacheKey)
+      if (cachedRaw) {
+        const cached = validateKvJson(cachedRaw, CachedQuestionsSchema)
+        if (cached) {
+          return c.json({
+            ok: true,
+            data: { questions: cached.questions, confidence: cached.confidence ?? 1, cached: true },
+            trace_id: c.get('trace_id'),
+          })
+        }
+      }
       const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
-      writeEvent(c.env.METRICS_AE, {
-        name: 'ai.inference',
-        userId: user.sub,
-        sessionId: id,
-        plan: c.get('plan'),
-        durationMs: Date.now() - inferenceStart,
-        count: result.questions.length,
-        traceId: c.get('trace_id'),
-      })
+      recordWizardAiInference(c, id, result.questions.length, inferenceStart)
+      await writeKvJson(
+        c.env.SESSIONS_KV,
+        cacheKey,
+        { questions: result.questions, confidence: result.confidence },
+        { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
+      )
       return c.json({
         ok: true,
         data: { questions: result.questions, confidence: result.confidence },
         trace_id: c.get('trace_id'),
       })
     } catch (err) {
-      if (err instanceof WizardValidationError) {
-        return c.json(
-          {
-            ok: false,
-            error: {
-              code: 'ai_output_invalid',
-              message: 'AI returned an output that failed validation',
-              details: err.details,
-            },
-            trace_id: c.get('trace_id'),
-          },
-          502,
-        )
-      }
-      if (err instanceof WizardAIError) {
-        const sanitized = sanitizeError(err, c.env.ENV, 500)
-        return c.json(
-          {
-            ok: false,
-            error: { ...sanitized, code: 'ai_failed' },
-            trace_id: c.get('trace_id'),
-          },
-          500,
-        )
-      }
-      throw err
+      const payload = wizardAiErrorPayload(err, c.env.ENV)
+      if (!payload) throw err
+      const { status, ...error } = payload
+      return c.json({ ok: false, error, trace_id: c.get('trace_id') }, status)
     }
   })
 
@@ -163,48 +151,15 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const user = c.get('user')
     const id = c.req.param('id')
 
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+    const limited = await enforceWizardAiRateLimit(c, id, {
       max: 20,
-      windowSeconds: 3600,
       prefix: 'ai-wizard',
+      message: 'Too many AI generations. Try again in an hour.',
     })
-    if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, {
-        name: 'ai.rate_limited',
-        userId: user.sub,
-        sessionId: id,
-        plan: c.get('plan'),
-        count: 20,
-        traceId: c.get('trace_id'),
-      })
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'rate_limited',
-            message: 'Too many AI generations. Try again in an hour.',
-            details: { reset_at: rl.resetAt, limit: 20 },
-          },
-          trace_id: c.get('trace_id'),
-        },
-        429,
-      )
-    }
+    if (limited) return limited
 
-    const sseLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
-    if (!sseLoaded.ok) {
-      return c.json(
-        { ok: false, error: { code: sseLoaded.error.code, message: sseLoaded.error.message }, trace_id: c.get('trace_id') },
-        sseLoaded.error.status,
-      )
-    }
-    const sseDraft = requireDraft(sseLoaded.session, 'generate_questions')
-    if (!sseDraft.ok) {
-      return c.json(
-        { ok: false, error: { code: sseDraft.error.code, message: sseDraft.error.message }, trace_id: c.get('trace_id') },
-        sseDraft.error.status,
-      )
-    }
+    const loaded = await loadDraftSessionForAi(c, id, 'generate_questions')
+    if (!loaded.ok) return loaded.res
 
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = GenerateQuestionsSchema.safeParse(body)
@@ -228,6 +183,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       language,
     })
     const groundingHash = await hashGrounding(grounding)
+    const cacheKey = `wizard:gen:${user.sub}:${groundingHash}`
     const traceId = c.get('trace_id')
 
     function sse(event: string, data: unknown): Uint8Array {
@@ -242,7 +198,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
           trace_id: traceId,
           groundingHash,
           ai: {
-            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+            // The model that actually runs by default; the larger model is only
+            // invoked as a quality fallback when the primary fails.
+            model: FAST_MODEL,
+            fallbackModel: QUALITY_FALLBACK_MODEL,
             provider: 'Cloudflare Workers AI',
             dataRetention: 'none',
             inferenceRegion: 'EU-edge',
@@ -251,6 +210,20 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
           },
         }))
         try {
+          // WIZ-CACHE-01: identical grounding within the TTL replays the cached
+          // result without any model call.
+          const cachedRaw = await readKvText(c.env.SESSIONS_KV, cacheKey)
+          const cached = cachedRaw ? validateKvJson(cachedRaw, CachedQuestionsSchema) : null
+          if (cached) {
+            controller.enqueue(sse('questions', {
+              questions: cached.questions,
+              confidence: cached.confidence ?? 1,
+              groundingHash,
+              cached: true,
+            }))
+            controller.enqueue(sse('done', { ok: true }))
+            return
+          }
           const inferenceStart = Date.now()
           // Stream each question to the client as it finishes generating. If
           // token streaming fails outright, fall back to the buffered
@@ -268,15 +241,13 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
               throw streamErr
             }
           }
-          writeEvent(c.env.METRICS_AE, {
-            name: 'ai.inference',
-            userId: user.sub,
-            sessionId: id,
-            plan: c.get('plan'),
-            durationMs: Date.now() - inferenceStart,
-            count: result.questions.length,
-            traceId,
-          })
+          recordWizardAiInference(c, id, result.questions.length, inferenceStart)
+          await writeKvJson(
+            c.env.SESSIONS_KV,
+            cacheKey,
+            { questions: result.questions, confidence: result.confidence },
+            { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
+          )
           // Final authoritative payload: reconciliation for incremental clients,
           // the full list for the fallback path, and backward-compat for old clients.
           controller.enqueue(sse('questions', {
@@ -286,15 +257,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
           }))
           controller.enqueue(sse('done', { ok: true }))
         } catch (err) {
-          if (err instanceof WizardValidationError) {
-            controller.enqueue(sse('error', {
-              code: 'ai_output_invalid',
-              message: 'AI returned an output that failed validation',
-              details: err.details,
-            }))
-          } else if (err instanceof WizardAIError) {
-            const sanitized = sanitizeError(err, c.env.ENV, 500)
-            controller.enqueue(sse('error', { ...sanitized, code: 'ai_failed' }))
+          const payload = wizardAiErrorPayload(err, c.env.ENV)
+          if (payload) {
+            const { status: _status, ...errorBody } = payload
+            controller.enqueue(sse('error', errorBody))
           } else {
             controller.enqueue(sse('error', {
               code: 'internal_error',
@@ -368,6 +334,51 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       )
       .bind(qid, id, nextPosition, parsed.data.kind, parsed.data.prompt, optionsJson, now)
       .run()
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LAUNCHPAD-02b: POST /api/sessions/:id/questions/batch
+  // Appends multiple questions to a DRAFT session in a single D1 batch. Used by
+  // the wizard launch step instead of one sequential POST per question.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/questions/batch', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const batchLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!batchLoaded.ok) {
+      return errorResponse(c, batchLoaded.error.status, batchLoaded.error.code, batchLoaded.error.message)
+    }
+    const batchDraft = requireDraft(batchLoaded.session, 'add_question')
+    if (!batchDraft.ok) {
+      return errorResponse(c, batchDraft.error.status, batchDraft.error.code, batchDraft.error.message)
+    }
+    const session = batchDraft.session
+
+    const body = await c.req.json().catch(() => null)
+    const parsed = AddQuestionsBatchSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse(c, 400, 'validation', 'Invalid questions payload')
+    }
+
+    // Plan-gate every kind before writing anything — the batch is all-or-nothing.
+    for (const q of parsed.data.questions) {
+      const denied = deniedQuestionFeature(c.get('plan'), c.get('planQuotas'), q.kind)
+      if (denied) {
+        return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
+      }
+    }
+
+    const existing = await fetchQuestions(c.env.DB, id)
+    const rows = parsed.data.questions.map((q) => {
+      const rawOptions = autoPopulateOptions(q.kind, q.options)
+      const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+      return { id: ulid(), kind: q.kind, prompt: q.prompt, optionsJson: JSON.stringify(options) }
+    })
+    await insertQuestionsBatch(c.env.DB, id, existing.length, rows)
 
     const questions = await fetchQuestions(c.env.DB, id)
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
@@ -529,17 +540,11 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const id = c.req.param('id')
     const session = await fetchSession(c.env.DB, id, user.sub)
     if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub)
     if (!deleted) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })
@@ -754,53 +759,19 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
   // 10/hour/user. DRAFT-only.
   // ──────────────────────────────────────────────────────────────────────────
   app.post('/:id/ai/refine', async (c) => {
-    const user = c.get('user')
     const id = c.req.param('id')
     const traceId = c.get('trace_id')
 
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+    const limited = await enforceWizardAiRateLimit(c, id, {
       max: 10,
-      windowSeconds: 3600,
       prefix: 'ai-refine',
+      message: 'Too many AI refinements. Try again in an hour.',
     })
-    if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, {
-        name: 'ai.rate_limited',
-        userId: user.sub,
-        sessionId: id,
-        plan: c.get('plan'),
-        count: 10,
-        traceId,
-      })
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'rate_limited',
-            message: 'Too many AI refinements. Try again in an hour.',
-            details: { reset_at: rl.resetAt, limit: 10 },
-          },
-          trace_id: traceId,
-        },
-        429,
-      )
-    }
+    if (limited) return limited
 
-    const refineLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
-    if (!refineLoaded.ok) {
-      return c.json(
-        { ok: false, error: { code: refineLoaded.error.code, message: refineLoaded.error.message }, trace_id: traceId },
-        refineLoaded.error.status,
-      )
-    }
-    const refineDraft = requireDraft(refineLoaded.session, 'ai_refine')
-    if (!refineDraft.ok) {
-      return c.json(
-        { ok: false, error: { code: refineDraft.error.code, message: refineDraft.error.message }, trace_id: traceId },
-        refineDraft.error.status,
-      )
-    }
-    const session = refineDraft.session
+    const loaded = await loadDraftSessionForAi(c, id, 'ai_refine')
+    if (!loaded.ok) return loaded.res
+    const session = loaded.session
 
     const validated = await validateBody(c, RefineQuestionsSchema)
     if ('error' in validated) return validated.error
@@ -833,21 +804,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
         sessionGoal: `${grounding}\n\nRefinement feedback: ${feedback}`,
         language,
       })
-      writeEvent(c.env.METRICS_AE, {
-        name: 'ai.inference',
-        userId: user.sub,
-        sessionId: id,
-        plan: c.get('plan'),
-        durationMs: Date.now() - inferenceStart,
-        count: result.questions.length,
-        traceId,
-      })
+      recordWizardAiInference(c, id, result.questions.length, inferenceStart)
 
       // Persist hash on the session row for future cache hits.
-      await c.env.DB
-        .prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2`)
-        .bind(groundingHash, id)
-        .run()
+      await updateSessionGroundingHash(c.env.DB, id, groundingHash)
       // Store refined questions in KV (24h TTL) for cache replays.
       await writeKvJson(
         c.env.SESSIONS_KV,
@@ -862,28 +822,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
         trace_id: traceId,
       })
     } catch (err) {
-      if (err instanceof WizardValidationError) {
-        return c.json(
-          {
-            ok: false,
-            error: {
-              code: 'ai_output_invalid',
-              message: 'AI returned an output that failed validation',
-              details: err.details,
-            },
-            trace_id: traceId,
-          },
-          502,
-        )
-      }
-      if (err instanceof WizardAIError) {
-        const sanitized = sanitizeError(err, c.env.ENV, 500)
-        return c.json(
-          { ok: false, error: { ...sanitized, code: 'ai_failed' }, trace_id: traceId },
-          500,
-        )
-      }
-      throw err
+      const payload = wizardAiErrorPayload(err, c.env.ENV)
+      if (!payload) throw err
+      const { status, ...error } = payload
+      return c.json({ ok: false, error, trace_id: traceId }, status)
     }
   })
 

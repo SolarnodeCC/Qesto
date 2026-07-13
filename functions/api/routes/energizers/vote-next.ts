@@ -1,11 +1,11 @@
 import { recordAuditEvent } from '../../lib/audit'
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow } from '../../lib/db-row-types'
-import { requireSessionAccess } from '../sessions/shared'
+import { requireSessionAccess, postDO } from '../sessions/shared'
 
 export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/vote', async (c) => {
@@ -16,17 +16,22 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
     try {
       const VoteSchema = z.object({
         value: z.string().min(1).max(200),
-        voter_id: z.string().min(1).max(120),
+        // Legacy field: older clients still send it, but the server ignores it —
+        // voter identity is bound to the authenticated session (see below).
+        voter_id: z.string().max(120).optional(),
       })
       const raw = await c.req.json().catch(() => null)
       const parsed = VoteSchema.safeParse(raw)
       if (!parsed.success) {
         return c.json(
-          { ok: false, error: { code: 'validation', message: 'value and voter_id required' }, trace_id },
+          { ok: false, error: { code: 'validation', message: 'value required' }, trace_id },
           400,
         )
       }
-      const body = parsed.data
+      // Bind the vote to the authenticated caller. A client-supplied voter_id
+      // would let any caller overwrite other participants' votes via the
+      // ON CONFLICT upsert.
+      const body = { value: parsed.data.value, voter_id: c.get('user').sub }
 
       const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
@@ -111,15 +116,25 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
           )
         }
         const q = config.questions[qi]
+        if (!q.options.includes(body.value)) {
+          return errorResponse(c, 400, 'validation', 'Invalid answer choice')
+        }
+        // Audit E-1: correctness is stored for scoring but never echoed back
+        // while the question is open, and answers are final — the previous
+        // upsert + immediate `correct` flag let participants brute-force the
+        // answer key by re-answering until true.
         const correct = body.value === q.options[q.correct_index] ? 1 : 0
-        await c.env.DB.prepare(
+        const result = await c.env.DB.prepare(
           `INSERT INTO team_quiz_responses (id, energizer_id, voter_id, question_index, value, correct, created_at)
            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-           ON CONFLICT(energizer_id, voter_id, question_index) DO UPDATE SET value = excluded.value, correct = excluded.correct`,
+           ON CONFLICT(energizer_id, voter_id, question_index) DO NOTHING`,
         )
           .bind(crypto.randomUUID(), energizerId, body.voter_id, qi, body.value, correct, Date.now())
           .run()
-        return c.json({ ok: true, data: { voted: body.value, correct: correct === 1 }, trace_id })
+        if (result.meta?.changes === 0) {
+          return errorResponse(c, 409, 'duplicate', 'You already answered this quiz question')
+        }
+        return c.json({ ok: true, data: { voted: body.value }, trace_id })
       }
 
       await c.env.DB.prepare(
@@ -211,6 +226,20 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
         after_snapshot: { current_index: nextIndex, state: newState },
         trace_id,
       })
+
+      // Audit E-2: reflect the advance into the DO plane participants watch.
+      if (session.status === 'energizing' || session.status === 'live') {
+        try {
+          await postDO(c.env, sessionId, '/energizer-sync', {
+            action: 'advance',
+            energizerId,
+            currentIndex: nextIndex,
+            completed: isDone,
+          })
+        } catch {
+          // Best-effort: D1 stays authoritative for the host lobby.
+        }
+      }
 
       return c.json({
         ok: true,

@@ -9,7 +9,10 @@ describe('Sprint 26/27 LIVE energizer contract', () => {
 
     expect(hook).toContain("type: 'energizer_activate'")
     expect(hook).toContain("type: 'energizer_answer'")
-    expect(present).toContain('sendEnergizerActivate')
+    // Core-audit P-2: the unreachable Present.tsx launch stubs were removed;
+    // the v1 activation surface lives in the hook until the presenter UI ships.
+    expect(hook).toContain('sendEnergizerActivate')
+    expect(present).toContain('state.energizer')
     expect(join).toContain('sendEnergizerAnswer')
     expect(join).toContain('LiveQuickFingerPanel')
   })

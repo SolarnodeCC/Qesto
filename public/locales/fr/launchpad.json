@@ -53,5 +53,8 @@
   "preflight_not_ready": "Pas prêt",
   "status_ready": "Brouillon · prêt à démarrer",
   "status_draft": "Brouillon",
-  "status_energizing": "Échauffement"
+  "status_energizing": "Échauffement",
+  "move_up": "Déplacer vers le haut",
+  "move_down": "Déplacer vers le bas",
+  "energizers_load_error": "Impossible de charger les energizers. Actualisez pour réessayer."
 }

@@ -1,9 +1,41 @@
 import { recordAuditEvent } from '../../lib/audit'
 import { errorResponse, sanitizeError } from '../../lib/error-handler'
-import { safeLogContext } from '../../lib/log'
+import { safeLogContext, logEvent } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
-import { requireSessionAccess } from '../sessions/shared'
+import { requireSessionAccess, postDO, type SessionRow } from '../sessions/shared'
+import { buildLiveEnergizerFromRow } from '../../lib/energizer-live-projection'
+import { getEnergizerById } from '../../repositories/energizerRepository'
+import type { Env } from '../../types'
+
+// Audit E-2: the DO WebSocket is the participant-facing energizer plane.
+// Host lifecycle changes made over REST are reconciled into the SessionRoom
+// DO here — best-effort, because the D1 write is the source of truth for the
+// host lobby and a sync miss must not fail the host's action.
+export async function syncEnergizerToDO(
+  env: Env,
+  session: Pick<SessionRow, 'id' | 'status'>,
+  energizerId: string,
+  newState: 'active' | 'completed',
+): Promise<void> {
+  if (session.status !== 'energizing' && session.status !== 'live') return
+  try {
+    if (newState === 'active') {
+      const row = await getEnergizerById(env.DB, session.id, energizerId)
+      const live = row ? buildLiveEnergizerFromRow(row) : null
+      if (!live) return
+      await postDO(env, session.id, '/energizer-sync', { action: 'activate', energizer: live })
+    } else {
+      await postDO(env, session.id, '/energizer-sync', { action: 'complete', energizerId })
+    }
+  } catch (err) {
+    logEvent({
+      event: 'energizer.do_sync_failed',
+      session_id: session.id,
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+    })
+  }
+}
 
 export function registerEnergizerPatchRoute(app: EnergizerApp): void {
   app.patch('/sessions/:sessionId/energizers/:energizerId', async (c) => {
@@ -75,6 +107,10 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
         after_snapshot: { state: body.state },
         trace_id,
       })
+
+      if (body.state !== undefined) {
+        await syncEnergizerToDO(c.env, session, energizerId, body.state)
+      }
 
       return c.json({ ok: true, data: { state: body.state }, trace_id })
     } catch (err) {

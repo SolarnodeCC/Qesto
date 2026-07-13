@@ -46,12 +46,12 @@ import {
   handleCopilotSnapshot,
 } from './lib/session-room-rest'
 import { handleUpgrade } from './lib/session-room-ws-upgrade'
+import { handleVote } from './lib/session-room-vote-admission'
 import {
-  handleVote,
   handlePresenterAdvance,
   handlePresenterBack,
   handleAddQuestion,
-} from './lib/session-room-vote-flow'
+} from './lib/session-room-presenter-actions'
 import {
   handlePresenterPauseResume,
   handleApproveResponse,
@@ -76,6 +76,21 @@ const CopilotCheckpointPayloadSchema = z.object({
   tool: z.string(),
   summary: z.string(),
 })
+
+// Audit E-2: internal `/energizer-sync` payload posted by the REST plane when
+// the host activates/advances/completes an energizer, so the DO — the single
+// participant-facing plane — reflects it. The `energizer` payload is validated
+// further by isValidLiveEnergizer inside the handler.
+const EnergizerSyncPayloadSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('activate'), energizer: z.record(z.string(), z.unknown()) }),
+  z.object({
+    action: z.literal('advance'),
+    energizerId: z.string(),
+    currentIndex: z.number().int().nonnegative(),
+    completed: z.boolean(),
+  }),
+  z.object({ action: z.literal('complete'), energizerId: z.string() }),
+])
 
 // ── DurableObject ───────────────────────────────────────────────────────────
 
@@ -225,6 +240,35 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
         }
       }
       return new Response(JSON.stringify({ ok: true, delivered }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+    // Audit E-2: REST-plane energizer lifecycle sync (host lobby activate /
+    // advance / complete) and the host-only live read model.
+    if (url.pathname === '/energizer-sync' && req.method === 'POST') {
+      const decoded = await decodeRequestBody(req, EnergizerSyncPayloadSchema)
+      if (!decoded.ok) {
+        return new Response(
+          JSON.stringify({ ok: false, error: { code: 'invalid_payload', message: 'Malformed energizer sync payload' } }),
+          { status: 400, headers: { 'content-type': 'application/json' } },
+        )
+      }
+      const payload = decoded.data
+      const applied =
+        payload.action === 'activate'
+          ? await this.energizerHandler.syncActivate(payload.energizer as unknown as Parameters<EnergizerHandler['syncActivate']>[0])
+          : payload.action === 'advance'
+            ? await this.energizerHandler.syncAdvance(payload.energizerId, payload.currentIndex, payload.completed)
+            : await this.energizerHandler.syncComplete(payload.energizerId)
+      return new Response(JSON.stringify({ ok: true, applied }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+    if (url.pathname === '/energizer-state' && req.method === 'GET') {
+      const energizer = await this.energizerHandler.getActiveEnergizer()
+      return new Response(JSON.stringify({ ok: true, energizer }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
       })

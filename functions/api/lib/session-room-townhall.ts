@@ -23,28 +23,8 @@ export const TOWNHALL_KEYS = {
   submitRate: (voterId: string) => `th:submit_rate:${voterId}`,
 } as const
 
-// ── Submit rate limiting (separate, tighter bucket than the vote bucket) ─────────
-// Submissions are far more expensive than upvotes (text + moderation surface), so cap
-// at 3 burst, sustained ~3/min. Upvotes reuse the existing vote bucket in SessionRoom.
-export const TOWNHALL_SUBMIT_BUCKET_CAPACITY = 3
-export const TOWNHALL_SUBMIT_BUCKET_REFILL_PER_SEC = 1 / 20
-
-export type TokenBucket = { tokens: number; lastAt: number }
-
-export function newSubmitBucket(now: number): TokenBucket {
-  return { tokens: TOWNHALL_SUBMIT_BUCKET_CAPACITY, lastAt: now }
-}
-
-/** Consume one submit token. On failure the bucket is returned unchanged so accrual continues. */
-export function consumeSubmitToken(bucket: TokenBucket, now: number): { ok: boolean; bucket: TokenBucket } {
-  const elapsed = Math.max(0, (now - bucket.lastAt) / 1000)
-  const refilled = Math.min(
-    TOWNHALL_SUBMIT_BUCKET_CAPACITY,
-    bucket.tokens + elapsed * TOWNHALL_SUBMIT_BUCKET_REFILL_PER_SEC,
-  )
-  if (refilled < 1) return { ok: false, bucket }
-  return { ok: true, bucket: { tokens: refilled - 1, lastAt: now } }
-}
+// Submit rate limiting lives in `board-submit-rate.ts` (shared with retro/ideate/
+// deliberate): 3 burst, sustained ~3/min. Upvotes reuse the vote bucket in SessionRoom.
 
 // ── Revision counter ─────────────────────────────────────────────────────────────
 export function nextRev(rev: number): number {

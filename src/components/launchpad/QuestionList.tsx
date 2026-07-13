@@ -1,5 +1,5 @@
 import { useState, useCallback, type FormEvent } from 'react'
-import { GripVertical, Loader2, Pencil, Plus, Sparkles, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus, Sparkles, X } from 'lucide-react'
 import { api } from '../../api/client'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
@@ -18,6 +18,8 @@ type Props = {
   onDragOver: (e: React.DragEvent, index: number) => void
   onDrop: (index: number) => void
   onDragEnd: () => void
+  /** Keyboard/touch alternative to drag-and-drop (WCAG 2.1.1). */
+  onMove: (index: number, direction: -1 | 1) => void
   onChanged: () => Promise<void>
 }
 
@@ -39,6 +41,7 @@ export default function QuestionList({
   onDragOver,
   onDrop,
   onDragEnd,
+  onMove,
   onChanged,
 }: Props) {
   const t = useT('launchpad')
@@ -99,11 +102,15 @@ export default function QuestionList({
       { method: 'POST', body: { sessionTitle, sessionGoal: topic, focusArea: aiTopic.trim() || undefined } },
     )
     if (!res.ok) { setAiGenerating(false); setAiError(res.error.message); return }
-    for (const q of res.data.questions) {
-      const kind = (QUESTION_KINDS.includes(q.kind as Question['kind']) ? q.kind : 'poll') as Question['kind']
+    if (res.data.questions.length > 0) {
+      const questions = res.data.questions.map((q) => ({
+        kind: (QUESTION_KINDS.includes(q.kind as Question['kind']) ? q.kind : 'poll') as Question['kind'],
+        prompt: q.prompt,
+        options: q.options ?? [],
+      }))
       await api<unknown>(
-        `/api/sessions/${encodeURIComponent(sessionId)}/questions`,
-        { method: 'POST', body: { kind, prompt: q.prompt, options: q.options ?? [] } },
+        `/api/sessions/${encodeURIComponent(sessionId)}/questions/batch`,
+        { method: 'POST', body: { questions } },
       )
     }
     setAiGenerating(false); setAiTopic(''); await onChanged()
@@ -218,6 +225,16 @@ export default function QuestionList({
                     {q.kind}
                   </span>
                   <span className="flex-1 text-sm text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8] truncate">{q.prompt}</span>
+                  <button type="button" onClick={() => onMove(index, -1)} disabled={index === 0}
+                    aria-label={`${t('move_up')}: ${q.prompt}`}
+                    className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
+                    <ChevronUp size={15} aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => onMove(index, 1)} disabled={index === orderedQuestions.length - 1}
+                    aria-label={`${t('move_down')}: ${q.prompt}`}
+                    className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
+                    <ChevronDown size={15} aria-hidden="true" />
+                  </button>
                   <button type="button" onClick={() => startEdit(q)} aria-label={t('edit_question')}
                     className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
                     <Pencil size={15} aria-hidden="true" />

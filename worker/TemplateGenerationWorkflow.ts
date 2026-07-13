@@ -4,6 +4,7 @@
 
 import { WorkflowEntrypoint, WorkflowEvent } from 'cloudflare:workers'
 import type { Env } from '../functions/api/types'
+import { runAI, type AIGatewayEnv } from '../functions/api/lib/ai/ai-gateway'
 import { nanoid } from 'nanoid'
 
 export interface SessionPipelinePayload {
@@ -57,18 +58,18 @@ const RETRY_DELAY_MS = [150, 300, 600] // exponential backoff: 150ms, 300ms, 600
  * Call Workers AI with exponential backoff retry on transient failures
  */
 async function invokeAI(
-  ai: any,
+  env: AIGatewayEnv,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   attempt = 0,
 ): Promise<string> {
   try {
-    const response = await ai.run(AI_MODEL, { messages })
-    return response.response
+    const response = (await runAI(env, AI_MODEL, { messages })) as { response?: string }
+    return response.response ?? ''
   } catch (err) {
     if (attempt < RETRY_ATTEMPTS - 1) {
       const delay = RETRY_DELAY_MS[attempt]
       await new Promise((r) => setTimeout(r, delay))
-      return invokeAI(ai, messages, attempt + 1)
+      return invokeAI(env, messages, attempt + 1)
     }
     throw new Error(`AI call failed after ${RETRY_ATTEMPTS} attempts: ${err instanceof Error ? err.message : String(err)}`)
   }
@@ -154,7 +155,7 @@ ${questionTexts}
 
 Output ONLY as JSON array of strings, one rewritten question per line. No markdown, no preamble.`
 
-        const response = await invokeAI(env.AI, [{ role: 'user', content: prompt }])
+        const response = await invokeAI(env, [{ role: 'user', content: prompt }])
 
         // Parse response (best-effort; if fails, discard this step)
         let rewrittenTexts: string[] = []
@@ -208,7 +209,7 @@ Output ONLY as JSON array of strings, one rewritten question per line. No markdo
 "${currentText}"
 
 Output ONLY the rewritten question. No explanation.`
-              currentText = await invokeAI(env.AI, [{ role: 'user', content: retryPrompt }])
+              currentText = await invokeAI(env, [{ role: 'user', content: retryPrompt }])
             }
 
             // Check similarity
@@ -219,7 +220,7 @@ Rewritten: "${currentText}"
 
 Output ONLY a JSON object: { "score": number, "reason": string }`
 
-            const similarityResponse = await invokeAI(env.AI, [{ role: 'user', content: similarityPrompt }])
+            const similarityResponse = await invokeAI(env, [{ role: 'user', content: similarityPrompt }])
 
             try {
               const parsed = JSON.parse(similarityResponse)
@@ -268,7 +269,7 @@ Question: "${q.text.en}"
 
 Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
 
-          const nerResponse = await invokeAI(env.AI, [{ role: 'user', content: nerPrompt }])
+          const nerResponse = await invokeAI(env, [{ role: 'user', content: nerPrompt }])
 
           try {
             const parsed = JSON.parse(nerResponse)
@@ -338,7 +339,7 @@ Output ONLY as JSON (no markdown, no preamble):
   "whatYoullLearn": ["insight 1", "insight 2", "insight 3"]
 }`
 
-        const response = await invokeAI(env.AI, [{ role: 'user', content: classifyPrompt }])
+        const response = await invokeAI(env, [{ role: 'user', content: classifyPrompt }])
 
         let classification = {
           industry: 'general',

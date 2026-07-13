@@ -24,13 +24,11 @@ import { assertFederationAllowed, assertEgressAllowed } from '../lib/sovereign-e
 import { buildSignedAuditExport, type SovereignAuditEntry } from '../lib/sovereign-audit-export'
 import type { ParentApp } from './parent-app'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 function tenantConfig(team: Team) {
   return {

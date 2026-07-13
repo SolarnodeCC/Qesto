@@ -3,7 +3,9 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import type { Env } from '../../types'
 import { registerEnergizerActiveRoute } from './active'
-import { registerEnergizerAdvanceDetailLeaderboardRoutes } from './advance-detail-leaderboard'
+import { registerEnergizerAdvanceRoutes } from './advance'
+import { registerEnergizerDetailRoutes } from './detail'
+import { registerEnergizerLeaderboardRoutes } from './leaderboard'
 import { registerEnergizerCreateListRoutes } from './create-list'
 import { registerEnergizerPatchRoute } from './patch'
 import { registerEnergizerVoteNextRoutes } from './vote-next'
@@ -19,7 +21,9 @@ export function mountEnergizerRoutes(parent: ParentApp): void {
   registerEnergizerActiveRoute(app)
   registerEnergizerPatchRoute(app)
   registerEnergizerVoteNextRoutes(app)
-  registerEnergizerAdvanceDetailLeaderboardRoutes(app)
+  registerEnergizerAdvanceRoutes(app)
+  registerEnergizerDetailRoutes(app)
+  registerEnergizerLeaderboardRoutes(app)
 
   parent.route('/api', app)
 }

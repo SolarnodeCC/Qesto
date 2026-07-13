@@ -46,7 +46,7 @@ export default function Present() {
   }, [])
   useReactionsTicker(reactionsState.total > 0, onReactionsTick)
 
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate, sendCaptionsStart, sendCaptionsStop, sendCaptionsSetLocale } = useLiveSession(
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendCaptionsStart, sendCaptionsStop, sendCaptionsSetLocale } = useLiveSession(
     id,
     {
       ...(presenterToken ? { presenterToken } : {}),
@@ -189,20 +189,6 @@ export default function Present() {
       setCaptionsPlanGated(true)
     }
   }, [state.error])
-
-  // Energizer launch handlers — wired to presenter UI in Sprint C
-  function handleStartQuickFinger() {
-    const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
-    const options = sourceOptions.length > 0 ? sourceOptions.slice(0, 4) : [t('quickFinger.optionYes'), t('quickFinger.optionNo')]
-    sendEnergizerActivate({ id: `quick_finger_${state.question?.id ?? Date.now()}`, kind: 'quick_finger', title: t('quickFinger.title'), status: 'active', prompt: state.question?.prompt ?? t('quickFinger.promptFallback'), options })
-  }
-  function handleStartTeamQuiz() {
-    const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
-    const options = sourceOptions.length >= 2 ? sourceOptions.slice(0, 4) : [t('teamQuiz.optionA'), t('teamQuiz.optionB'), t('teamQuiz.optionC'), t('teamQuiz.optionD')]
-    sendEnergizerActivate({ id: `team_quiz_${state.question?.id ?? Date.now()}`, kind: 'team_quiz', title: t('teamQuiz.title'), status: 'active', questions: [{ prompt: state.question?.prompt ?? t('teamQuiz.promptFallback'), options, correctIndex: 0 }, { prompt: t('teamQuiz.secondPrompt'), options: [t('teamQuiz.optionA'), t('teamQuiz.optionB')], correctIndex: 1 }] })
-  }
-  // Reference both handlers to satisfy noUnusedLocals while Sprint C UI wiring is pending
-  void ({ handleStartQuickFinger, handleStartTeamQuiz })
 
   if (auth.status === 'loading') {
     return <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">{t('loading')}</main>
@@ -354,6 +340,18 @@ function PresentInner({
   const t = useT('present')
   const { theme } = useCanvasTheme()
 
+  // Reflect the session's real anonymity mode — never claim "Full anonymity"
+  // when the host configured partial/none.
+  const anonymity = state.session?.anonymity
+  const anonymityLabel =
+    anonymity === 'full'
+      ? t('anonymity_full')
+      : anonymity === 'partial'
+        ? t('anonymity_partial')
+        : anonymity === 'zero_knowledge'
+          ? t('anonymity_zero_knowledge')
+          : null
+
   return (
     <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
       {/* COPILOT-05 — presenter-only live facilitator copilot (ADR-0046) */}
@@ -501,10 +499,12 @@ function PresentInner({
                 <Users size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
                 {state.results.total} {t('participant', { count: state.results.total })}
               </span>
-              <span className="flex items-center gap-2">
-                <Lock size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
-                {t('anonymity') ?? 'Full anonymity'}
-              </span>
+              {anonymityLabel && (
+                <span className="flex items-center gap-2">
+                  <Lock size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
+                  {anonymityLabel}
+                </span>
+              )}
             </div>
           </div>
 
@@ -623,10 +623,12 @@ function PresentInner({
               <Sparkles size={16} aria-hidden="true" />
               AI recap at session close · Workers AI on Cloudflare
             </div>
-            <div className="flex items-center gap-2 font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
-              <Lock size={18} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
-              {t('anonymity') ?? 'Full anonymity'}
-            </div>
+            {anonymityLabel && (
+              <div className="flex items-center gap-2 font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
+                <Lock size={18} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
+                {anonymityLabel}
+              </div>
+            )}
           </div>
         </div>
         </div>

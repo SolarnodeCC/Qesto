@@ -87,11 +87,16 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
           : initializeBracket(body.participants, body.bracket_size ?? 8)
       }
 
+      // Append after the session's current highest position — the table has
+      // UNIQUE(session_id, position), so a fixed position would make every
+      // second create fail with a constraint error.
       await c.env.DB.prepare(
         `INSERT INTO energizers (id, session_id, kind, prompt, config_json, position, state, created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`,
+         VALUES (?1, ?2, ?3, ?4, ?5,
+                 (SELECT COALESCE(MAX(position) + 1, 0) FROM energizers WHERE session_id = ?2),
+                 ?6, ?7, ?8)`,
       )
-        .bind(energizerId, sessionId, body.kind, body.prompt, JSON.stringify(config), 0, 'draft', now, now)
+        .bind(energizerId, sessionId, body.kind, body.prompt, JSON.stringify(config), 'draft', now, now)
         .run()
 
       await recordAuditEvent(c, {

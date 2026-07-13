@@ -73,5 +73,15 @@
   "vote_unavailable_offline": "Verbinding verbroken — opnieuw verbinden. Stemmen gaat automatisch verder zodra je weer online bent.",
   "not_found_help": "Controleer de code en probeer het opnieuw.",
   "try_again": "Opnieuw proberen",
-  "code_length_hint": "Voer de code van 6 tekens in"
+  "code_length_hint": "Voer de code van 6 tekens in",
+  "energizer_updates_unavailable": "Energizer-updates zijn momenteel niet beschikbaar. We blijven het automatisch opnieuw proberen.",
+  "emojiPoll.title": "Emoji-poll",
+  "emojiPoll.option_aria": "{emoji}: {count} stemmen",
+  "emojiPoll.change_hint": "Tik op een andere emoji om je stem te wijzigen.",
+  "wordCloud.title": "Woordwolk",
+  "wordCloud.placeholder": "Één woord…",
+  "wordCloud.submit": "Versturen",
+  "wordCloud.submitted": "Jouw woord: {word}. Verstuur een ander woord om het te vervangen.",
+  "wordCloud.single_word_hint": "Alleen losse woorden — geen spaties.",
+  "wordCloud.top_words": "Topwoorden"
 }
