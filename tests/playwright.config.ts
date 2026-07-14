@@ -27,7 +27,9 @@ export default defineConfig({
   projects: [
     {
       name: 'fullstack-chrome',
-      testIgnore: /a11y\.spec\.ts/,
+      // Accessibility and visual-regression tests have dedicated projects.
+      // The visual snapshots are intentionally keyed to `spa-chrome`.
+      testIgnore: [/a11y\.spec\.ts/, /visual_smoke\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
