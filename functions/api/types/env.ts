@@ -1,6 +1,24 @@
 // Worker environment surface: vars, secrets, and Cloudflare bindings.
 // Split out of types.ts (audit 2026-07-08: 468-line cross-domain hub).
 
+export type MarketingWorkflowPayload = {
+  sessionId: string
+  language: 'nl' | 'en' | 'de' | 'fr'
+  questionCount: number
+  participantCount: number
+  durationMinutes: number
+}
+
+export type WorkflowCreateOptions<Params> = {
+  id?: string
+  /** Cloudflare Workflows exposes this object as `event.payload`. */
+  params?: Params
+  retention?: {
+    successRetention?: string
+    errorRetention?: string
+  }
+}
+
 export type Env = {
   // Vars
   ENV: 'production' | 'preview' | 'dev' | 'staging'
@@ -200,7 +218,7 @@ export type Env = {
   MARKETING_KV?: KVNamespace
   SESSION_ROOM: DurableObjectNamespace
   AI: Ai
-  WORKFLOWS?: { create: (config: any) => Promise<{ id: string }> }
+  WORKFLOWS?: { create: <Params = unknown>(config?: WorkflowCreateOptions<Params>) => Promise<{ id: string }> }
   DECISIONS_VECTORIZE: VectorizeIndex
   HELP_VECTORIZE: VectorizeIndex
   KB_VECTORIZE: VectorizeIndex
