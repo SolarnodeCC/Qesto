@@ -75,12 +75,13 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
     return { ok: false, status: res.status, error: { code: 'invalid_response', message: 'Invalid response envelope' } }
   }
 
-  const body = json as { ok?: boolean; error?: ApiError } | null
-  return {
-    ok: false,
-    status: res.status,
-    error: body?.error ?? { code: 'http_error', message: `HTTP ${res.status}` },
-  }
+  const body = json as { ok?: boolean; error?: ApiError | string } | null
+  const rawError = body?.error
+  const error: ApiError =
+    typeof rawError === 'string'
+      ? { code: 'api_error', message: rawError }
+      : (rawError as ApiError | undefined) ?? { code: 'http_error', message: `HTTP ${res.status}` }
+  return { ok: false, status: res.status, error }
 }
 
 // Error codes worth retrying: the SessionRoom Durable Object can be momentarily
