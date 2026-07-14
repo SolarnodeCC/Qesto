@@ -22,10 +22,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       // tenant's energizer, so lock it to the owner like /active and /next.
       const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
       if (!session) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404,
-        )
+        return errorResponse(c, 404, 'not_found', 'Session not found or access denied')
       }
       const VoteSchema = z.object({
         value: z.string().min(1).max(200),
@@ -112,10 +109,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
         // Audit 2026-07-14 H-1: battle_royale/bracket rounds are driven by the
         // tournament endpoints, not this generic vote — previously any 200-char
         // string fell through to the insert and surfaced on host result views.
-        return c.json(
-          { ok: false, error: { code: 'validation', message: `${energizer.kind} does not accept votes on this endpoint` }, trace_id },
-          400,
-        )
+        return errorResponse(c, 400, 'validation', `${energizer.kind} does not accept votes on this endpoint`)
       }
 
       if (energizer.kind === 'team_quiz') {
