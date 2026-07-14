@@ -8,11 +8,16 @@ import { upsertTeamInsightRollup } from './team-insights'
 import { cutoffDayForWindow, type InsightTrendWindow } from './team-insights-recurring'
 import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
 
-export type MoodBucket = 'positive' | 'neutral' | 'concerning'
+// Audit 2026-07-14 M-1: this trend is derived from insights_daily.confidence —
+// the AI's theme-extraction confidence — NOT participant sentiment. It was
+// previously named "moodTrend" with positive/neutral/concerning buckets, which
+// read as team mood. Renamed to confidence semantics until the sentiment
+// pipeline (lib/ai/sentiment.ts) is wired into insights_daily at close time.
+export type ConfidenceBucket = 'high' | 'medium' | 'low'
 
-export type MoodTrendPoint = {
+export type ConfidenceTrendPoint = {
   day: string
-  mood: MoodBucket
+  level: ConfidenceBucket
   sampleSize: number
 }
 
@@ -22,7 +27,8 @@ export type FacilitatorScorecardEntry = {
   avgParticipation: number
   responseRate: number
   themeDiversity: number
-  moodTrend: MoodTrendPoint[]
+  /** Daily insight-extraction confidence — not a sentiment/mood signal. */
+  confidenceTrend: ConfidenceTrendPoint[]
 }
 
 export type FacilitatorScorecardPayload = {
@@ -46,10 +52,10 @@ export const FacilitatorScorecardPayloadSchema = z.object({
       avgParticipation: z.number(),
       responseRate: z.number(),
       themeDiversity: z.number(),
-      moodTrend: z.array(
+      confidenceTrend: z.array(
         z.object({
           day: z.string(),
-          mood: z.enum(['positive', 'neutral', 'concerning']),
+          level: z.enum(['high', 'medium', 'low']),
           sampleSize: z.number(),
         }),
       ),
@@ -73,10 +79,10 @@ type ScorecardRow = {
   owner_id: string
 }
 
-function moodFromConfidence(confidence: number): MoodBucket {
-  if (confidence >= 0.7) return 'positive'
-  if (confidence >= 0.4) return 'neutral'
-  return 'concerning'
+function bucketFromConfidence(confidence: number): ConfidenceBucket {
+  if (confidence >= 0.7) return 'high'
+  if (confidence >= 0.4) return 'medium'
+  return 'low'
 }
 
 function parseThemeLabels(themesJson: string): string[] {
@@ -133,18 +139,18 @@ export function computeFacilitatorScorecard(
       for (const label of parseThemeLabels(r.themes_json)) themes.add(label)
     }
 
-    const moodByDay = new Map<string, { sum: number; n: number }>()
+    const confidenceByDay = new Map<string, { sum: number; n: number }>()
     for (const r of facRows) {
-      const bucket = moodByDay.get(r.day) ?? { sum: 0, n: 0 }
+      const bucket = confidenceByDay.get(r.day) ?? { sum: 0, n: 0 }
       bucket.sum += r.confidence
       bucket.n += 1
-      moodByDay.set(r.day, bucket)
+      confidenceByDay.set(r.day, bucket)
     }
-    const moodTrend: MoodTrendPoint[] = [...moodByDay.entries()]
+    const confidenceTrend: ConfidenceTrendPoint[] = [...confidenceByDay.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([day, b]) => {
         const avg = b.n > 0 ? b.sum / b.n : 0
-        return { day, mood: moodFromConfidence(avg), sampleSize: b.n }
+        return { day, level: bucketFromConfidence(avg), sampleSize: b.n }
       })
 
     facilitators.push({
@@ -153,7 +159,7 @@ export function computeFacilitatorScorecard(
       avgParticipation: sessionsRun > 0 ? Math.round((voteSum / sessionsRun) * 10) / 10 : 0,
       responseRate: sessionsRun > 0 ? Math.round((withVotes / sessionsRun) * 100) / 100 : 0,
       themeDiversity: themes.size,
-      moodTrend,
+      confidenceTrend,
     })
 
     totalSessions += sessionsRun

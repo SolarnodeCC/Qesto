@@ -23,7 +23,8 @@ export type FacilitatorScorecardEntry = {
   avgParticipation: number
   responseRate: number
   themeDiversity: number
-  moodTrend: Array<{ day: string; mood: string; sampleSize: number }>
+  /** Daily insight-extraction confidence — not a sentiment/mood signal. */
+  confidenceTrend: Array<{ day: string; level: 'high' | 'medium' | 'low'; sampleSize: number }>
 }
 
 type TrendsData = {

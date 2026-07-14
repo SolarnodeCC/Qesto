@@ -5,6 +5,9 @@
 **Method:** static code inspection + data-flow tracing on branch `claude/qesto-core-audit-8ao6vl`. No load tests or live inference measurements executed in this pass — runtime latency/error/cost columns in §3 are marked accordingly.
 **Predecessor:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](./CORE_FEATURES_AUDIT_2026-07-09.md). §5 verifies the fix status of its critical findings.
 
+> **Fix status (2026-07-14, same branch):** all HIGH and MEDIUM findings below were fixed in the commits following this report on `claude/qesto-core-audit-8ao6vl`:
+> H-1 owner-locked REST vote + kind rejection · H-2 coaching rate limits (10/h, email 5/day) + `max_tokens: 600` · H-3 60 s refresh debounce · H-4 fetch cap 20 + sessionStorage cache · M-1 `moodTrend` → `confidenceTrend` (`high/medium/low`) · M-2 email HTML escaping · M-3 Zod array/item caps · M-4 actions merge-by-id preserving `createdAt`/`sourceSessionId` · M-5 "Completion rate" relabel + consent-stub card removed · M-6 fenced coaching prompt (v2) + null on parse failure + `tests/eval/coaching-prompt.eval.test.ts` (REV-10) · M-7 vector path removed, frequency clustering + source logging. LOW findings remain open.
+
 ---
 
 ## 1. Architecture answers (audit questionnaire)

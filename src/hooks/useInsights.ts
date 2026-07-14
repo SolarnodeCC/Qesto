@@ -82,19 +82,49 @@ function aggregateThemes(perSession: Map<string, RawInsights>): AggregatedTheme[
     }))
 }
 
+// Audit 2026-07-14 H-4: previously every closed session got its own GET on
+// every dashboard mount (unbounded Promise.all) and the cache died with the
+// component. Cap the fan-out to the most recent sessions and persist the
+// per-session cache in sessionStorage so returning to the dashboard is free.
+const INSIGHTS_FETCH_CAP = 20
+const INSIGHTS_STORAGE_KEY = 'qesto:insights:v1'
+
+function loadPersistedCache(): Map<string, RawInsights> {
+  try {
+    const raw = sessionStorage.getItem(INSIGHTS_STORAGE_KEY)
+    if (!raw) return new Map()
+    const entries = JSON.parse(raw) as Array<[string, RawInsights]>
+    return Array.isArray(entries) ? new Map(entries) : new Map()
+  } catch {
+    return new Map()
+  }
+}
+
+function persistCache(cache: Map<string, RawInsights>): void {
+  try {
+    sessionStorage.setItem(INSIGHTS_STORAGE_KEY, JSON.stringify([...cache]))
+  } catch {
+    // sessionStorage full/unavailable — in-memory cache still works.
+  }
+}
+
 export function useInsights(closedSessions: SessionSummary[], enabled = false): InsightsState {
   const [themes, setThemes] = useState<AggregatedTheme[]>([])
   const [loading, setLoading] = useState(false)
   const [planGated, setPlanGated] = useState(false)
-  // Track fetched insights by session ID to avoid re-fetching.
-  const cache = useRef<Map<string, RawInsights>>(new Map())
+  // Track fetched insights by session ID to avoid re-fetching. Seeded from
+  // sessionStorage so a return to the dashboard replays nothing. The Map
+  // identity is stable for the component's lifetime, so the useCallback
+  // closures below can capture it directly.
+  const cacheRef = useRef<Map<string, RawInsights> | null>(null)
+  const cache = cacheRef.current ?? (cacheRef.current = loadPersistedCache())
   // Track sessions that failed to fetch so we don't retry them in a loop.
   const failed = useRef<Set<string>>(new Set())
   // Prevent concurrent fetches when closedSessions reference changes mid-flight.
   const fetching = useRef(false)
 
-  const fetchAll = useCallback(async (sessions: SessionSummary[]) => {
-    if (sessions.length === 0) {
+  const fetchAll = useCallback(async (allSessions: SessionSummary[]) => {
+    if (allSessions.length === 0) {
       setThemes([])
       return
     }
@@ -103,9 +133,13 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
     setLoading(true)
     let hitPlanGate = false
 
+    const sessions = [...allSessions]
+      .sort((a, b) => b.created_at - a.created_at)
+      .slice(0, INSIGHTS_FETCH_CAP)
+
     await Promise.all(
       sessions.map(async (s) => {
-        if (cache.current.has(s.id) || failed.current.has(s.id)) return
+        if (cache.has(s.id) || failed.current.has(s.id)) return
         const res = await api<{ session_id: string; themes?: string[]; follow_ups?: string[]; generated_at?: number; model?: string; insights: null | RawInsights; message?: string }>(
           `/api/sessions/${encodeURIComponent(s.id)}/insights`,
         )
@@ -124,15 +158,17 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
           ? (d as unknown as RawInsights)
           : (d as any)?.insights ?? null
         if (raw && Array.isArray(raw.themes)) {
-          cache.current.set(s.id, raw as RawInsights)
+          cache.set(s.id, raw as RawInsights)
         }
       }),
     )
 
+    persistCache(cache)
     setPlanGated(hitPlanGate)
-    setThemes(aggregateThemes(cache.current))
+    setThemes(aggregateThemes(cache))
     setLoading(false)
     fetching.current = false
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cache Map identity is stable
   }, [])
 
   useEffect(() => {
@@ -155,8 +191,10 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
       }
       return
     }
-    cache.current.set(sessionId, res.data as RawInsights)
-    setThemes(aggregateThemes(cache.current))
+    cache.set(sessionId, res.data as RawInsights)
+    persistCache(cache)
+    setThemes(aggregateThemes(cache))
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cache Map identity is stable
   }, [])
 
   return { themes, loading, planGated, analyzeSession }

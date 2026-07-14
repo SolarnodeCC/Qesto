@@ -3,17 +3,10 @@
  * Vectorize metadata-filtered similarity + k-anonymity floor (≥3 sessions).
  */
 import type { D1Database } from '@cloudflare/workers-types'
-import {
-  DECISIONS_EMBED_DIM,
-  DECISIONS_EMBED_MODEL,
-  DECISIONS_VECTORIZE_TIMEOUT_MS,
-  type InsightsVectorizeBindings,
-} from './insights-vectorize'
+import type { InsightsVectorizeBindings } from './insights-vectorize'
 import { upsertTeamInsightRollup, type TeamInsightKind } from './team-insights'
-import { runAI } from './ai/ai-gateway'
-import { sanitizeEmbedText } from './ai/prompt-sanitize'
-import { withTimeout } from './shared/async'
 import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
+import { logEvent } from './log'
 
 export const INSIGHT_TREND_WINDOWS = ['30d', '90d', '180d'] as const
 export type InsightTrendWindow = (typeof INSIGHT_TREND_WINDOWS)[number]
@@ -87,19 +80,20 @@ function parseThemeLabels(themesJson: string): string[] {
     .filter(Boolean)
 }
 
-function firstVector(result: unknown): number[] | undefined {
-  const raw = result as { data?: unknown }
-  const first = Array.isArray(raw?.data) ? raw.data[0] : undefined
-  if (!Array.isArray(first) || first.length !== DECISIONS_EMBED_DIM) return undefined
-  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
-}
-
 /**
- * Cluster recurring themes via Vectorize over team-tagged embeddings, with a
- * label-frequency fallback when Vectorize is unavailable.
+ * Cluster recurring themes by label frequency over the team's insights_daily
+ * rows, with the k-anonymity floor applied per label.
+ *
+ * Audit 2026-07-14 M-7: the previous Vectorize path embedded a single centroid
+ * of the top labels and then grouped matches by the `title` metadata field —
+ * i.e. *session titles* surfaced as "themes", and any failure silently fell
+ * back to this frequency count anyway. The vector metadata carries no theme
+ * labels, so the path could not be fixed in place; it was removed (saving an
+ * embedding + query per cache miss) until per-theme embeddings exist at upsert
+ * time. `env` stays in the signature for that reintroduction.
  */
 export async function clusterRecurringThemes(
-  env: InsightsVectorizeBindings,
+  _env: InsightsVectorizeBindings,
   db: D1Database,
   teamId: string,
   window: InsightTrendWindow,
@@ -125,56 +119,6 @@ export async function clusterRecurringThemes(
     }
   }
 
-  let vectorThemes: RecurringTheme[] = []
-  try {
-    const seedLabels = [...labelSessions.entries()]
-      .sort((a, b) => b[1].size - a[1].size)
-      .slice(0, 5)
-      .map(([k]) => k)
-    const embedText = sanitizeEmbedText(`Team recurring themes: ${seedLabels.join('; ')}`)
-    if (!embedText) throw new Error('empty_embed_text')
-    const embedResult = await withTimeout(
-      runAI(env as import('../types').Env, DECISIONS_EMBED_MODEL, { text: embedText }),
-      10_000,
-      'Team insight embedding',
-    )
-    const vector = firstVector(embedResult)
-    if (vector) {
-      const queryResult = await withTimeout(
-        env.DECISIONS_VECTORIZE.query(vector, {
-          topK: 40,
-          returnMetadata: 'all',
-          filter: { team_id: teamId },
-        }),
-        DECISIONS_VECTORIZE_TIMEOUT_MS,
-        'Team recurring Vectorize query',
-      )
-      const byTitle = new Map<string, { sessions: Set<string>; score: number; days: string[] }>()
-      for (const match of queryResult.matches) {
-        const meta = match.metadata as Record<string, string> | undefined
-        const sessionId = meta?.session_id
-        const title = (meta?.title ?? 'theme').trim()
-        if (!sessionId) continue
-        const bucket = byTitle.get(title) ?? { sessions: new Set(), score: 0, days: [] }
-        bucket.sessions.add(sessionId)
-        bucket.score = Math.max(bucket.score, match.score ?? 0)
-        if (meta?.ts) bucket.days.push(meta.ts)
-        byTitle.set(title, bucket)
-      }
-      vectorThemes = [...byTitle.entries()]
-        .filter(([, b]) => b.sessions.size >= RECURRING_K_ANON_SESSIONS)
-        .map(([label, b]) => ({
-          label,
-          sessionCount: b.sessions.size,
-          firstSeen: sinceDay,
-          lastSeen: new Date().toISOString().slice(0, 10),
-          score: Math.round(b.score * 100) / 100,
-        }))
-    }
-  } catch {
-    vectorThemes = []
-  }
-
   const frequencyThemes: RecurringTheme[] = [...labelSessions.entries()]
     .filter(([, sessions]) => sessions.size >= RECURRING_K_ANON_SESSIONS)
     .map(([key, sessions]) => {
@@ -188,15 +132,16 @@ export async function clusterRecurringThemes(
       }
     })
     .sort((a, b) => b.sessionCount - a.sessionCount)
+    .slice(0, 12)
 
-  const merged = new Map<string, RecurringTheme>()
-  for (const t of [...vectorThemes, ...frequencyThemes]) {
-    const existing = merged.get(t.label.toLowerCase())
-    if (!existing || t.sessionCount > existing.sessionCount) {
-      merged.set(t.label.toLowerCase(), t)
-    }
-  }
-  return [...merged.values()].sort((a, b) => b.sessionCount - a.sessionCount).slice(0, 12)
+  logEvent({
+    event: 'insight.recurring_themes.computed',
+    source: 'label_frequency',
+    teamId,
+    window,
+    themeCount: frequencyThemes.length,
+  })
+  return frequencyThemes
 }
 
 export function computeEngagementTrend(rows: DailyRow[]): EngagementTrendPayload {

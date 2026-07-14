@@ -14,6 +14,21 @@ import { sendEmail } from '../../lib/email'
 import { writeEvent } from '../../lib/observability'
 import type { AiInsightsVars } from './types'
 import { COACHING_INSIGHTS_TTL_SECONDS } from '../../lib/constants'
+import { rateLimit } from '../../lib/rate-limit'
+
+// Audit 2026-07-14 H-2: coaching runs the 70B model + a Vectorize RAG query per
+// call — meter it like the sibling AI endpoints (insights-analyze is 10/h).
+const COACHING_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'ai-coaching' }
+// Email export sends via Resend; bound it to a handful per day.
+const COACHING_EMAIL_RATE_LIMIT = { max: 5, windowSeconds: 86_400, prefix: 'ai-coaching-email' }
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 const CoachingBodySchema = z.object({
   followUp: z.string().max(500).optional(),
@@ -57,6 +72,18 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     const sessionId = c.req.param('sessionId')
     const user = c.get('user')
     const traceId = c.get('trace_id')
+
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_RATE_LIMIT)
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'rate_limited', message: 'Too many coaching requests. Try again later.' },
+          trace_id: traceId,
+        },
+        429,
+      )
+    }
 
     const session = await assertSessionOwner(c.env.DB, sessionId, user.sub)
     if (!session) {
@@ -208,6 +235,17 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     if (!session) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId }, 404)
     }
+    const emailRl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_EMAIL_RATE_LIMIT)
+    if (!emailRl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'rate_limited', message: 'Too many coaching exports today. Try again tomorrow.' },
+          trace_id: traceId,
+        },
+        429,
+      )
+    }
     const history =
       c.env.SESSIONS_KV ?
         ((await readKvJson<CoachingTurn[]>(c.env.SESSIONS_KV, coachingHistoryKey(sessionId))) ?? [])
@@ -222,9 +260,11 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
       '',
       ...history.map((t) => `[${t.role}] ${t.content}`),
     ].join('\n')
-    const html = `<p>Your facilitator coaching export for <strong>${session.title}</strong>.</p>
+    // Audit 2026-07-14 M-2: session title and history turns are user/model
+    // authored — escape them so crafted markup cannot land in the email body.
+    const html = `<p>Your facilitator coaching export for <strong>${escapeHtml(session.title)}</strong>.</p>
 <p>Total votes: ${voteRow?.n ?? 0}</p>
-${history.map((t) => `<p><em>${t.role}</em>: ${t.content.replace(/\n/g, '<br>')}</p>`).join('')}`
+${history.map((t) => `<p><em>${escapeHtml(t.role)}</em>: ${escapeHtml(t.content).replace(/\n/g, '<br>')}</p>`).join('')}`
     await sendEmail(c.env.RESEND_API_KEY, {
       to: user.email,
       subject: `Qesto coaching insights — ${session.title}`,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { BarChart3, CheckCircle2, Radio, ShieldCheck } from 'lucide-react'
+import { BarChart3, CheckCircle2, Radio } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useInsights } from '../hooks/useInsights'
@@ -209,11 +209,13 @@ export default function Dashboard() {
     const completedSessions = sessions.filter(
       (s) => s.status === 'closed' || s.status === 'archived',
     ).length
+    // Audit 2026-07-14 M-5: this ratio was previously labeled "Response rate",
+    // which it is not — it is the share of launched sessions that have closed.
     const nonDraft = sessions.filter((s) => s.status !== 'draft').length
-    const responseRate = nonDraft > 0
+    const completionRate = nonDraft > 0
       ? `${Math.round((completedSessions / nonDraft) * 100)}%`
       : '—'
-    return { activeSessions, completedSessions, responseRate }
+    return { activeSessions, completedSessions, completionRate }
   }, [state])
 
   const filteredSessions: SessionSummary[] =
@@ -324,7 +326,9 @@ export default function Dashboard() {
         />
 
         {/* ── Metric strip ─────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Audit 2026-07-14 M-5: the "Consent opt-in" card was a permanent "—"
+            placeholder with no data source — dropped until one exists. */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <MetricCard
             label="Active sessions"
             value={state.status === 'ready' ? (metrics?.activeSessions ?? 0) : '—'}
@@ -333,8 +337,8 @@ export default function Dashboard() {
             loading={state.status === 'loading'}
           />
           <MetricCard
-            label="Response rate"
-            value={state.status === 'ready' ? (metrics?.responseRate ?? '—') : '—'}
+            label="Completion rate"
+            value={state.status === 'ready' ? (metrics?.completionRate ?? '—') : '—'}
             icon={BarChart3}
             iconClassName="text-teal-600 dark:text-teal-400"
             loading={state.status === 'loading'}
@@ -345,12 +349,6 @@ export default function Dashboard() {
             icon={CheckCircle2}
             iconClassName="text-violet-600 dark:text-violet-400"
             loading={state.status === 'loading'}
-          />
-          <MetricCard
-            label="Consent opt-in"
-            value="—"
-            icon={ShieldCheck}
-            iconClassName="text-pulse-400 dark:text-[#8A96B0]"
           />
         </div>
 

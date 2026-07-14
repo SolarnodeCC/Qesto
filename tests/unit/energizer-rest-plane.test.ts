@@ -199,12 +199,14 @@ describe('GET /energizers/active — host-only (audit E-1 REST)', () => {
 })
 
 describe('POST /energizers/:id/vote — team quiz (audit E-1 REST)', () => {
+  // Audit 2026-07-14 H-1: the REST vote plane is host-only (participants
+  // answer over the DO WebSocket), so these run as the session owner.
   it('does not echo correctness and rejects re-answers', async () => {
     const db = new D1Mock()
     seedSession(db)
     seedTeamQuiz(db)
     const env = makeEnv(db)
-    const app = makeApp('user_voter')
+    const app = makeApp('user_host')
 
     const vote = (value: string) =>
       app.fetch(
@@ -229,7 +231,7 @@ describe('POST /energizers/:id/vote — team quiz (audit E-1 REST)', () => {
     expect(secondBody.error.code).toBe('duplicate')
 
     // The stored response kept the first (wrong) answer.
-    expect(db.teamQuizResponses.get('eg_tq:user_voter:0')).toMatchObject({ value: 'B', correct: 0 })
+    expect(db.teamQuizResponses.get('eg_tq:user_host:0')).toMatchObject({ value: 'B', correct: 0 })
   })
 
   it('rejects values outside the question options', async () => {
@@ -237,7 +239,7 @@ describe('POST /energizers/:id/vote — team quiz (audit E-1 REST)', () => {
     seedSession(db)
     seedTeamQuiz(db)
 
-    const res = await makeApp('user_voter').fetch(
+    const res = await makeApp('user_host').fetch(
       new Request('http://local/sessions/sess_1/energizers/eg_tq/vote', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -246,6 +248,54 @@ describe('POST /energizers/:id/vote — team quiz (audit E-1 REST)', () => {
       makeEnv(db),
     )
     expect(res.status).toBe(400)
+  })
+
+  // Audit 2026-07-14 H-1: without a session-scope check, any authenticated
+  // user with a sessionId+energizerId pair could stuff votes into another
+  // tenant's energizer.
+  it('404s for authenticated non-owners (cross-tenant vote stuffing)', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    seedTeamQuiz(db)
+
+    const res = await makeApp('user_other').fetch(
+      new Request('http://local/sessions/sess_1/energizers/eg_tq/vote', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ value: 'A' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(404)
+    expect(db.teamQuizResponses.size).toBe(0)
+  })
+
+  it('rejects votes on kinds without REST vote support (battle_royale)', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    db.energizers.set('eg_br', {
+      id: 'eg_br',
+      session_id: 'sess_1',
+      kind: 'battle_royale',
+      prompt: 'Last one standing',
+      options_json: '[]',
+      config_json: JSON.stringify({ participants: ['Ada', 'Grace'] }),
+      position: 1,
+      state: 'active',
+      created_at: 1,
+      updated_at: 5,
+    })
+
+    const res = await makeApp('user_host').fetch(
+      new Request('http://local/sessions/sess_1/energizers/eg_br/vote', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ value: '<img src=x onerror=alert(1)>' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(400)
+    expect(db.energizerVotes.size).toBe(0)
   })
 })
 
