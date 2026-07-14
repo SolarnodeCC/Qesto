@@ -258,6 +258,35 @@ export async function fetchQuestions(db: D1Database, sessionId: string): Promise
   return (results ?? []).map(rowToQuestion)
 }
 
+// Aggregate persisted votes for a whole session, keyed per question then per
+// option (or per response text for open/word_cloud, where `option_id` holds the
+// response). Returns Map<questionId, Map<optionId, count>>. Shared by the recap
+// results route and the rich export routes.
+export async function loadSessionVoteMap(
+  db: D1Database,
+  sessionId: string,
+): Promise<Map<string, Map<string, number>>> {
+  const { results } = await db
+    .prepare(
+      `SELECT question_id, option_id, COUNT(*) AS count
+         FROM votes
+        WHERE session_id = ?1
+     GROUP BY question_id, option_id`,
+    )
+    .bind(sessionId)
+    .all<{ question_id: string; option_id: string; count: number }>()
+  const map = new Map<string, Map<string, number>>()
+  for (const row of results ?? []) {
+    let inner = map.get(row.question_id)
+    if (!inner) {
+      inner = new Map<string, number>()
+      map.set(row.question_id, inner)
+    }
+    inner.set(row.option_id, row.count)
+  }
+  return map
+}
+
 export async function upsertPollQuestion(
   db: D1Database,
   sessionId: string,

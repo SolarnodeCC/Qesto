@@ -13,6 +13,7 @@
   "export": "Resultaten exporteren",
   "exporting": "Exporteren…",
   "csv": {
+    "question": "Vraag",
     "option": "Optie",
     "votes": "Stemmen",
     "percent": "Percentage van totaal"

@@ -2238,6 +2238,20 @@ export class D1PreparedStatementMock {
         .sort((a, b) => a.position - b.position)
       return { results: rows as unknown as T[] }
     }
+    // loadSessionVoteMap (recap results + rich exports): per-question, per-option
+    // tallies. GROUP BY question_id, option_id.
+    if (this.sql.startsWith('SELECT question_id, option_id, COUNT(*)')) {
+      const [session_id] = this.args as [string]
+      const tally = new Map<string, { question_id: string; option_id: string; count: number }>()
+      for (const v of this.db.votes.values()) {
+        if (v.session_id !== session_id) continue
+        const key = `${v.question_id} ${v.option_id}`
+        const existing = tally.get(key)
+        if (existing) existing.count += 1
+        else tally.set(key, { question_id: v.question_id, option_id: v.option_id, count: 1 })
+      }
+      return { results: [...tally.values()] as unknown as T[] }
+    }
     if (this.sql.startsWith('SELECT option_id, COUNT(*)')) {
       const [session_id] = this.args as [string]
       const tally = new Map<string, number>()

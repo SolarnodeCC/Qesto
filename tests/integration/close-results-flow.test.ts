@@ -143,13 +143,14 @@ describe('close → persist → results round-trip', () => {
     expect(resultsRes.status).toBe(200)
     const results = (await resultsRes.json()) as ApiBody<{
       session: { status: string }
-      question: { options: Array<{ id: string }> } | null
-      results: { counts: Record<string, number>; total: number; source: 'live' | 'persisted' }
+      questions: Array<{ id: string; options: Array<{ id: string }>; counts: Record<string, number>; total: number }>
+      source: 'live' | 'persisted'
     }>
     if (!results.ok) throw new Error('results failed')
     expect(results.data.session.status).toBe('closed')
-    expect(results.data.results.source).toBe('persisted')
-    expect(results.data.results.total).toBe(0)
+    expect(results.data.source).toBe('persisted')
+    expect(results.data.questions).toHaveLength(1)
+    expect(results.data.questions[0].total).toBe(0)
     expect(stub).toBeTruthy()
   })
 
@@ -222,10 +223,11 @@ describe('close → persist → results round-trip', () => {
       new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { cookie } }),
       env,
     )).json()) as ApiBody<{
-      results: { counts: Record<string, number>; total: number; source: string }
+      questions: Array<{ counts: Record<string, number>; total: number }>
+      source: string
     }>
     if (!results.ok) throw new Error('results failed')
-    expect(results.data.results.source).toBe('persisted')
+    expect(results.data.source).toBe('persisted')
   })
 
   it('rejects /results on DRAFT with 409', async () => {
@@ -418,13 +420,129 @@ describe('close → persist → results round-trip', () => {
     )
     expect(resultsRes.status).toBe(200)
     const results = (await resultsRes.json()) as ApiBody<{
-      results: { counts: Record<string, number>; total: number; source: 'live' | 'persisted' }
+      questions: Array<{ id: string; counts: Record<string, number>; total: number }>
+      source: 'live' | 'persisted'
     }>
     if (!results.ok) throw new Error('results failed')
-    expect(results.data.results.source).toBe('persisted')
-    expect(results.data.results.total).toBe(5)
-    expect(results.data.results.counts['opt-a']).toBe(2)
-    expect(results.data.results.counts['opt-b']).toBe(2)
-    expect(results.data.results.counts['opt-c']).toBe(1)
+    expect(results.data.source).toBe('persisted')
+    expect(results.data.questions).toHaveLength(1)
+    const q = results.data.questions[0]
+    expect(q.total).toBe(5)
+    expect(q.counts['opt-a']).toBe(2)
+    expect(q.counts['opt-b']).toBe(2)
+    expect(q.counts['opt-c']).toBe(1)
+  })
+
+  it('returns every question with its own tally for a multi-question session', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_host', 'host@example.com')
+
+    // 1. Create session.
+    const created = (await (await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ title: 'Multi-question recap' }),
+      }),
+      env,
+    )).json()) as ApiBody<{ session: { id: string } }>
+    if (!created.ok) throw new Error('create failed')
+    const sessionId = created.data.session.id
+
+    // 2. Attach the first (position-0) poll question via PATCH.
+    const patchRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({
+          question: {
+            kind: 'poll',
+            prompt: 'First question',
+            options: [
+              { id: 'q1-a', label: 'One A' },
+              { id: 'q1-b', label: 'One B' },
+            ],
+          },
+        }),
+      }),
+      env,
+    )
+    const patchBody = (await patchRes.json()) as ApiBody<{ questions: Array<{ id: string }> }>
+    if (!patchBody.ok || !patchBody.data.questions[0]) throw new Error('question creation failed')
+    const q1Id = patchBody.data.questions[0].id
+
+    // 3. Seed a second question directly into D1 at position 1.
+    const q2Id = 'question_two'
+    db.questions.set(q2Id, {
+      id: q2Id,
+      session_id: sessionId,
+      position: 1,
+      kind: 'poll',
+      prompt: 'Second question',
+      options_json: JSON.stringify([
+        { id: 'q2-a', label: 'Two A' },
+        { id: 'q2-b', label: 'Two B' },
+      ]),
+      created_at: Date.now(),
+    })
+
+    // 4. Seed votes for BOTH questions into D1.
+    const seeds: Array<{ id: string; question_id: string; option_id: string; voter_id: string }> = [
+      { id: 'v1', question_id: q1Id, option_id: 'q1-a', voter_id: 'voter_1' },
+      { id: 'v2', question_id: q1Id, option_id: 'q1-a', voter_id: 'voter_2' },
+      { id: 'v3', question_id: q1Id, option_id: 'q1-b', voter_id: 'voter_3' },
+      { id: 'v4', question_id: q2Id, option_id: 'q2-a', voter_id: 'voter_1' },
+      { id: 'v5', question_id: q2Id, option_id: 'q2-b', voter_id: 'voter_2' },
+      { id: 'v6', question_id: q2Id, option_id: 'q2-b', voter_id: 'voter_3' },
+    ]
+    for (const s of seeds) {
+      db.votes.set(s.id, {
+        id: s.id,
+        session_id: sessionId,
+        question_id: s.question_id,
+        voter_id: s.voter_id,
+        option_id: s.option_id,
+        submitted_at: Date.now(),
+      })
+    }
+
+    // 5. Start + close.
+    await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      env,
+    )
+    const closeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { cookie } }),
+      env,
+    )
+    expect(closeRes.status).toBe(200)
+
+    // 6. GET /results — expect BOTH questions, each with its own tally.
+    const resultsRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { cookie } }),
+      env,
+    )
+    expect(resultsRes.status).toBe(200)
+    const results = (await resultsRes.json()) as ApiBody<{
+      questions: Array<{ id: string; prompt: string; counts: Record<string, number>; total: number }>
+      source: 'live' | 'persisted'
+    }>
+    if (!results.ok) throw new Error('results failed')
+    expect(results.data.source).toBe('persisted')
+    expect(results.data.questions).toHaveLength(2)
+
+    // Ordered by position: q1 first, q2 second.
+    const [first, second] = results.data.questions
+    expect(first.id).toBe(q1Id)
+    expect(first.total).toBe(3)
+    expect(first.counts['q1-a']).toBe(2)
+    expect(first.counts['q1-b']).toBe(1)
+
+    expect(second.id).toBe(q2Id)
+    expect(second.total).toBe(3)
+    expect(second.counts['q2-a']).toBe(1)
+    expect(second.counts['q2-b']).toBe(2)
   })
 })

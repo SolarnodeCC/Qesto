@@ -14,6 +14,7 @@ import { loadTeamBranding } from '../../lib/team-branding'
 import { csvRow } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
 import { requireFeature } from '../../middleware/feature-gate'
+import { loadSessionVoteMap } from './shared'
 import type { Env } from '../../types'
 import type { Session } from '../../types'
 import type { AuthVariables } from '../../middleware/auth'
@@ -42,31 +43,6 @@ function trackExport(
   })
 }
 
-async function loadExportVoteMap(
-  db: D1Database,
-  sessionId: string,
-): Promise<Map<string, Map<string, number>>> {
-  const { results } = await db
-    .prepare(
-      `SELECT question_id, option_id, COUNT(*) AS count
-         FROM votes
-        WHERE session_id = ?1
-     GROUP BY question_id, option_id`,
-    )
-    .bind(sessionId)
-    .all<{ question_id: string; option_id: string; count: number }>()
-  const map = new Map<string, Map<string, number>>()
-  for (const row of results ?? []) {
-    let inner = map.get(row.question_id)
-    if (!inner) {
-      inner = new Map<string, number>()
-      map.set(row.question_id, inner)
-    }
-    inner.set(row.option_id, row.count)
-  }
-  return map
-}
-
 function parseQuestionOptions(rawJson: string | null): { id: string; label: string }[] {
   try {
     const parsed = JSON.parse(rawJson ?? '[]')
@@ -92,7 +68,7 @@ async function renderSignedHtmlExport(
     .bind(id)
     .all<{ id: string; position: number; kind: string; prompt: string; options_json: string | null }>()
 
-  const voteMap = await loadExportVoteMap(c.env.DB, id)
+  const voteMap = await loadSessionVoteMap(c.env.DB, id)
   const startedAt = session.started_at ?? null
   const closedAt = session.closed_at ?? null
   const durationMs = startedAt !== null && closedAt !== null ? closedAt - startedAt : null
@@ -198,7 +174,7 @@ export function mountExportRoutes(
       .bind(id)
       .all<{ id: string; position: number; kind: string; prompt: string; options_json: string | null }>()
 
-    const voteMap = await loadExportVoteMap(c.env.DB, id)
+    const voteMap = await loadSessionVoteMap(c.env.DB, id)
 
     const questionsExport = (questionRows ?? []).map((q) => {
       const options = parseQuestionOptions(q.options_json)
@@ -291,7 +267,7 @@ export function mountExportRoutes(
       .bind(id)
       .all<{ id: string; position: number; kind: string; prompt: string; options_json: string | null }>()
 
-    const voteMap = await loadExportVoteMap(c.env.DB, id)
+    const voteMap = await loadSessionVoteMap(c.env.DB, id)
 
     const startedAt = session.started_at ?? null
     const closedAt = session.closed_at ?? null
