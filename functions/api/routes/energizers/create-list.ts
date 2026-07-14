@@ -30,13 +30,16 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
           404,
         )
       }
+      // Audit 2026-07-14 M-3: arrays and item lengths are capped — unbounded
+      // participants/emojis/options let a host persist multi-megabyte
+      // config_json rows that then flow into DO broadcasts.
       const CreateEnergizerSchema = z.object({
         kind: z.enum(['battle_royale', 'bracket', 'emoji_poll', 'quick_finger', 'team_quiz', 'word_cloud']),
         prompt: z.string().min(1).max(400),
-        participants: z.array(z.string()).optional(),
+        participants: z.array(z.string().min(1).max(80)).max(64).optional(),
         bracket_size: z.union([z.literal(4), z.literal(8), z.literal(16)]).optional(),
-        emojis: z.array(z.string()).optional(),
-        options: z.array(z.string()).optional(),
+        emojis: z.array(z.string().min(1).max(16)).max(12).optional(),
+        options: z.array(z.string().min(1).max(120)).max(12).optional(),
         correct_index: z.number().int().nonnegative().optional(),
       })
       const raw = await c.req.json().catch(() => null)

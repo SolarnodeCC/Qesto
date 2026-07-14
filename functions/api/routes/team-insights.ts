@@ -43,6 +43,11 @@ function trendsCacheKey(teamId: string, window: string): string {
   return namespacedKey(teamId, `insights:trends:${window}`)
 }
 
+// Audit 2026-07-14 H-3: /refresh recomputes every window (embeddings + D1
+// scans + scorecard) per call — debounce it like the workspace refresh
+// (ADR-0048 §API row 8) so repeated clicks don't multiply the cost.
+const INSIGHTS_REFRESH_DEBOUNCE_MS = 60_000
+
 
 export function mountTeamInsightsRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -249,6 +254,16 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
         { ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id: c.get('trace_id') },
         403,
       )
+    }
+
+    // Skip the recompute entirely when a rollup was materialised in the last
+    // 60 s — the caller still gets fresh-enough data from the rollup tables.
+    const latest = await c.env.DB
+      .prepare(`SELECT MAX(computed_at) AS m FROM team_insight_rollup WHERE team_id = ?1`)
+      .bind(teamId)
+      .first<{ m: number | null }>()
+    if (latest?.m && Date.now() - latest.m < INSIGHTS_REFRESH_DEBOUNCE_MS) {
+      return c.json({ ok: true, data: { refreshed: false, debounced: true }, trace_id: c.get('trace_id') })
     }
 
     const env = { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE }

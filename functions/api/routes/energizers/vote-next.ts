@@ -12,8 +12,21 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
+    const user = c.get('user')
 
     try {
+      // Audit 2026-07-14 H-1: this REST vote plane is only exercised by the
+      // host's launchpad energizer panel — participants answer over the DO
+      // WebSocket. Without a session-scope check any authenticated user who
+      // learned a sessionId+energizerId pair could stuff votes into another
+      // tenant's energizer, so lock it to the owner like /active and /next.
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const VoteSchema = z.object({
         value: z.string().min(1).max(200),
         // Legacy field: older clients still send it, but the server ignores it —
@@ -31,7 +44,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       // Bind the vote to the authenticated caller. A client-supplied voter_id
       // would let any caller overwrite other participants' votes via the
       // ON CONFLICT upsert.
-      const body = { value: parsed.data.value, voter_id: c.get('user').sub }
+      const body = { value: parsed.data.value, voter_id: user.sub }
 
       const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
@@ -95,6 +108,14 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
             400,
           )
         }
+      } else if (energizer.kind !== 'team_quiz') {
+        // Audit 2026-07-14 H-1: battle_royale/bracket rounds are driven by the
+        // tournament endpoints, not this generic vote — previously any 200-char
+        // string fell through to the insert and surfaced on host result views.
+        return c.json(
+          { ok: false, error: { code: 'validation', message: `${energizer.kind} does not accept votes on this endpoint` }, trace_id },
+          400,
+        )
       }
 
       if (energizer.kind === 'team_quiz') {

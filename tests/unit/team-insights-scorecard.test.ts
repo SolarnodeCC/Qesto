@@ -81,7 +81,9 @@ describe('team-insights-scorecard (INSIGHTS-05)', () => {
     const facA = scorecard.facilitators.find((f) => f.facilitatorId === 'fac-a')
     expect(facA?.sessionsRun).toBe(1)
     expect(facA?.responseRate).toBe(1)
-    expect(facA?.moodTrend[0]?.mood).toBe('positive')
+    // 0.8 confidence → 'high' insight-extraction confidence (M-1: renamed from
+    // the misleading mood buckets — this measures parser certainty, not mood).
+    expect(facA?.confidenceTrend[0]?.level).toBe('high')
   })
 
   it('excludes zero_knowledge sessions at query boundary', async () => {

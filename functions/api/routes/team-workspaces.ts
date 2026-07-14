@@ -414,15 +414,32 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     if (!c.env.ACTIONS_KV) {
       return errorResponse(c, 503, 'unavailable', 'Actions store unavailable')
     }
+    // Audit 2026-07-14 M-4: merge by id instead of rebuilding every item —
+    // the previous full rewrite reset createdAt and dropped sourceSessionId
+    // (the "carried over from session X" lineage) on every manual edit.
+    const existingBlob = await readWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId)
+    const existingById = new Map(existingBlob.items.map((item) => [item.id, item]))
     const now = Date.now()
-    const items = body.data.items.map((item) => ({
-      id: item.id ?? ulid(),
-      text: item.text,
-      status: item.status,
-      sourceSessionId: null,
-      createdAt: now,
-      resolvedAt: item.status === 'resolved' ? now : null,
-    }))
+    const items = body.data.items.map((item) => {
+      const prior = item.id ? existingById.get(item.id) : undefined
+      if (prior) {
+        return {
+          ...prior,
+          text: item.text,
+          status: item.status,
+          resolvedAt:
+            item.status === 'resolved' ? (prior.resolvedAt ?? now) : null,
+        }
+      }
+      return {
+        id: item.id ?? ulid(),
+        text: item.text,
+        status: item.status,
+        sourceSessionId: null,
+        createdAt: now,
+        resolvedAt: item.status === 'resolved' ? now : null,
+      }
+    })
     await writeWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId, { items })
     return c.json({ ok: true, data: { items }, trace_id: c.get('trace_id') })
   })
