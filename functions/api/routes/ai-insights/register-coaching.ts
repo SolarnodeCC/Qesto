@@ -75,14 +75,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
 
     const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_RATE_LIMIT)
     if (!rl.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'rate_limited', message: 'Too many coaching requests. Try again later.' },
-          trace_id: traceId,
-        },
-        429,
-      )
+      return errorResponse(c, 429, 'rate_limited', 'Too many coaching requests. Try again later.')
     }
 
     const session = await assertSessionOwner(c.env.DB, sessionId, user.sub)
@@ -237,14 +230,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     }
     const emailRl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_EMAIL_RATE_LIMIT)
     if (!emailRl.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'rate_limited', message: 'Too many coaching exports today. Try again tomorrow.' },
-          trace_id: traceId,
-        },
-        429,
-      )
+      return errorResponse(c, 429, 'rate_limited', 'Too many coaching exports today. Try again tomorrow.')
     }
     const history =
       c.env.SESSIONS_KV ?
