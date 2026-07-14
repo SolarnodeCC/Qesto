@@ -13,6 +13,7 @@
   "export": "Exportar resultados",
   "exporting": "Exportando…",
   "csv": {
+    "question": "Pregunta",
     "option": "Opción",
     "votes": "Votos",
     "percent": "Porcentaje del total"

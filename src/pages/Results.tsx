@@ -68,6 +68,15 @@ function ResultRow({
   )
 }
 
+type QuestionResultData = {
+  id: string
+  kind: string
+  prompt: string
+  options: PollOption[]
+  counts: Record<string, number>
+  total: number
+}
+
 type ResultsPayload = {
   session: {
     id: string
@@ -76,17 +85,8 @@ type ResultsPayload = {
     code: string
     closed_at: number | null
   }
-  question: {
-    id: string
-    kind: string
-    prompt: string
-    options: PollOption[]
-  } | null
-  results: {
-    counts: Record<string, number>
-    total: number
-    source: 'live' | 'persisted'
-  }
+  questions: QuestionResultData[]
+  source: 'live' | 'persisted'
 }
 
 type State =
@@ -96,6 +96,99 @@ type State =
 
 function toCsv(rows: string[][]): string {
   return rows.map((row) => csvRow(row)).join('\n')
+}
+
+// Renders one question's recap slice: a no-votes notice, a word cloud
+// (open/word_cloud), or a tally list. Extracted so the page can loop over every
+// question in the session rather than showing only the first.
+function QuestionResult({
+  question,
+  number,
+  sourceLabel,
+  t,
+}: {
+  question: QuestionResultData
+  number: number
+  sourceLabel: string
+  t: ReturnType<typeof useT>
+}) {
+  const rows = question.options.map((o) => ({
+    id: o.id,
+    label: o.label,
+    count: question.counts[o.id] ?? 0,
+  }))
+  const max = rows.reduce((m, r) => Math.max(m, r.count), 0)
+  const winner = rows.length > 0 ? rows.reduce((best, r) => (r.count > best.count ? r : best), rows[0]) : null
+
+  const heading = (
+    <p className="text-xs font-medium uppercase tracking-wide text-pulse-400">{t('question', { number })}</p>
+  )
+
+  if (question.total === 0) {
+    return (
+      <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-3">
+        {heading}
+        <h2 className="text-xl font-semibold">{question.prompt}</h2>
+        <p className="text-sm text-pulse-500">{t('no_votes')}</p>
+      </section>
+    )
+  }
+
+  if (question.kind === 'word_cloud' || question.kind === 'open') {
+    const allEntries = Object.entries(question.counts)
+    const topEntries = allEntries.slice(0, 25)
+    const maxCount = Math.max(...topEntries.map((e) => e[1]), 1)
+    return (
+      <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
+        {heading}
+        <h2 className="text-xl font-semibold">{question.prompt}</h2>
+        <div className="flex flex-wrap gap-x-3 gap-y-2 items-baseline justify-start py-3">
+          {topEntries.map(([word, count]) => (
+            <span
+              key={word}
+              style={{ fontSize: `${getResultFontSize(count, maxCount)}px` }}
+              className="font-bold leading-tight text-pulse-800 dark:text-[#F0F2F8]"
+              title={`${word}: ${count}`}
+            >
+              {word}
+            </span>
+          ))}
+        </div>
+        <p className="text-xs text-pulse-500">
+          {t('total_responses_label', { count: question.total })}{' '}
+          {allEntries.length > 25 ? t('showing_top', { shown: 25, total: allEntries.length }) : ''} · {sourceLabel}
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
+      {heading}
+      <h2 className="text-xl font-semibold">{question.prompt}</h2>
+      <ul className="space-y-3">
+        {rows.map((r) => {
+          const pct = question.total === 0 ? 0 : Math.round((r.count / question.total) * 100)
+          const barPct = max === 0 ? 0 : Math.round((r.count / max) * 100)
+          const isWinner = !!(winner && r.id === winner.id && r.count > 0)
+          return (
+            <ResultRow
+              key={r.id}
+              label={r.label}
+              count={r.count}
+              pct={pct}
+              barPct={barPct}
+              isWinner={isWinner}
+              winnerSuffix={` · ${t('winner')}`}
+            />
+          )
+        })}
+      </ul>
+      <p className="text-xs text-pulse-500">
+        {t('total_votes_label', { count: question.total })} · {sourceLabel}
+      </p>
+    </section>
+  )
 }
 
 export default function Results() {
@@ -146,30 +239,36 @@ export default function Results() {
     )
   }
 
-  const { session, question, results } = state.data
-  const rows =
-    question?.options.map((o) => ({
-      id: o.id,
-      label: o.label,
-      count: results.counts[o.id] ?? 0,
-    })) ?? []
-  const max = rows.reduce((m, r) => Math.max(m, r.count), 0)
-  const winner = rows.length > 0 ? rows.reduce((best, r) => (r.count > best.count ? r : best), rows[0]) : null
+  const { session, questions, source } = state.data
+  const totalVotes = questions.reduce((sum, q) => sum + q.total, 0)
 
   const STATUS_KEY: Record<string, string> = {
     live: 'status_live', closed: 'status_closed', draft: 'status_draft', archived: 'status_archived',
   }
   const statusLabel = STATUS_KEY[session.status] ? t(STATUS_KEY[session.status]) : session.status
-  const sourceLabel = t('source_label', { source: results.source === 'live' ? t('source_live') : t('source_persisted') })
+  const sourceLabel = t('source_label', { source: source === 'live' ? t('source_live') : t('source_persisted') })
 
   function handleExport() {
-    if (!question) return
-    const header = [t('csv.option'), t('csv.votes'), t('csv.percent')]
-    const body = rows.map((r) => [
-      r.label,
-      String(r.count),
-      results.total === 0 ? '0%' : `${Math.round((r.count / results.total) * 100)}%`,
-    ])
+    if (questions.length === 0) return
+    const header = [t('csv.question'), t('csv.option'), t('csv.votes'), t('csv.percent')]
+    const body: string[][] = []
+    for (const q of questions) {
+      // Poll-style questions carry options; open/word_cloud store the response
+      // text as the count key, so fall back to the counts map when there are
+      // no options — otherwise those questions would be omitted from the CSV.
+      const entries =
+        q.options.length > 0
+          ? q.options.map((o) => ({ label: o.label, count: q.counts[o.id] ?? 0 }))
+          : Object.entries(q.counts).map(([label, count]) => ({ label, count }))
+      for (const e of entries) {
+        body.push([
+          q.prompt,
+          e.label,
+          String(e.count),
+          q.total === 0 ? '0%' : `${Math.round((e.count / q.total) * 100)}%`,
+        ])
+      }
+    }
     const csv = toCsv([header, ...body])
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -216,69 +315,20 @@ export default function Results() {
           {t('join_code')} <code className="font-mono">{session.code}</code>
           {session.closed_at
             ? ` · ${t('closed_at', { date: new Date(session.closed_at).toLocaleString() })}`
-            : results.source === 'live'
+            : source === 'live'
             ? ` · ${t('live_snapshot')}`
             : ''}
         </p>
       </header>
 
-      {!question ? (
+      {questions.length === 0 ? (
         <p className="text-sm text-pulse-500">{t('no_question')}</p>
-      ) : results.total === 0 ? (
-        <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-3">
-          <h2 className="text-xl font-semibold">{question.prompt}</h2>
-          <p className="text-sm text-pulse-500">{t('no_votes')}</p>
-        </section>
-      ) : question.kind === 'word_cloud' || question.kind === 'open' ? (() => {
-        const allEntries = Object.entries(results.counts)
-        const topEntries = allEntries.slice(0, 25)
-        const maxCount = Math.max(...topEntries.map(e => e[1]), 1)
-        return (
-          <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
-            <h2 className="text-xl font-semibold">{question.prompt}</h2>
-            <div className="flex flex-wrap gap-x-3 gap-y-2 items-baseline justify-start py-3">
-              {topEntries.map(([word, count]) => (
-                <span
-                  key={word}
-                  style={{ fontSize: `${getResultFontSize(count, maxCount)}px` }}
-                  className="font-bold leading-tight text-pulse-800 dark:text-[#F0F2F8]"
-                  title={`${word}: ${count}`}
-                >
-                  {word}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-pulse-500">
-              {t('total_responses_label', { count: results.total })}{' '}
-              {allEntries.length > 25 ? t('showing_top', { shown: 25, total: allEntries.length }) : ''} · {sourceLabel}
-            </p>
-          </section>
-        )
-      })() : (
-        <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
-          <h2 className="text-xl font-semibold">{question.prompt}</h2>
-          <ul className="space-y-3">
-            {rows.map((r) => {
-              const pct = results.total === 0 ? 0 : Math.round((r.count / results.total) * 100)
-              const barPct = max === 0 ? 0 : Math.round((r.count / max) * 100)
-              const isWinner = !!(winner && r.id === winner.id && r.count > 0)
-              return (
-                <ResultRow
-                  key={r.id}
-                  label={r.label}
-                  count={r.count}
-                  pct={pct}
-                  barPct={barPct}
-                  isWinner={isWinner}
-                  winnerSuffix={` · ${t('winner')}`}
-                />
-              )
-            })}
-          </ul>
-          <p className="text-xs text-pulse-500">
-            {t('total_votes_label', { count: results.total })} · {sourceLabel}
-          </p>
-        </section>
+      ) : (
+        <div className="density-stack-6">
+          {questions.map((q, i) => (
+            <QuestionResult key={q.id} question={q} number={i + 1} sourceLabel={sourceLabel} t={t} />
+          ))}
+        </div>
       )}
 
       {(session.status === 'closed' || session.status === 'archived') && (
@@ -289,7 +339,7 @@ export default function Results() {
         <button
           type="button"
           onClick={handleExport}
-          disabled={!question || results.total === 0}
+          disabled={questions.length === 0 || totalVotes === 0}
           className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
           {t('export_csv')}
