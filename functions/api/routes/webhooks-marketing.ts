@@ -4,7 +4,7 @@
 import { Hono } from 'hono'
 import { hmacSha256Hex } from '../lib/webhooks'
 import { SessionWebhookPayload } from '../lib/template-schemas'
-import type { Env } from '../types'
+import type { Env, MarketingWorkflowPayload } from '../types'
 import { type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { logEvent } from '../lib/log'
@@ -79,12 +79,15 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     let queued = false
     try {
       if (c.env.WORKFLOWS) {
-        await c.env.WORKFLOWS.create({
+        const workflowPayload: MarketingWorkflowPayload = {
           sessionId: payload.sessionId,
           language: payload.language,
           questionCount: payload.questionCount,
           participantCount: payload.participantCount,
           durationMinutes: payload.durationMinutes,
+        }
+        await c.env.WORKFLOWS.create({
+          params: workflowPayload,
         })
         queued = true
         logEvent({ event: 'workflow.queued', sessionId: payload.sessionId })
