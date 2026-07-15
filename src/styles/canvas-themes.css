@@ -13,6 +13,9 @@
  *   --canvas-text-muted  secondary text      (≥ 4.5:1 on --canvas-bg)
  *   --canvas-accent      brand accent colour (≥ 4.5:1 on --canvas-bg)
  *   --canvas-bar-1 … 4  visualisation fills  (≥ 3:1 on --canvas-bg for large text)
+ *   --canvas-bar-muted        non-winning result bar/segment fill (recap-aligned, RES-VIZ-01)
+ *   --canvas-bar-winner-start winning result bar/segment gradient start stop
+ *   --canvas-bar-winner-end   winning result bar/segment gradient end stop
  *   --canvas-font-scale  base multiplier for typography scale (default 1)
  *   --canvas-font-body   font family stack
  *   --canvas-font-display font family stack for headings
@@ -34,6 +37,9 @@
   --canvas-bar-2:        #6D28D9;   /* violet-700 */
   --canvas-bar-3:        #B45309;   /* amber-700 */
   --canvas-bar-4:        #0369A1;   /* sky-700 */
+  --canvas-bar-muted:        #737373;   /* pulse-500 — matches recap's non-winner bg-pulse-500 fill */
+  --canvas-bar-winner-start: #14B8A6;   /* teal-500 — matches recap's from-teal-500 */
+  --canvas-bar-winner-end:   #8B5CF6;   /* violet-500 — matches recap's to-violet-500 */
   --canvas-font-scale:   1;
   --canvas-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --canvas-font-display: Syne, ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -54,6 +60,9 @@
   --canvas-bar-2:        #A78BFA;   /* violet-400 */
   --canvas-bar-3:        #FCD34D;   /* amber-300 */
   --canvas-bar-4:        #38BDF8;   /* sky-300 */
+  --canvas-bar-muted:        #57648A;   /* slate-navy, ~3.5:1 on #0A0F1E */
+  --canvas-bar-winner-start: #2DD4BF;   /* = --canvas-bar-1 / --canvas-accent, 8.1:1 on #0A0F1E */
+  --canvas-bar-winner-end:   #A78BFA;   /* = --canvas-bar-2 */
   --canvas-font-scale:   1;
   --canvas-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --canvas-font-display: Syne, ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -75,6 +84,12 @@
   --canvas-bar-2:        #3B0764;   /* violet-950, 14.1:1 */
   --canvas-bar-3:        #451A03;   /* amber-950, 16.8:1 */
   --canvas-bar-4:        #0C4A6E;   /* sky-900, 13.6:1 */
+  /* Deliberately much darker/stronger than default's muted (#737373) — this
+     theme's whole premise is no faded elements, so the non-winner fill still
+     reads clearly rather than washing out like a "de-emphasized" gray would. */
+  --canvas-bar-muted:        #595959;   /* ~6.4:1 on white */
+  --canvas-bar-winner-start: #005C5C;   /* = --canvas-bar-1 / --canvas-accent, 8.9:1 on white — already AAA-grade */
+  --canvas-bar-winner-end:   #3B0764;   /* = --canvas-bar-2, 14.1:1 on white */
   --canvas-font-scale:   1;
   --canvas-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --canvas-font-display: Syne, ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -95,6 +110,9 @@
   --canvas-bar-2:        #818CF8;   /* indigo-400 */
   --canvas-bar-3:        #FBBF24;   /* amber-400 */
   --canvas-bar-4:        #60A5FA;   /* blue-400 */
+  --canvas-bar-muted:        #55648A;   /* slate-navy, ~3.3:1 on #1C243A */
+  --canvas-bar-winner-start: #34D399;   /* = --canvas-bar-1 / --canvas-accent, 7.8:1 on #1C243A */
+  --canvas-bar-winner-end:   #818CF8;   /* = --canvas-bar-2 */
   --canvas-font-scale:   1;
   --canvas-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --canvas-font-display: Syne, ui-sans-serif, system-ui, -apple-system, sans-serif;
