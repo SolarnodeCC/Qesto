@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS votes (
   voter_id TEXT NOT NULL,
   option_id TEXT NOT NULL,                                     -- references options_json[].id
   submitted_at INTEGER NOT NULL,
-  UNIQUE(question_id, voter_id)                                -- one vote per voter per question
+  UNIQUE(question_id, voter_id, option_id)                     -- one row per (voter, option): multi-vote kinds (multi_select/upvote/word_cloud) persist several per voter
 );
 CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
 

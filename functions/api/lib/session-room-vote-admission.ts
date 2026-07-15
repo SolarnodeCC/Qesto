@@ -156,6 +156,10 @@ export async function handleVote(
     voterId: att.voterId,
     optionId,
     submittedAt: Date.now(),
+    // vote_policy='multi' change-your-answer: countDecKey is the option this
+    // vote replaces. Carry it so the flush removes the stale persisted row
+    // (otherwise the wider UNIQUE key would keep both → double-count).
+    ...(countDecKey ? { supersedesOptionId: countDecKey } : {}),
   })
 
   // Schedule flush if threshold reached or interval elapsed.

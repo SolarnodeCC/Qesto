@@ -1,0 +1,27 @@
+id = "0080_widen_votes_unique"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "destructive"
+stage = "contract"
+
+[approval]
+# Destructive votes-table rebuild — requires architect sign-off per migration
+# governance before production apply. Fill approved_by/approval_date at that gate.
+approved_by = ""
+approval_date = ""
+
+[rollback]
+strategy = "restore-from-backup"
+procedure = "Restore pre-migration backup; table rebuild is not reversible in-place"
+
+[backup]
+required = true
+note = "Data copied to votes__unique_fix before DROP; existing rows are a strict subset of the wider key (no dedup/loss). Verify on staging."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+post_check = "0080_widen_votes_unique.verify.sql"
+verify = true

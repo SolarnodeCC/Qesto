@@ -69,4 +69,11 @@ export type BufferedVote = {
   voterId: string
   optionId: string
   submittedAt: number
+  /**
+   * Option this vote replaces for the same voter (vote_policy='multi'
+   * change-your-answer). When set, the D1 flush deletes the superseded
+   * (question_id, voter_id, option_id) row before inserting this one, so the
+   * durable projection keeps only the voter's final choice rather than both.
+   */
+  supersedesOptionId?: string
 }
