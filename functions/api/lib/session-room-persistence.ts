@@ -82,23 +82,34 @@ export async function flushVotesToD1AndKV(
 
   const startMs = Date.now()
   try {
-    const stmt = env.DB.prepare(
+    const insertStmt = env.DB.prepare(
       'INSERT INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?)',
     )
+    // vote_policy='multi' change-your-answer: remove the voter's superseded
+    // option row (scoped to the exact (question, voter, option) identity) before
+    // inserting their new choice, so the durable projection keeps only the final
+    // pick. Idempotent — deleting a not-yet-flushed old option is a no-op.
+    const deleteStmt = env.DB.prepare(
+      'DELETE FROM votes WHERE question_id = ? AND voter_id = ? AND option_id = ?',
+    )
 
-    const batch = state.voteBuffer.map((v) => [
-      crypto.randomUUID(),
-      v.sessionId,
-      v.questionId,
-      v.voterId,
-      v.optionId,
-      v.submittedAt,
-    ])
-
-    for (const row of batch) {
+    // Iterate the buffer in order so per-voter supersede (delete old → insert
+    // new) stays correct even for A→B→A within a single flush window.
+    let insertCount = 0
+    for (const v of state.voteBuffer) {
+      if (v.supersedesOptionId) {
+        await deleteStmt.bind(v.questionId, v.voterId, v.supersedesOptionId).run()
+      }
       try {
-        await stmt.bind(...row).run()
+        await insertStmt
+          .bind(crypto.randomUUID(), v.sessionId, v.questionId, v.voterId, v.optionId, v.submittedAt)
+          .run()
+        insertCount++
       } catch (err) {
+        // Post-widening (0080), the UNIQUE key is (question_id, voter_id,
+        // option_id), so this only fires on a genuine duplicate of the same
+        // (voter, option) — i.e. an idempotent re-flush after a partial failure.
+        // Swallow that; rethrow anything else.
         if (!(err instanceof Error && err.message.includes('UNIQUE constraint failed'))) {
           throw err
         }
@@ -124,7 +135,7 @@ export async function flushVotesToD1AndKV(
       sessionId: meta.sessionId,
       teamId: meta.teamId ?? undefined,
       durationMs: Date.now() - startMs,
-      count: batch.length,
+      count: insertCount,
       detail: 'batch_insert_to_d1',
     })
 
