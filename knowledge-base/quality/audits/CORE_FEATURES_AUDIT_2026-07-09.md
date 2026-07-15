@@ -1,5 +1,7 @@
 # Core Features Audit — AI Wizard, Energizers, Launchpad, Presenter
 
+> **Superseded (2026-07-14):** the successor audit [`CORE_FEATURES_AUDIT_2026-07-14.md`](./CORE_FEATURES_AUDIT_2026-07-14.md) §5 verifies all three CRITICAL findings from this report (E-1/E-2/E-3) as fixed — E-1/E-2 via PR #715 (energizer boundary consolidation, see [`BACKLOG_ACTIVE.md`](../../product/backlog/BACKLOG_ACTIVE.md) §Energizer security boundary), E-3 via positional insert. Read the 07-14 audit for current state; this document is retained as evidence.
+
 **Date:** 2026-07-09
 **Scope:** AI question generation (`ai-wizard.ts`, `routes/sessions/wizard.ts`, `ai/ai-gateway.ts`), energizers (REST + DO paths), Launchpad (`src/pages/Launchpad.tsx` + components), Presenter (`src/pages/Present.tsx`, `SessionRoom` DO, `useLiveSession`).
 **Method:** static code inspection + data-flow tracing on branch `claude/qesto-core-audit-ty0cbj` (no load tests executed in this pass).

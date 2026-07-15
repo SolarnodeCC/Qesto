@@ -4,9 +4,9 @@ type: planning
 domain: product
 category: planning
 status: active
-version: 1.0
+version: 1.1
 created: 2026-06-19
-updated: 2026-06-19
+updated: 2026-07-14
 tags:
   - planning
   - release-train
@@ -95,19 +95,21 @@ _Predictability formula (monthly):_ `(trains closed meeting exit criteria) / (tr
 
 | Train ID | Calendar close | Version | North star | Status |
 |----------|----------------|---------|------------|--------|
-| **RT-2026-06** (RT-01) | merge on `main` by 2026-07-03 | — (stabilize) | CI truth + Janurai closure + S99 ops debt | **Active** |
-| **RT-2026-07** (RT-02) | merge on `main` by 2026-07-17 | — (UX only) | P1 dashboard/UI debt from S93–S95 | Planned |
-| **RT-2026-08** (RT-03) | merge on `main` by 2026-08-07 | **v7.1.0** *or* XR GA | Conditional horizon — EPIC-VALID must pass | **Conditional** |
+| **RT-2026-06** (RT-01) | closed **2026-07-14** (target was 2026-07-03) | — (stabilize) | CI truth + Janurai closure + S99 ops debt | **Closed — P0 exception: CI blocked on GitHub billing (external); carried to RT-02** |
+| **RT-2026-07** (RT-02) | merge on `main` by **2026-07-31** (reset from 2026-07-17 at RT-01 closeout) | — (UX only) | P1 dashboard/UI debt from S93–S95 | **Active** |
+| **RT-2026-08** (RT-03) | merge on `main` by 2026-08-21 (shifted with RT-02) | **v7.1.0** *or* XR GA | Conditional horizon — EPIC-VALID must pass | **Conditional** |
 
 ---
 
-## RT-01 — Stabilize (`RT-2026-06`)
+## RT-01 — Stabilize (`RT-2026-06`) — **CLOSED 2026-07-14**
 
 **Goal:** Close S99 operational gaps, restore CI truth, and clear security/process debt before new features.
 
-**Train capacity:** ~45 pts. **Do not start RT-02 until RT-01 P0 exit criteria are green.**
+**Closeout:** closed 2026-07-14 with a recorded **P0 exception** — the CI green-rate criterion stayed blocked on GitHub billing (external); `OPS-CI-RUNNER-01` carries into RT-02 with the criterion attached. During the train two addenda were absorbed: **architecture hardening** (ARCH-RATCHET/ERROR-BUILDER/MEDIUM-CLEANUP/AI-GATEWAY/REPO-LAYER, from the 07-08 refactoring audit) and the **energizer security-boundary consolidation** (E-1/E-2, PR #715). Story-level statuses and carry-overs: [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md) §RT-01. Reconciliation evidence: [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md).
 
-### Scope (remapped from S99 closeout + platform review)
+**Train capacity:** ~45 pts committed (addenda pushed actual scope above target — noted as a predictability learning for RT-02 scope control).
+
+### Scope (remapped from S99 closeout + platform review; original commitment — see BACKLOG_ACTIVE for final statuses)
 
 | ID | Pts | Pri | Owner | Acceptance signal |
 |----|----:|-----|-------|-------------------|
@@ -120,24 +122,24 @@ _Predictability formula (monthly):_ `(trains closed meeting exit criteria) / (tr
 | `OPS-DR-GAP-02` | 8 | P1 | devops + backend | R2 snapshot cadence + automated trigger |
 | `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | GA copy approved; XR labeled beta-only |
 
-### Exit criteria
+### Exit criteria (as closed, 2026-07-14)
 
-- [ ] CI green rate 100% on last 10 `main` pushes
-- [ ] Janurai CRITICAL = 0 open on `main`
-- [ ] ADR-0064 accepted
-- [ ] S99 DoD ops items closed — evidence in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md)
+- [ ] CI green rate 100% on last 10 `main` pushes — **waived (P0 exception)**: GitHub billing, external; transfers to `OPS-CI-RUNNER-01` in RT-02
+- [x] Janurai CRITICAL = 0 open on `main`
+- [x] ADR-0064 accepted
+- [x] S99 DoD ops items closed (engineering scope) — evidence in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md); AE operator row + XR device lab remain operator/optional residuals
 
-**Live status:** [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md) §RT-01.
+**Final statuses:** [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md) §RT-01.
 
 ---
 
-## RT-02 — P1 UX debt / dashboards (`RT-2026-07`)
+## RT-02 — P1 UX debt / dashboards (`RT-2026-07`) — **ACTIVE**
 
 **Goal:** Ship the user-facing half of v7 backends deferred from S93–S97. **No new trust boundaries.**
 
-**Precondition:** RT-01 P0 green.
+**Precondition:** met — RT-01 closed 2026-07-14 with recorded P0 exception. Target close reset to **2026-07-31**.
 
-**Train capacity:** ~50 pts.
+**Train capacity:** ~50 pts. Scope now also carries RT-01 leftovers (`OPS-CI-RUNNER-01`, `MKTG-V70-GA-COPY-01`, ARCH burn-down) and two committed audit criticals (`KB-BILLING-COPY-01`, `GDPR-RETENTION-CLAIM-01`) — full tables in [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md) §RT-02.
 
 ### Scope (remapped from [`SPRINT85_99_PLAN.md`](./SPRINT85_99_PLAN.md) §S93 P1 + §S95 instructor UI)
 
@@ -258,7 +260,7 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 ## PO + Architect sign-off checklist
 
 - [x] v7.0 GA exit criteria met (S99 engineering evidence 2026-06-19)
-- [ ] RT-01 P0 exit criteria green before RT-02 kickoff (CI + S99 ops remain)
+- [x] RT-01 closed before RT-02 kickoff — **with recorded P0 exception** (CI green-rate blocked on GitHub billing; criterion transferred to `OPS-CI-RUNNER-01` in RT-02) — [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md)
 - [x] ADR-0064 accepted before RT-03 promotion
 - [ ] Predictability scorecard ≥ 65 after RT-02 close — [`AGENT_PREDICTABILITY_SCORECARD.md`](../ai-context/research/AGENT_PREDICTABILITY_SCORECARD.md)
 - [x] RT-03 path (A vs B) decision criteria in [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md)
@@ -270,6 +272,7 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
+| 2026-07-14 | Backlog audit & reconciliation: RT-01 closed (11 days past target) with P0 exception (CI/GitHub billing, external); RT-02 marked Active with target reset to 2026-07-31 and RT-03 shifted to 2026-08-21; RT-01 addenda (architecture hardening, energizer E-1/E-2) recorded; sign-off checklist updated — [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md) |
 | 2026-06-19 | Created — supersedes S91–S99 forward sprint fiction; RT-01/02/03 defined; predictability target 42→65+ |
 | 2026-06-19 | Cadence propagated into the agent system: `.claude` agents/skills/hooks/settings, `CLAUDE.md` planning rule, roadmap + product README banners now operate on release trains and route to `BACKLOG_ACTIVE.md` instead of `SPRINT_PLAN_MASTER.md` |
 | 2026-06-19 | Cadence formally ratified by [`ADR-0067`](../../adr/ADR-0067-release-train-cadence.md) (supersedes ADR-0054 cadence/capacity); live PO market-pulse workflow + enterprise-review doc migrated; historical banners added to stale sprint ops docs |

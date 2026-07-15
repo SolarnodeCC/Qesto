@@ -4,9 +4,9 @@ type: planning
 domain: product
 category: strategy
 status: active
-version: 1.0
+version: 1.1
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-07-14
 tags:
   - roadmap
   - planning
@@ -19,7 +19,7 @@ relates_to:
 
 # Qesto — Roadmap & Release Status (Current)
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../../README.md)._
 
 > **Forward planning runs on release trains, not sprints.** Current GA: `7.0.0`.
 > For committed forward work read [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md); for the
@@ -28,14 +28,24 @@ _Hub: [Documentation map](./README.md)._
 > milestones" and "Sprint N" sections below are **historical record** of how shipped versions
 > were sequenced — do **not** treat them as the next thing to build.
 
-_Last updated: 2026-11-03 (UTC) — **v7.0 GA shipped at Sprint 99** (Engagement Intelligence Network): REACTIONS / PULSE / COPILOT / LEARN / SOVEREIGN+ / CONNECT / STUDIO all GA; XR ships beta only behind `beta-xr`. Platform certified at `7.0.0` (ADR-0063: Pentest #6 closed, ADR-0062 isolation proof, DR drill ≤2h, SOC 2 annual, bounded AAA); v6.x → 24-month maintenance ending 2029-11-03. Current GA: `7.0.0`. See [`v7.0.0.md`](../releases/v7.0.0.md). Previous: 2026-06-11 — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0**_
+_Last audit refresh: **2026-07-14** — [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md). RT-01 (stabilize) closed 2026-07-14 with a recorded P0 exception (CI blocked on GitHub billing); RT-02 (UX debt/dashboards) is active, target close 2026-07-31. Note on the narrative below: the v7.0-GA status note carries the sprint-narrative date "2026-11-03"; the verified engineering evidence date for v7.0 GA is **2026-06-19** (see [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md))._
+
+_Historical status note (sprint-narrative date 2026-11-03) — **v7.0 GA shipped at Sprint 99** (Engagement Intelligence Network): REACTIONS / PULSE / COPILOT / LEARN / SOVEREIGN+ / CONNECT / STUDIO all GA; XR ships beta only behind `beta-xr`. Platform certified at `7.0.0` (ADR-0063: Pentest #6 closed, ADR-0062 isolation proof, DR drill ≤2h, SOC 2 annual, bounded AAA); v6.x → 24-month maintenance. Current GA: `7.0.0`. See [`v7.0.0.md`](../releases/v7.0.0.md). Previous: 2026-06-11 — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0**_
 _Superseded: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0** (cadence change 10→9 working days, capacity retained at 120–150 pts; S85–S90 carry the committed v6.0 epics re-spaced, S91–S99 add 8 net-new epics E91–E98 → v7.0 GA) with agent synthesis (PO, architect, market research). Previous refresh 2026-06-01 (Sprint 81–90 Post-v5.0 Expansion Arc, E81–E90 → v6.0 GA)._
 
 ## Release status
-- **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
+
+**Current GA: `7.0.0`** (certified per ADR-0063; engineering evidence 2026-06-19). Forward work runs on release trains — see [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md). `v7.1.0` is conditional (RT-03, EPIC-VALID gates).
+
+<details>
+<summary>Historical release-status snapshot (v2.x era, superseded — kept for archive continuity)</summary>
+
+- **v2.0.0**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
 - **v2.1 (shipped)**: stabilization + entitlement enforcement + enterprise/compliance readiness + translation QA hardening.
-- **v2.2 (target — Sprints 30-32, ships 2026-07-08)**: LIVE engagement depth (Quick Finger, Team Quiz, leaderboard, badges), resilience P0 (PII sanitization, AI timeouts, circuit-breaker wiring), admin analytics maturity, enterprise hardening, integration provider foundation.
-- **v2.3 (target — Sprints 33-34, ships 2026-08-05)**: Integration ecosystem (Slack, Teams, generic webhooks), compliance evidence (EU residency docs, GDPR badge, SOC 2 framework), AI depth (recap provenance, real-time session sentiment), anonymous engagement leadership (zero-knowledge mode depth).
+- **v2.2 (shipped as part of the v2.x→v3 arc)**: LIVE engagement depth (Quick Finger, Team Quiz, leaderboard, badges), resilience P0 (PII sanitization, AI timeouts, circuit-breaker wiring), admin analytics maturity, enterprise hardening, integration provider foundation.
+- **v2.3 (shipped as part of the v2.x→v3 arc)**: Integration ecosystem (Slack, Teams, generic webhooks), compliance evidence (EU residency docs, GDPR badge, SOC 2 framework), AI depth (recap provenance, real-time session sentiment), anonymous engagement leadership (zero-knowledge mode depth).
+
+</details>
 
 ## Epic status summary
 -  **Core Session Platform** (session lifecycle, realtime voting, presenter controls)
