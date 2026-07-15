@@ -259,6 +259,7 @@ SENTIMENT_ENABLED = "true"
 REALTIME_TOWNHALL_ENABLED = "true"
 RATE_LIMIT_FAIL_CLOSED = "false"
 WS_CONNECT_PER_IP_PER_MIN = "15"
+BETA_XR_ENABLED = "false"
 # SAML SSO kill-switch (SEC-SAML-01, #529) — disabled until assertion signature
 # verification ships. Staging may flip to "true" for IdP integration testing only.
 SAML_SSO_ENABLED = "false"
@@ -269,7 +270,7 @@ SAML_SIGNATURE_VERIFY_ENABLED = "false"
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "qesto-staging"
-database_id = "345adbff-4a31-47c0-98d4-0dd9368157a6"
+database_id = "c5a1a60e-0389-41d0-b2d4-80a3d2794902"
 migrations_dir = "migrations"
 
 # Staging KV namespaces — all 9 provisioned and ready
@@ -303,6 +304,12 @@ id = "c0b05bde687f4740a85caa1294009c4b"
 [[env.staging.kv_namespaces]]
 binding = "MARKETING_KV"
 id = "f7bff720ab4547c8b11ac0044279a949"
+[[env.staging.kv_namespaces]]
+binding = "ACTIONS_KV"
+id = "59680ad5a348400f89f36c148dbc72ef"
+[[env.staging.kv_namespaces]]
+binding = "HELP_CONVERSATIONS_KV"
+id = "8d08b7883b6c451b88a653ce8ba55c13"
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]
