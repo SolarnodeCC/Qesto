@@ -7,8 +7,8 @@ stage = "contract"
 [approval]
 # Destructive votes-table rebuild — requires architect sign-off per migration
 # governance before production apply. Fill approved_by/approval_date at that gate.
-approved_by = "remco oostelaar"
-approval_date = "15072026"
+approved_by = "remco_oostelaar"
+approval_date = "15-07-2026"
 
 [rollback]
 strategy = "restore-from-backup"
