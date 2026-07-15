@@ -4,9 +4,9 @@ type: guide
 domain: governance
 category: policy
 status: active
-version: 1.0
+version: 1.1
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-07-14
 tags:
   - governance
   - policy
@@ -17,13 +17,15 @@ relates_to:
 
 # Qesto — Archived Sprints (Historical Reference)
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../../README.md)._
 
-_Last updated: 2026-05-19 (UTC)_
+_Last updated: 2026-07-14 (UTC)_
+
+> **Coverage note (2026-07-14 audit):** this file's narrative summaries stop at Sprint 50 (mid-May 2026). The later arcs are archived elsewhere: **S60–S99** live in the per-sprint execution docs in this directory ([`SPRINT85_EXECUTION.md`](./SPRINT85_EXECUTION.md) … [`SPRINT99_EXECUTION.md`](./SPRINT99_EXECUTION.md)) and the versioned release notes (`v4.x` … [`v7.0.0.md`](./v7.0.0.md)). Post-GA work is train-based — see [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md).
 
 ## Overview
 
-This document provides historical summaries of completed sprints, including Sprint 19's early implementation closeout. For **calendar / team sprint history**, use this file and [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md). For a **reference five-sprint teaching arc** (v0.1→v0.5) layered on the shipped v2 baseline, see [`SPRINT_PLAN.md`](../planning/SPRINT_PLAN_MASTER.md) — and read [`README.md`](./README.md) so the two notions of “sprint” are not confused.
+This document provides historical summaries of completed sprints, including Sprint 19's early implementation closeout. For **calendar / team sprint history**, use this file and [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md). For a **reference five-sprint teaching arc** (v0.1→v0.5) layered on the shipped v2 baseline, see [`SPRINT_PLAN.md`](../planning/SPRINT_PLAN_MASTER.md) — and read the documentation map so the two notions of “sprint” are not confused.
 
 ---
 

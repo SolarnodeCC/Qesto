@@ -4,9 +4,9 @@ type: planning
 domain: product
 category: backlog
 status: active
-version: 1.0
+version: 1.1
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-07-14
 tags:
   - backlog
   - priorities
@@ -20,10 +20,12 @@ relates_to:
 
 # Qesto — Product Backlog (Epic-Based)
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../../README.md)._
 
-> **Active work (agents + PO):** [`BACKLOG_ACTIVE.md`](./BACKLOG_ACTIVE.md) — RT-01 Stabilize + RT-02 UX value loop.  
+> **Active work (agents + PO):** [`BACKLOG_ACTIVE.md`](./BACKLOG_ACTIVE.md) — RT-01 closed 2026-07-14; RT-02 UX value loop active.  
 > **This file:** historical archive, regression contracts, and epic registry. Do not sprint-commit from tables below without PO promotion to `BACKLOG_ACTIVE.md`.
+>
+> **Note on dates (2026-07-14 audit):** several status blocks below carry **sprint-narrative dates** (e.g. "2026-11-03", "2026-09-25") from the S85–S99 forward-dated teaching calendar. The verified engineering evidence for that arc is dated **2026-06-19**. Real calendar truth for anything after 2026-06-19 lives in [`BACKLOG_ACTIVE.md`](./BACKLOG_ACTIVE.md) and [`RELEASE_TRAIN_MASTER.md`](../planning/RELEASE_TRAIN_MASTER.md) (ADR-0067 killed forward-dated headers for active docs; these are retained here as archive only).
 
 _2026-06-19 (UTC) — **S99 DoD closed (engineering):** 22/22 exit items audited — 17 ✅, 3 ⚠️, 2 ❌ (ops/GTM). All local gates green: tsc · Vitest **2224** · build · check:i18n · test:eval **127**. Quality dashboard **57→72**; Scrum DoD **2→4**. Production deploy + AE + marketing **not** verified → RT-01. Evidence: [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md) §Exit Criteria + §Closeout evidence._
 _2026-11-03 (UTC) — **Sprint 99 code-complete: v7.0 GA — Engagement Intelligence Network** _(production deploy pending RT-01 `OPS-S99-CLOSEOUT-01`)_. Final sprint of the S85–S99 arc. `ADR-0063` accepted (v7.0 platform certification + v6.x deprecation policy). Release engineering on `main`: platform `RELEASES` += `7.0.0`; `/api/platform/version` → `7.0.0`; `/api/platform/certification` → certifiedVersion `7.0.0`, `pentest6: complete`, `isolationProof: verified` (ADR-0062); `/api/platform/v6-sunset` (currentGa `7.0.0`). XR beta (feature-flagged `beta-xr`): `FE-XR-LAUNCHER-01` WebXR detection + `XR-FALLBACK-01` 2D degrade + i18n in 5 locales. GA epics: REACTIONS, PULSE, COPILOT, LEARN, SOVEREIGN+, CONNECT, STUDIO; XR beta only. Gates: tsc · Vitest 2224 · build · check:i18n · test:eval 127 — all green 2026-06-19. See [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md), [`v7.0.0.md`](../releases/v7.0.0.md), [`ADR-0063`](../../adr/ADR-0063-v7-platform-certification.md). Next: RT-01 ops closeout → [`BACKLOG_ACTIVE.md`](./BACKLOG_ACTIVE.md)._
@@ -54,7 +56,7 @@ _Website Design Wave added: 2026-04-19 — see §12_
 _**Sprint 20 scope expansion**: 2026-05-01 — Sprint 19 shipped early; AUTHZ-ADR-01 pulled in as committed (was stretch); Sprint A verification bundle added; total committed scope raised from 34 to 45 pts. See SPRINT_PLAN.md §Sprint 20 for updated table._
 _**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review completed 2026-05-01; Sprint 19 implementation is complete; Sprint 20 starts the next five-calendar-sprint plan._
 
-_2026-06-20 (UTC) — **Requirement debt raised: GDPR-RETENTION-CLAIM-01.** Participant-facing consent string (`public/locales/*/vote.json` `gdprConsent`, all 5 locales) promises "Data is stored for a maximum of 30 days and then deleted," but no code-enforced 30-day purge exists for named-consent participant data — confirmed via `worker/index.ts` cron audit (only `PULSE-RETENTION-01` 90d/7y job exists, scoped to Pulse team-rollup analytics, not general session/participant data). Also, the pricing-matrix "Retention" row (`src/config/pricing-matrix.ts`, Pulse 30d/Signal 365d/Chorus 7y) is a stated target with no enforcing cron. Needs PO decision: (a) build a real auto-redaction job matching the promised windows, or (b) change the consent copy and pricing-matrix framing to stop promising an enforced window that doesn't exist. Documented in [`knowledge-base/help/privacy-gdpr.md`](../../help/privacy-gdpr.md) §Data Retention and §GDPR Consent for Participants. Not actioned as code in this pass (scope: GitHub issue #522 was documentation-only)._
+_2026-06-20 (UTC) — **Requirement debt raised: GDPR-RETENTION-CLAIM-01.** Participant-facing consent string (`public/locales/*/vote.json` `gdprConsent`, all 5 locales) promises "Data is stored for a maximum of 30 days and then deleted," but no code-enforced 30-day purge exists for named-consent participant data — confirmed via `worker/index.ts` cron audit (only `PULSE-RETENTION-01` 90d/7y job exists, scoped to Pulse team-rollup analytics, not general session/participant data). Also, the pricing-matrix "Retention" row (`src/config/pricing-matrix.ts`, Pulse 30d/Signal 365d/Chorus 7y) is a stated target with no enforcing cron. Needs PO decision: (a) build a real auto-redaction job matching the promised windows, or (b) change the consent copy and pricing-matrix framing to stop promising an enforced window that doesn't exist. Documented in [`knowledge-base/help/privacy-gdpr.md`](../../help/privacy-gdpr.md) §Data Retention and §GDPR Consent for Participants. Not actioned as code in this pass (scope: GitHub issue #522 was documentation-only). **Update 2026-07-14: promoted to RT-02 as a committed P0 row (`GDPR-RETENTION-CLAIM-01` in [`BACKLOG_ACTIVE.md`](./BACKLOG_ACTIVE.md) §RT-02 audit-criticals addendum) — re-verified still open (no purge cron in `worker/`).**_
 
 ## Overview
 

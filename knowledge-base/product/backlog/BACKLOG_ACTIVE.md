@@ -4,9 +4,9 @@ type: planning
 domain: product
 category: backlog
 status: active
-version: 1.0
+version: 1.1
 created: 2026-06-19
-updated: 2026-07-08
+updated: 2026-07-14
 tags:
   - backlog
   - release-train
@@ -22,7 +22,7 @@ relates_to:
 
 # Qesto — Active Backlog (Release Trains)
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../../README.md)._
 
 **Planning truth for agents:** Read **this file** for committed work. Cadence contract and horizon map: [`RELEASE_TRAIN_MASTER.md`](../planning/RELEASE_TRAIN_MASTER.md). [`BACKLOG_MASTER.md`](./BACKLOG_MASTER.md) is the historical archive + regression contract; do not treat its sprint registries as open work.
 
@@ -32,29 +32,31 @@ _Hub: [Documentation map](./README.md)._
 
 ---
 
-## RT-01 — Stabilize (`RT-2026-06`; target close 2026-07-03)
+## RT-01 — Stabilize (`RT-2026-06`) — **CLOSED 2026-07-14**
 
 **Goal:** Close S99 operational gaps, restore CI truth, and clear security/process debt before new features.
 
-**Train capacity:** ~45 pts (product + ops). **Do not start RT-02 until RT-01 P0 exit criteria are green.**
+**Closeout (2026-07-14, per [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md)):** target close was 2026-07-03; closed 11 days late at the last merge on `main`. **P0 exit exception recorded:** the "CI green rate 100%" criterion remains blocked on GitHub billing (external, not engineering) — PO accepted closure with `OPS-CI-RUNNER-01` carried into RT-02. Remaining operator actions (S99 AE table row, DR prod first-run) are tracked as carry-over, not train blockers. Open/in-progress stories below are carried into RT-02 (see "Carry-over from RT-01").
+
+**Train capacity:** ~45 pts (product + ops).
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `OPS-CI-RUNNER-01` | 5 | P0 | devops | **Blocked (billing)** | GitHub billing fix required; local gates green + connect-scale flake fixed — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md) |
+| `OPS-CI-RUNNER-01` | 5 | P0 | devops | **Blocked (billing) → carried to RT-02** | GitHub billing fix required; local gates green + connect-scale flake fixed — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md) |
 | `OPS-GIT-HOOKS-01` | 3 | P0 | devops | **Done** | `just hooks` installs `core.hooksPath`; pre-push lanes verified (`scripts/test-pre-push-hook.sh`) |
 | `SEC-JANURAI-REVERIFY-01` | 8 | P0 | security + tester | **Done** | [`JANURAI_REVERIFY_2026_06_19.md`](../../security/JANURAI_REVERIFY_2026_06_19.md) — CRITICAL-5 re-tested; 4 closed, SAML dual-gate |
 | `VALID-ADR-0064-ACCEPT` | 3 | P0 | PO + architect | **Done** | ADR-0064 accepted 2026-06-19; EPIC-VALID eligible for train commit |
 | `OPS-DR-GAP-01` | 8 | P1 | devops + backend | **Done (code)** | [`DR_KV_EXPORT_BACKUP.md`](../../operations/DR_KV_EXPORT_BACKUP.md) + weekly Worker cron; prod first-run pending |
 | `OPS-DR-GAP-02` | 8 | P1 | devops + backend | **Done** | [`DR_SNAPSHOT_CADENCE.md`](../../operations/DR_SNAPSHOT_CADENCE.md) — 30s DO alarm → R2 |
 | `OPS-S99-CLOSEOUT-01` | 5 | P0 | devops + PO | **Done (automation)** | [`OPS_S99_CLOSEOUT_EVIDENCE.md`](../../operations/OPS_S99_CLOSEOUT_EVIDENCE.md) + `scripts/smoke-platform-v7.mjs` in CI; AE table pending operator |
-| `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | **Draft** | [`MKTG_V70_GA_ANNOUNCEMENT.md`](../../marketing/MKTG_V70_GA_ANNOUNCEMENT.md) — PO sign-off before publish |
+| `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | **Draft → carried to RT-02** | [`MKTG_V70_GA_ANNOUNCEMENT.md`](../../marketing/MKTG_V70_GA_ANNOUNCEMENT.md) — PO sign-off before publish |
 
-### RT-01 exit criteria
+### RT-01 exit criteria (as closed, 2026-07-14)
 
-- [ ] CI green rate 100% on last 10 `main` pushes _(blocked: GitHub billing — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md))_
+- [ ] CI green rate 100% on last 10 `main` pushes — **waived at closeout** _(blocked: GitHub billing, external; criterion transfers to `OPS-CI-RUNNER-01` in RT-02 — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md))_
 - [x] Janurai CRITICAL exploitable = 0 on default prod — [`JANURAI_REVERIFY_2026_06_19.md`](../../security/JANURAI_REVERIFY_2026_06_19.md)
 - [x] ADR-0064 accepted
-- [ ] S99 DoD ops items (#18–22) closed in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md) _(automation + docs ✅; AE operator row + XR device lab optional)_
+- [x] S99 DoD ops items (#18–22): engineering scope closed in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md) — automation + docs shipped (`OPS-S99-CLOSEOUT-01` Done). _Residual: AE table row is a manual operator action, XR device lab optional — both tracked as RT-02 carry-over notes, not engineering work._
 
 ---
 
@@ -62,24 +64,24 @@ _Hub: [Documentation map](./README.md)._
 
 **Goal:** Convert the audit's High findings into CI ratchets so debt can only shrink. Rails + first
 fix land in RT-01; burn-down is funded across RT-02→RT-03. Refs:
-[`REFACTORING_AUDIT.md`](../../../REFACTORING_AUDIT.md), [`REMEDIATION_PLAN.md`](../../../REMEDIATION_PLAN.md),
+[`REFACTORING_AUDIT_2026-07-08.md`](../../quality/audits/REFACTORING_AUDIT_2026-07-08.md), [`REMEDIATION_PLAN.md`](../../quality/audits/REMEDIATION_PLAN.md),
 ADR-0068/0069/0070.
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
 | `ARCH-RATCHET-01` | 5 | P0 | architect + backend | **Done** | 3 ratchet gates (`check-ai-gateway`/`check-d1-access`/`check-error-response`) wired into `quality-gates.sh` + `check:rc`; `errorResponse()` + `runAI()` added; `sovereign.ts` migrated (error baseline 610→603); ADR-0068/0069/0070 accepted |
-| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | In progress | 124 sites migrated to `errorResponse()` (sovereign + 117-site codemod across 23 files); `check-error-response` 610→480. Tricky sites (variable msg, `denyFeature()`, `details`) remain |
+| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | In progress → carried to RT-02 | `check-error-response` baseline now **324** (610→480→324; latest batch 2026-07-14 incl. audit-fix returns). Tricky sites (variable msg, `denyFeature()`, `details`) remain |
 | `ARCH-MEDIUM-CLEANUP-01` | 5 | P1 | backend | **Done** | Vectorize dedup (`lib/ai/embed-query.ts`), Env-narrowing (integrations/billing → `Pick<Env,…>`), dual-auth consolidation (`lib/authz-helpers.ts`), `lib/stripe-client.ts` extracted from billing |
-| `ARCH-AI-GATEWAY-MIGRATE-01` | 8 | P1 | ai-engineer | Open | Raw `AI.run` sites routed through `runAI`; `check-ai-gateway` baseline lowered; `npm run test:eval` green (REV-10) per batch |
-| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | In progress | First slice done: `lifecycle.ts` (724→663) → `sessionLifecycleRepository`/`sessionLifecycleService`. Remaining: `billing.ts`, `integrations.ts` extracted; `check-d1-access` baseline lowered |
+| `ARCH-AI-GATEWAY-MIGRATE-01` | 8 | P1 | ai-engineer | **Done (2026-07-14)** | All inference routes through the `runAI()` gateway facade — verified by [`CORE_FEATURES_AUDIT_2026-07-14.md`](../../quality/audits/CORE_FEATURES_AUDIT_2026-07-14.md) §1; `check-ai-gateway` baseline down to **3** (facade internals only); eval suite green |
+| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | In progress → carried to RT-02 | Slices done: `lifecycle.ts` → `sessionLifecycleRepository`/`sessionLifecycleService`; gallery D1 queries → repository (2026-07-12, ADR-0069 ratchet). `check-d1-access` baseline **313**. Remaining: `billing.ts`, `integrations.ts` |
 
 ---
 
-## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; target close 2026-07-17)
+## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; target close 2026-07-31) — **ACTIVE**
 
 **Goal:** Ship the user-facing half of v7 backends deferred from S93–S95. **No new trust boundaries.**
 
-**Precondition:** RT-01 P0 green.
+**Precondition:** RT-01 closed 2026-07-14 with recorded P0 exception (CI blocked on GitHub billing — external). Original target close 2026-07-17 is not reachable with all P0 stories still Open; reset to **2026-07-31** (within the 2–3-week train rule, counted from actual RT-01 closeout).
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
@@ -88,6 +90,27 @@ ADR-0068/0069/0070.
 | `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | Open | Instructor screen for `POST /api/learn/instructor/analytics` (backend shipped S95) |
 | `PULSE-AI-NARRATION-01` | 8 | P1 | ai-engineer | Conditional | Workers-AI trend narration; `npm run test:eval` green (REV-10) |
 | `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | Open | New dashboard/panel strings in 5 locales; `check:i18n` green |
+
+### Carry-over from RT-01 (accepted at RT-01 closeout, 2026-07-14)
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-CI-RUNNER-01` | 5 | P0 | devops | **Blocked (billing)** | GitHub billing fix (external); then CI green rate 100% on last 10 `main` pushes — inherits the waived RT-01 exit criterion |
+| `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | Draft | [`MKTG_V70_GA_ANNOUNCEMENT.md`](../../marketing/MKTG_V70_GA_ANNOUNCEMENT.md) — PO sign-off before publish |
+| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | In progress | `check-error-response` baseline ≤ 324 and falling; tricky sites (variable msg, `denyFeature()`, `details`) migrated or documented as exceptions |
+| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | In progress | `billing.ts` + `integrations.ts` D1 access behind repositories; `check-d1-access` baseline < 313 |
+
+_Operator (non-engineering) residuals from RT-01: AE table row for S99 closeout; DR KV-export prod first-run. Owner: operator; no story points._
+
+### RT-02 addendum — Committed criticals from audit reconciliation (2026-07-14)
+
+Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Audit triage](#audit-triage--pending-po-promotion-2026-07-14)). Source: [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | Open | Residual fabricated "5-day downgrade" claim removed everywhere: `help/billing.md` FAQ (§"What happens to my sessions if payment fails?") + 4 seed entries in `functions/api/seed/help-documents.json`; copy states the real Stripe dunning flow (as the rewritten §Failed Payments already does); `HELP_VECTORIZE` re-seeded — [`KB_COVERAGE_AUDIT_2026-06-21.md`](../../quality/audits/KB_COVERAGE_AUDIT_2026-06-21.md) CRITICAL #1 |
+| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | Open (needs PO decision) | Consent copy in all 5 locales promises a 30-day purge with no enforcing cron (verified again 2026-07-14: no purge job in `worker/`). Either (a) build the auto-redaction cron matching promised windows, or (b) reword consent copy + pricing-matrix framing. Promoted from [`BACKLOG_MASTER.md`](./BACKLOG_MASTER.md) (raised 2026-06-20) |
+| `MKTG-TEMPLATE-PIPELINE-FIX-01` | 8 | P0 | backend + ai-engineer | **Done (2026-07-12)** | Retroactive row for shipped work: MKTP-001..016/018/019 from [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) fixed in commit `6335af3` — real question text in generation, working email-capture "use template" flow, fail-closed anonymisation gates, draft-first publish, D1 template registry (migration 0079). Open residue: MKTP-017/020 (LOW → triage) |
 
 ### RT-02 exit criteria
 
@@ -100,7 +123,7 @@ ADR-0068/0069/0070.
 
 ### RT-02 addendum — Platform audit findings (PLATFORM_AUDIT_2026-07-08)
 
-**Goal:** Backlog items from the four-dimension platform audit. These are foundational (ops, quality, marketing, KB) and unblock RT-03. Refs: [`PLATFORM_AUDIT_2026-07-08.md`](../audits/PLATFORM_AUDIT_2026-07-08.md).
+**Goal:** Backlog items from the four-dimension platform audit. These are foundational (ops, quality, marketing, KB) and unblock RT-03. Refs: [`PLATFORM_AUDIT_2026-07-08.md`](../../quality/audits/PLATFORM_AUDIT_2026-07-08.md).
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
@@ -114,7 +137,7 @@ ADR-0068/0069/0070.
 | `KB-STALENESS-CRON-01` | 3 | P2 | knowledge | Open | Agent cron: flag docs with `updated:` >2 release trains old and `status: active`; auto-file for review or archive; removes from KB embed corpus |
 ## Energizer security boundary — consolidated (audit E-1/E-2, closed)
 
-**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings. Consolidation approved by PO 2026-07-10 ("fix these issues now"); implemented in PR #715.
+**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../../quality/audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings. Consolidation approved by PO 2026-07-10 ("fix these issues now"); implemented in PR #715.
 
 | ID | Pri | Finding | Resolution | Status |
 |----|----|---------|------------|--------|
@@ -122,6 +145,27 @@ ADR-0068/0069/0070.
 | `ARCH-ENERGIZER-E2-ISOLATION` | CRIT | REST energizer plane 401'd for anonymous participants; REST/D1 vs WS/DO results never reconciled | **DO WebSocket is the single participant-facing plane.** Host REST lifecycle (PATCH activate, `/next`) syncs into the DO (`/energizer-sync`); DO gained emoji_poll/word_cloud answers with an aggregate `optionCounts` read model; JoinPage dropped REST polling for WS-only panels (all 4 lobby kinds); host monitoring reads live results from the DO (`/energizer-state`) with D1 fallback; DO completions mirror back to D1 | **Done (PR #715)** |
 
 **Architecture note:** the host lobby (Launchpad) stays on the authenticated REST plane for draft/edit/activate/monitor; participants — anonymous included — are WS-only. D1 remains config/lifecycle truth; the DO is the live-answer store.
+
+---
+
+## Audit triage — pending PO promotion (2026-07-14)
+
+Open findings from all current audits that are **not** committed to a train. Nothing here is scheduled work until the PO promotes it into a train table with points and an owner. Full reconciliation: [`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md).
+
+| Finding(s) | Severity | Source audit | Summary |
+|------------|----------|--------------|---------|
+| LAYOUT-006..011 | MEDIUM/LOW | [`LAYOUT_RESPONSIVENESS_AUDIT_2026-07-10.md`](../../quality/audits/LAYOUT_RESPONSIVENESS_AUDIT_2026-07-10.md) | Explicitly out of scope of the 07-10 remediation pass (LAYOUT-001..005 fixed) |
+| L-1..L-7 | LOW | [`CORE_FEATURES_AUDIT_2026-07-14.md`](../../quality/audits/CORE_FEATURES_AUDIT_2026-07-14.md) | Batched cleanup: `'DEL'+'ETE'` obfuscation, presenter NaN timer, AI-gateway nits, hardcoded model id, Accept-Language cache key, N-insert duplication, alias space |
+| MKTP-017, MKTP-020 | LOW | [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) | Route-doc mismatch + formulaic template names; no card preview imagery (all higher findings fixed in `6335af3`) |
+| Design-system findings | HIGH (UX) | [`DESIGN_SYSTEM_AUDIT_2026-07-01.md`](../../quality/audits/DESIGN_SYSTEM_AUDIT_2026-07-01.md) | Audit-only, nothing remediated: broken type-scale classes render unstyled, 29+ files violate Hard Rule #9 (inline SVG), ~20/59 routes without shared chrome. Partially overtaken by ADR-0071 work — needs re-scoping pass before promotion |
+| Jankurai P0/P1 | P0 (tooling) | [`JANKURAI_AUDIT_2026_07_02.md`](../../quality/audits/JANKURAI_AUDIT_2026_07_02.md) | Committed `justfile` is a corrupt symlink breaking every proof lane; owner-map/test-map gaps; tool version skew (policy 1.6.10 vs CI 1.5.1). Advisory, not applied |
+| KB coverage MEDIUMs | MEDIUM | [`KB_COVERAGE_AUDIT_2026-06-21.md`](../../quality/audits/KB_COVERAGE_AUDIT_2026-06-21.md) | Help provenance dates, retention stated three ways, frozen CHANGELOG. (Criticals: promoted → `KB-BILLING-COPY-01`; missing RAG topics + README count: verified resolved by the 07-07 seed/README refresh) |
+| SEO residuals | MEDIUM | [`SEO_IMPLEMENTATION_COMPLETE.md`](../../marketing/seo/SEO_IMPLEMENTATION_COMPLETE.md) | IndexNow key provisioning (partial), Google Search Console setup (manual, pending) |
+| Eval-baseline extension | LOW | [`AI_EVAL_BASELINE.md`](../../operations/monitoring/AI_EVAL_BASELINE.md) | Baseline doc ~5 weeks old; coaching-prompt fixtures added 07-14 (M-6) but the baseline doc itself needs a refresh to the current suite count |
+| SECURITY_AUDIT_FINDINGS closure sweep | VERIFY | [`SECURITY_AUDIT_FINDINGS.md`](../../security/reviews/SECURITY_AUDIT_FINDINGS.md) | 2026-05-21 doc still says "In Progress" (~50 High / ~40 Medium queued). Later audits (2026-06 review, 2026-07-08 audit: 0 critical, all H/M fixed) suggest these were superseded — needs a one-pass closure verification + doc status update, not new fixes |
+| PEN5-E2 tenancy decision | ARCH | [`SEC_PEN5_01_RESULTS.md`](../../security/SEC_PEN5_01_RESULTS.md) | Unresolved tenancy-model architecture decision from Pentest #5 (2026-06-13); crit/high = 0 otherwise |
+
+_Already committed elsewhere (do not re-add):_ Phase-2 observability gap → `OPS-PHASE2-OBS-01` (RT-02 platform-audit addendum); SAML XML-DSig → `SEC-SAML-VERIFY-01` (Security Follow-ups, P1 SAML-GA blocker); RAG retrieval-quality measurement → `KB-RETRIEVAL-EVAL-01`; KB staleness automation → `KB-STALENESS-CRON-01`.
 
 ---
 
@@ -216,7 +260,10 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
-| 2026-07-08 | RT-02 addendum: added 8 items from [`PLATFORM_AUDIT_2026-07-08.md`](../audits/PLATFORM_AUDIT_2026-07-08.md) — P0 operator paging, Phase-2 observability dashboards, KB retrieval eval, lifecycle email, prompt manifest CI check, no-signup demo widget, cohort analytics, KB staleness automation |
+| 2026-07-14 | **Backlog audit & reconciliation** ([`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md)): RT-01 closed with P0 exception (CI blocked on GitHub billing); carry-overs moved to RT-02 (`OPS-CI-RUNNER-01`, `MKTG-V70-GA-COPY-01`, `ARCH-ERROR-BUILDER-MIGRATE-01` @324, `ARCH-REPO-LAYER-01` @313); `ARCH-AI-GATEWAY-MIGRATE-01` marked Done (gateway baseline 3, verified by core-features audit); RT-02 target reset to 2026-07-31 and marked Active; criticals committed (`KB-BILLING-COPY-01`, `GDPR-RETENTION-CLAIM-01`); retroactive Done row `MKTG-TEMPLATE-PIPELINE-FIX-01` (commit `6335af3`); new Audit-triage section for all remaining open findings |
+| 2026-07-12 | Marketing template pipeline: audit published and criticals/highs/mediums fixed same-day (MKTP-001..016/018/019, commit `6335af3`) — recorded retroactively in the 07-14 reconciliation |
+| 2026-07-10 | Energizer security boundary consolidated (audit E-1/E-2, PR #715): `GET /energizers/active` host-only; DO WebSocket is the single participant-facing plane — recorded retroactively in the 07-14 reconciliation |
+| 2026-07-08 | RT-02 addendum: added 8 items from [`PLATFORM_AUDIT_2026-07-08.md`](../../quality/audits/PLATFORM_AUDIT_2026-07-08.md) — P0 operator paging, Phase-2 observability dashboards, KB retrieval eval, lifecycle email, prompt manifest CI check, no-signup demo widget, cohort analytics, KB staleness automation |
 | 2026-06-19 | Created RT-01 (stabilize) + RT-02 (UX value loop) post S99 audit; `OPS-GIT-HOOKS-01` marked done |
 | 2026-06-19 | OPS-S99 closeout: platform smoke in CI, AE runbook, deploy rollback, marketing draft; connect-scale test de-flaked |
 | 2026-06-19 | Agent-system aligned to release-train cadence — PO agent/skill, HANDOFFS (E3/E20), architect/cso/release-notes/ai-strategy/marketing/i18n skills, `.claude` hooks + settings + context-preservation now reference trains and point at this file (not the deprecated `SPRINT_PLAN_MASTER.md`) |
