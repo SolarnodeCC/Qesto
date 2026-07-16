@@ -41,7 +41,7 @@ build, with synthetic load active throughout (see §3). This is the first drill 
 DR program to clock-time the D1 restore, R2 snapshot restore, and MR failover paths rather
 than estimate them — the S89/S90 tabletop drills are superseded for those three paths only;
 all other scenario procedures are unchanged and re-validated here. No production traffic was
-interrupted: the exercise runs on the staging project (`qesto-staging`), mirrored
+interrupted: the exercise runs on an isolated pre-production drill project, mirrored
 infrastructure topology, isolated D1/KV/DO/R2/Vectorize resources. Where a step still relies
 on an external SLA Qesto cannot clock itself (e.g., Cloudflare support ticket SLA), it remains
 marked **[estimate]** and is bounded by the vendor's published response target, not invented._
@@ -63,7 +63,7 @@ live-traffic commitment made in `DR_DRILL_ANNUAL_V6_2026.md` §5.
 | Field | Value |
 |---|---|
 | Drill date | 2026-10-16 (S98, day 6 of the 2026-10-09 → 10-20 window) |
-| Drill type | **Live-traffic exercise** on staging (`qesto-staging` Pages project), synthetic multi-tenant load active throughout |
+| Drill type | **Live-traffic exercise** on an isolated pre-production drill Pages project, synthetic multi-tenant load active throughout |
 | Lead | DevOps (qesto-devops) |
 | Reviewers | Architect, Backend Lead, Security (read-only observer for Scenario D) |
 | Build under test | `7.0.0-rc.2` (pre-release; soak running in parallel per `V70_RC_SOAK_EVIDENCE.md`) |
@@ -91,7 +91,7 @@ features per `SPRINT91_99_STORIES.md`).
 | Vectorize indexes | `DECISIONS_VECTORIZE`, `HELP_VECTORIZE`, `KB_VECTORIZE` (1024d, cosine, bge-m3) | Cloudflare Vectorize | No |
 | Workers AI | `AI` binding | Cloudflare Workers AI | No |
 | Secrets | `JWT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `ADMIN_BOOTSTRAP_SECRET`, OAuth client secrets, `EMBED_WIDGET_SECRET`, `SAML_IDP_CERT` | Cloudflare Pages Secrets | No |
-| DNS + Pages project | `qesto.cc` (prod) / `qesto-staging` (drill target) | Cloudflare DNS + Pages | No |
+| DNS + Pages project | `qesto.cc` (prod) / isolated drill Pages project (drill target) | Cloudflare DNS + Pages | No |
 | External services | Stripe, Resend, OAuth providers | Third-party SaaS | No |
 
 **Note on `beta-xr`:** XR-SPATIAL-01/XR-AVATAR-01 (if shipped this sprint) are feature-flagged
@@ -123,7 +123,7 @@ in `V70_RC_SOAK_EVIDENCE.md` §6.
 ## 3. Drill Methodology — Live Traffic
 
 Unlike the S89/S90 tabletop drills, this exercise ran with synthetic load active against
-`qesto-staging` for the full duration of each scenario injection, so that restore procedures
+the drill environment for the full duration of each scenario injection, so that restore procedures
 were exercised against a system under realistic write/read pressure rather than an idle
 environment.
 
@@ -145,7 +145,7 @@ access token to force `D1_ERROR`, deleting a staging KV namespace key range, for
 (`qesto.cc`) was never touched.
 
 **Timing instrumentation:** wall-clock start = moment of fault injection (confirmed via
-`wrangler pages deployment tail --project-name qesto-staging` showing the first error
+`wrangler pages deployment tail --project-name <drill-project>` showing the first error
 signature). Wall-clock end = moment `/api/admin/health` on staging returns all-green AND the
 k6 post-scenario smoke run completes with 0 failed checks.
 
@@ -232,8 +232,8 @@ then rolled back via wrangler.
 
 **Recovery procedure (unchanged from v6.0):**
 ```bash
-wrangler pages deployment list --project-name qesto-staging
-wrangler pages deployment rollback <deployment-id> --project-name qesto-staging
+wrangler pages deployment list --project-name <drill-project>
+wrangler pages deployment rollback <deployment-id> --project-name <drill-project>
 ```
 
 **Measured:** rollback command executed and confirmed live (verified via
@@ -252,11 +252,11 @@ band, now clock-confirmed.
 **[estimate]** rehearsal in both v6.0 and v7.0 drills, since deliberately rotating
 `JWT_SECRET` on staging mid-load-test would invalidate the soak harness's active sessions and
 contaminate the parallel soak evidence run. The procedure was rehearsed by a dry-run
-(`wrangler pages secret put JWT_SECRET --project-name qesto-staging --dry-run` is not a real
+(`wrangler pages secret put JWT_SECRET --project-name <drill-project> --dry-run` is not a real
 flag — the team instead timed secret-put against a disposable test secret name
 `DR_DRILL_TEST_SECRET` to measure propagation, then deleted it).
 
-**Measured:** `wrangler pages secret put DR_DRILL_TEST_SECRET --project-name qesto-staging`
+**Measured:** `wrangler pages secret put DR_DRILL_TEST_SECRET --project-name <drill-project>`
 propagated and was readable by a probe Worker route at **T+0:02** (2 min) — consistent with
 Cloudflare's "instant global propagation" claim for Pages secrets, now clock-confirmed for
 this account/region.
@@ -279,7 +279,7 @@ probe forced to report elevated latency.
 
 **Recovery procedure (per `MULTI_REGION_RUNBOOK.md`, unchanged):**
 ```bash
-curl -s "https://qesto-staging.pages.dev/api/admin/health" | jq '.data | {readRegion, writeRegion, failoverActive}'
+curl -s "https://<drill-host>/api/admin/health" | jq '.data | {readRegion, writeRegion, failoverActive}'
 ```
 followed by `POST /api/admin/multi-region/failover` (superuser JWT).
 

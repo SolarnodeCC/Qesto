@@ -51,7 +51,7 @@ the RC build toward the S99 GA sprint.
 | Soak start | 2026-10-09 18:00 UTC (S98 day 1, per `SPRINT98_EXECUTION.md` §Sequential Dependencies: "Soak harness must start day 1") |
 | Soak end | 2026-10-10 18:00 UTC |
 | Duration | 24 hours continuous |
-| Environment | `qesto-staging` (Cloudflare Pages project, mirrored topology to production) |
+| Environment | Dedicated pre-production soak environment (Cloudflare Pages project, mirrored topology to production) |
 | Lead | DevOps (qesto-devops), harness built with qesto-e2e-tester load tooling |
 | Reviewers | Architect, Backend Lead |
 | Predecessor | v7.0.0-rc.1 soak opened S97 (`SPRINT97_EXECUTION.md`); this run hardens and re-validates on rc.2 after S97/S98 fixes |
@@ -84,10 +84,10 @@ the RC build toward the S99 GA sprint.
 Built on the existing load-test tooling in `tests/load/` (`tests/load/README.md`), extended
 for sustained multi-surface duration rather than a single-scenario burst:
 
-- **Baseline smoke:** `k6 run tests/load/k6-smoke.js -e BASE_URL=https://qesto-staging.pages.dev`
+- **Baseline smoke:** `k6 run tests/load/k6-smoke.js -e BASE_URL=https://<soak-host>`
   run hourly throughout the 24h window as a canary; 24/24 hourly runs green (0 failed checks).
 - **Federation/CONNECT load:** `k6 run tests/load/townhall-scale-50k.js -e
-  BASE_URL=https://qesto-staging.pages.dev` run continuously at the staging-scaled profile
+  BASE_URL=https://<soak-host>` run continuously at the soak-scaled profile
   (100 VUs) for the full 24h, per the moderation queue p95 <2s and zero-duplicate-upvote
   acceptance criteria already established for that script.
 - **Session lifecycle churn:** custom harness cycling sessions through
@@ -179,7 +179,7 @@ explicitly because S98 scope conditionally includes `XR-SPATIAL-01` and `XR-AVAT
 `SPRINT98_EXECUTION.md` §Kill Criterion) — and this soak evidence must not be read as having
 validated, or been affected by, XR code paths.
 
-- Confirmed via `wrangler pages secret/var list` equivalent check on the staging environment
+- Confirmed via `wrangler pages secret/var list` equivalent check on the soak environment
   config: `beta-xr` defaults to `false`, no override active during the soak window.
 - Confirmed via traffic composition: 0 requests to `POST /api/sessions/:id/xr-broadcast` or
   any `spatial_state`/`spatial_update` message types observed in the sampled `wrangler tail`

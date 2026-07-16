@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * OPS-S99-CLOSEOUT-01 — smoke platform v7 endpoints (staging or prod).
+ * OPS-S99-CLOSEOUT-01 — smoke platform v7 endpoints.
  * Tests:
  *   1. Platform info endpoints (/version, /releases, /certification)
  *   2. Session CRUD (create → read → verify structure)
  *   3. Basic session lifecycle (draft state only, no WebSocket)
  * Usage: node scripts/smoke-platform-v7.mjs [BASE_URL]
- * Default: https://staging.qesto.cc
+ * Default: https://qesto.cc
  */
-const BASE = (process.argv[2] ?? 'https://staging.qesto.cc').replace(/\/$/, '')
+const BASE = (process.argv[2] ?? 'https://qesto.cc').replace(/\/$/, '')
 const API = `${BASE}/api`
 
 const platformChecks = [

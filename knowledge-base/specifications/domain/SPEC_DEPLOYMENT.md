@@ -483,32 +483,6 @@ jobs:
 
 ## Deployment Environments
 
-### Staging
-
-```bash
-# Deploy to staging branch
-git push origin main:staging
-
-# Wrangler routes staging to staging.qesto.cc
-# Uses qesto-staging D1 database
-# KV prefixed with staging-*
-```
-
-**Staging Configuration** (wrangler.toml):
-```toml
-[env.staging]
-routes = [{pattern = "staging.qesto.cc", zone_name = "qesto.cc"}]
-vars = {
-  APP_URL = "https://staging.qesto.cc",
-  LOG_LEVEL = "debug"
-}
-
-[[d1_databases]]
-binding = "DB"
-database_name = "qesto-staging"
-database_id = "staging-db-id"
-```
-
 ### Development (Local)
 
 ```bash

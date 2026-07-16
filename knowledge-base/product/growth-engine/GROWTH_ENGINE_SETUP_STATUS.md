@@ -48,14 +48,10 @@ From a machine with `wrangler` CLI access, run:
 # 1. Generate and store webhook secret
 WEBHOOK_SECRET=$(openssl rand -hex 32)
 echo $WEBHOOK_SECRET | wrangler secret put MARKETING_WEBHOOK_SECRET
-echo $WEBHOOK_SECRET | wrangler secret put MARKETING_WEBHOOK_SECRET --env staging
 
 # 2. Apply D1 migration
-wrangler d1 migrations apply qesto-staging --env staging
-# Verify: SELECT name FROM pragma_table_info('sessions') WHERE name='is_public';
-
 wrangler d1 migrations apply qesto_3_db  # PRODUCTION
-# Same verify query
+# Verify: SELECT name FROM pragma_table_info('sessions') WHERE name='is_public';
 
 # 3. Deploy
 npm run build
@@ -77,9 +73,6 @@ wrangler pages deploy dist
 # Verify endpoints exist:
 curl https://qesto.cc/api/templates -i
 # Should return 200
-
-curl https://staging.qesto.cc/api/templates -i
-# Should return 200
 ```
 
 **Time**: ~2 minutes
@@ -88,7 +81,7 @@ curl https://staging.qesto.cc/api/templates -i
 
 ### Step 3: Run E2E Testing Checklist
 
-Open `PROVISIONING_GROWTH_ENGINE.md` and execute all 12 test phases on staging.
+Open `PROVISIONING_GROWTH_ENGINE.md` and execute all 12 test phases in production.
 
 **Quick Test (all 12 phases):**
 1. ✅ Session creation with is_public toggle
@@ -187,10 +180,10 @@ echo "test" | openssl dgst -sha256 -hex -mac HMAC -macopt key:YOUR_SECRET
 ### Workflow not triggering
 ```bash
 # Check Worker logs:
-wrangler tail --env staging
+wrangler tail
 
 # Confirm isPublic=1 on closed session:
-wrangler d1 execute qesto-staging --env staging \
+wrangler d1 execute qesto_3_db \
   "SELECT id, is_public FROM sessions WHERE status='closed' LIMIT 1;"
 
 # Check MARKETING_WEBHOOK_SECRET exists:

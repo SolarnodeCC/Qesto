@@ -1,4 +1,4 @@
-# Staging Migration & Deployment Checklist
+# Migration & Deployment Checklist
 ## DEPLOY-GAM-01 — ENERGIZING State + Circuit Breakers + Zero-Knowledge Mode
 
 > **Owner:** DevOps / Release Lead
@@ -25,7 +25,7 @@
 | `anonymity` column already exists in `sessions` table | Pre-existing (Sprint 24) |
 | `energizers` table schema unchanged | No migration required |
 
-> **Action:** Verify with `wrangler d1 execute DB --command "SELECT name FROM pragma_table_info('sessions') WHERE name='anonymity'"` against staging DB.
+> **Action:** Verify with `wrangler d1 execute DB --command "SELECT name FROM pragma_table_info('sessions') WHERE name='anonymity'"` against the production DB.
 
 ---
 
@@ -39,7 +39,7 @@
 | `TEAMS_KV` | No change | |
 | `AUDIT_KV` | No change | Audit entries for `energizer.*` actions pre-existing |
 
-> **Action:** After first staging deploy, run: `wrangler kv:key list --namespace-id $ACTIONS_KV_ID --prefix "cb:v1:"` to confirm circuit breaker keys are being written.
+> **Action:** After first deploy, run: `wrangler kv:key list --namespace-id $ACTIONS_KV_ID --prefix "cb:v1:"` to confirm circuit breaker keys are being written.
 
 ---
 
@@ -48,26 +48,26 @@
 | Flag | Required State | Notes |
 |---|---|---|
 | `ENABLE_ENERGIZERS` | **OFF** in prod until RC-ROLLOUT-01 | Sprint 32 delivers rollout plan |
-| `ENABLE_ENERGIZERS` | **ON** in staging for smoke tests | Explicit for this checklist |
+| `ENABLE_ENERGIZERS` | **ON** for smoke tests | Explicit for this checklist |
 | `ENABLE_ZERO_KNOWLEDGE` | Optional — UI visible to all, no flag required | `zero_knowledge` anonymity is an API field, not feature-flagged |
 
-> **Action:** Confirm `ENABLE_ENERGIZERS=true` is set in `wrangler.toml` staging vars before running WebSocket smoke.
+> **Action:** Confirm `ENABLE_ENERGIZERS=true` is set in `wrangler.toml` vars before running WebSocket smoke.
 
 ---
 
 ## Circuit Breaker Smoke Tests
 
-Run these after staging deploy to verify circuit breakers are wired:
+Run these after deploy to verify circuit breakers are wired:
 
 ```bash
 # 1. Verify /api/version returns 200 (proves app boots with circuit breakers)
-curl -s https://staging.qesto.cc/api/version | jq .
+curl -s https://qesto.cc/api/version | jq .
 
 # 2. Verify /api/admin/health returns 200
-curl -s https://staging.qesto.cc/api/admin/health | jq .
+curl -s https://qesto.cc/api/admin/health | jq .
 
 # 3. Verify circuit breaker KV keys written after first request
-wrangler kv:key list --namespace-id $ACTIONS_KV_STAGING_ID --prefix "cb:v1:"
+wrangler kv:key list --namespace-id $ACTIONS_KV_ID --prefix "cb:v1:"
 # Expected: keys for stripe, resend, ai, jwks (once any of those paths are hit)
 ```
 
@@ -75,7 +75,7 @@ wrangler kv:key list --namespace-id $ACTIONS_KV_STAGING_ID --prefix "cb:v1:"
 
 ## WebSocket Smoke Tests (ENERGIZING / LIVE Energizers)
 
-> These require `ENABLE_ENERGIZERS=true` in staging.
+> These require `ENABLE_ENERGIZERS=true` in production.
 
 ### Energizer LIVE path
 

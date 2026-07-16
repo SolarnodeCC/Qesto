@@ -44,7 +44,7 @@ reason class.
 
 1. GitHub → **Settings → Billing & plans** — resolve failed payment or raise spending limit.
 2. Re-run the latest failed workflow on `main` after billing is fixed.
-3. Confirm `deploy · staging` health curl succeeds (already wired in `ci.yml` #535).
+3. Confirm the `build · deploy` health curl succeeds (wired in `ci.yml`).
 
 ## Engineering parity (runs locally)
 

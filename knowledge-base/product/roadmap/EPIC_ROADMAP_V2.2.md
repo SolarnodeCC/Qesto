@@ -251,20 +251,10 @@ SPRINT 27 (Aug 19–Sep 2) — "Post-Launch Stability"
 
 Before Sprint 21 can begin, complete Sprint 20 infrastructure:
 
-### **Staging Environment Checklist**
-- [ ] Create `qesto-staging` D1 database
-- [ ] Provision KV namespaces (`SESSIONS_KV`, `USERS_KV`, `TEAMS_KV`, `DECISIONS_KV`, `CIRCUIT_BREAKER_KV` all with `--preview` suffix)
-- [ ] Add `[env.staging]` block to `wrangler.toml` with separate bindings
-- [ ] Inject Stripe test-mode keys as staging secrets (`sk_test_*` keys)
-- [ ] Inject test Resend API key as staging secret
-- [ ] Set `LIVE_ENERGIZERS_ENABLED=true` in `[env.staging.vars]`
-- [ ] Fix CI to inject `COMMIT_SHA` during Pages deploy (currently `COMMIT_SHA=dev` on production)
-- [ ] Add `deploy-staging` CI job (runs on `staging` branch, targets staging Cloudflare Pages project)
-
 ### **Feature Flag Wiring**
 - [ ] Add `CIRCUIT_BREAKER_ENABLED?: string` to `types.ts` Env interface
 - [ ] Add `INTEGRATION_ENABLED?: string` to `types.ts` Env interface
-- [ ] Add `LIVE_ENERGIZERS_ENABLED = "true"` to `[env.staging.vars]` in `wrangler.toml`
+- [ ] Add `LIVE_ENERGIZERS_ENABLED = "true"` to the appropriate `[env.*.vars]` in `wrangler.toml`
 - [ ] Implement KV kill-switch pattern: check `SESSIONS_KV.get('feature:live_energizers_enabled')` before falling back to env var
 - [ ] Document operator command for kill-switch: `wrangler kv key put --namespace-id <SESSIONS_KV_ID> "feature:live_energizers_enabled" "false"`
 

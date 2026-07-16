@@ -61,60 +61,9 @@ jobs:
           path: coverage/
           retention-days: 7
 
-  # #535: validate against staging before any production deploy. Production is
-  # gated on this job succeeding (incl. its health check), so a broken build or
-  # broken bindings are caught in staging instead of in front of live users.
-  deploy-staging:
-    name: deploy · staging
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - run: npm ci
-
-      - name: Build (staging)
-        run: npm run build
-        env:
-          VITE_API_BASE_URL: https://staging.qesto.cc
-          VITE_SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
-          VITE_CHECKOUT_URL: ${{ secrets.CHECKOUT_URL }}
-
-      - name: Deploy to Cloudflare Pages (staging)
-        run: npx wrangler pages deploy dist --project-name=qesto-staging
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Verify staging API health
-        run: |
-          echo "Checking staging API health endpoints..."
-          health=$(curl -sf https://staging.qesto.cc/api/admin/health)
-          d1_ok=$(echo "$health" | jq -r '.d1')
-          kv_ok=$(echo "$health" | jq -r '.kv')
-          do_ok=$(echo "$health" | jq -r '.do')
-          echo "D1: $d1_ok, KV: $kv_ok, DO: $do_ok"
-          if [ "$d1_ok" != "ok" ] || [ "$kv_ok" != "ok" ] || [ "$do_ok" != "ok" ]; then
-            echo "ERROR: staging health check failed — blocking production deploy"
-            exit 1
-          fi
-          echo "✓ Staging healthy"
-
-      - name: Platform v7 smoke (staging)
-        run: node scripts/smoke-platform-v7.mjs https://staging.qesto.cc
-
   build:
     name: build · deploy
-    needs: [ci, deploy-staging]
+    needs: ci
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10

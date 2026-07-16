@@ -414,7 +414,7 @@ AC:
 - `scripts/seed-staging.ts` generates anonymized test data: 10 teams, 3 users each, 5 sessions each, 100 votes each.
 - All PII replaced with faker data; session content is clearly synthetic.
 - Seed idempotent: re-running deletes old seed data first (tagged with `seed: true` in D1).
-- Runnable via `wrangler d1 execute qesto-staging --remote --file scripts/seed-staging.sql`.
+- Runnable via `wrangler d1 execute <db> --remote --file scripts/seed-staging.sql`.
 
 #### DEVOPS-STG-09 (8 pts, P1, S64)
 **Staging SLO dashboard**

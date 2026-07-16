@@ -13,10 +13,10 @@
  *   # Against local dev:
  *   k6 run tests/load/townhall-scale-50k.js -e BASE_URL=http://localhost:8787
  *
- *   # Against staging (dedicated infra required for 50k VUs):
- *   k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://staging.qesto.cc
+ *   # Against a dedicated host (dedicated infra required for 50k VUs):
+ *   k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://<target-host>
  *
- * STAGING GATE: This test must pass on dedicated k6 cloud infrastructure to unblock
+ * SCALE GATE: This test must pass on dedicated k6 cloud infrastructure to unblock
  * S85→S86 transition. Results recorded in
  * knowledge-base/quality/load/TOWNHALL_SCALE_PROOF_50K.md.
  *
