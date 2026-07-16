@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
@@ -7,6 +7,7 @@ import { KVMock } from '../helpers/kv-mock'
 import { writeKvJson } from '../../functions/api/lib/kv'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 import type { Team } from '../../functions/api/routes/teams'
+import { mergeRetroActionsOnClose, readWorkspaceActions } from '../../functions/api/lib/workspace-actions'
 
 const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
@@ -164,6 +165,122 @@ describe('team workspaces (ADR-0048)', () => {
     const body = (await get.json()) as { data: { openCount: number; items: Array<{ status: string }> } }
     expect(body.data.openCount).toBe(1)
     expect(body.data.items).toHaveLength(2)
+  })
+
+  it('preserves action lineage and sticky resolved timestamps when patching existing ids', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      const db = new D1Mock()
+      const teamsKv = new KVMock()
+      const actionsKv = new KVMock()
+      await seedTeam(db, teamsKv)
+      const env = buildEnv(db, teamsKv, actionsKv)
+      const app = createApp()
+      const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, TEST_JWT_SECRET, 3600)
+      const cookie = `qesto_session=${token}`
+
+      vi.setSystemTime(new Date('2026-07-16T10:00:00Z'))
+      const createWs = await app.fetch(
+        new Request('http://local/api/teams/team-w/workspaces', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', cookie },
+          body: JSON.stringify({ kind: 'retro', title: 'Lineage retro' }),
+        }),
+        env,
+      )
+      const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
+
+      await mergeRetroActionsOnClose(
+        actionsKv as unknown as KVNamespace,
+        'team-w',
+        wsId,
+        'session-origin',
+        ['Carry forward follow-up'],
+      )
+      const carried = (await readWorkspaceActions(actionsKv as unknown as KVNamespace, 'team-w', wsId)).items[0]
+      expect(carried).toMatchObject({
+        text: 'Carry forward follow-up',
+        status: 'open',
+        sourceSessionId: 'session-origin',
+        createdAt: Date.parse('2026-07-16T10:00:00Z'),
+      })
+
+      vi.setSystemTime(new Date('2026-07-16T11:00:00Z'))
+      const resolved = await app.fetch(
+        new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json', cookie },
+          body: JSON.stringify({
+            items: [{ id: carried.id, text: 'Carry forward follow-up - done', status: 'resolved' }],
+          }),
+        }),
+        env,
+      )
+      expect(resolved.status).toBe(200)
+      const resolvedItem = ((await resolved.json()) as { data: { items: Array<typeof carried> } }).data.items[0]
+      expect(resolvedItem).toMatchObject({
+        id: carried.id,
+        text: 'Carry forward follow-up - done',
+        status: 'resolved',
+        sourceSessionId: 'session-origin',
+        createdAt: carried.createdAt,
+        resolvedAt: Date.parse('2026-07-16T11:00:00Z'),
+      })
+
+      vi.setSystemTime(new Date('2026-07-16T12:00:00Z'))
+      const stillResolved = await app.fetch(
+        new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json', cookie },
+          body: JSON.stringify({
+            items: [{ id: carried.id, text: 'Carry forward follow-up - still done', status: 'resolved' }],
+          }),
+        }),
+        env,
+      )
+      const stillResolvedItem = ((await stillResolved.json()) as { data: { items: Array<typeof carried> } }).data.items[0]
+      expect(stillResolvedItem).toMatchObject({
+        text: 'Carry forward follow-up - still done',
+        status: 'resolved',
+        sourceSessionId: 'session-origin',
+        createdAt: carried.createdAt,
+        resolvedAt: Date.parse('2026-07-16T11:00:00Z'),
+      })
+
+      vi.setSystemTime(new Date('2026-07-16T13:00:00Z'))
+      const reopenedWithNew = await app.fetch(
+        new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json', cookie },
+          body: JSON.stringify({
+            items: [
+              { id: carried.id, text: 'Carry forward follow-up - reopened', status: 'open' },
+              { text: 'Fresh manually added task', status: 'resolved' },
+            ],
+          }),
+        }),
+        env,
+      )
+      const finalItems = ((await reopenedWithNew.json()) as { data: { items: Array<typeof carried> } }).data.items
+      expect(finalItems[0]).toMatchObject({
+        id: carried.id,
+        text: 'Carry forward follow-up - reopened',
+        status: 'open',
+        sourceSessionId: 'session-origin',
+        createdAt: carried.createdAt,
+        resolvedAt: null,
+      })
+      expect(finalItems[1]).toMatchObject({
+        text: 'Fresh manually added task',
+        status: 'resolved',
+        sourceSessionId: null,
+        createdAt: Date.parse('2026-07-16T13:00:00Z'),
+        resolvedAt: Date.parse('2026-07-16T13:00:00Z'),
+      })
+      expect(finalItems[1].id).toEqual(expect.any(String))
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('history returns linked instances with per-session insight summary', async () => {
