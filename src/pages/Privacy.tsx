@@ -104,7 +104,7 @@ export default function Privacy() {
             </ul>
             <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-6 mb-2">Educational use &amp; minors</h3>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
-              Qesto accounts require the account holder to be at least 16 years old. However, participants joining a
+              Qesto accounts require the account holder to be at least 16 years of age. However, participants joining a
               session by code may include individuals under 16 — this is a designed use case for teachers,
               trainers, and educational institutions.
             </p>
