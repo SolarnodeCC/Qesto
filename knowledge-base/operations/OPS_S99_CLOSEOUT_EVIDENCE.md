@@ -41,11 +41,10 @@ _Closes SPRINT99_EXECUTION.md exit items #18–22 where automation or documentat
 ### Automated (CI + local)
 
 ```bash
-node scripts/smoke-platform-v7.mjs https://staging.qesto.cc
 node scripts/smoke-platform-v7.mjs https://qesto.cc   # after prod deploy
 ```
 
-**CI wiring (2026-06-19):** `ci.yml` runs platform smoke after staging and production health checks.
+**CI wiring (2026-06-19):** `ci.yml` runs platform smoke after the production health check.
 
 **Local contract tests:** [`tests/unit/platform-v7-ga.test.ts`](../../../tests/unit/platform-v7-ga.test.ts) — version `7.0.0`, certification, v6-sunset.
 
@@ -60,8 +59,7 @@ When GitHub billing is restored, confirm the `Platform v7 smoke` CI step is gree
 ### Happy path (automated on `main` push)
 
 1. `quality-gates · audit` — `ops/ci/quality-gates.sh`
-2. `deploy · staging` — `wrangler pages deploy` → `qesto-staging` + `/api/admin/health` + platform smoke
-3. `build · deploy` — `wrangler pages deploy` → `qesto` + cache purge + `verify-deploy.mjs` + health + platform smoke
+2. `build · deploy` — `wrangler pages deploy` → `qesto` + cache purge + `verify-deploy.mjs` + health + platform smoke
 
 ### Rollback (manual, < 15 min)
 

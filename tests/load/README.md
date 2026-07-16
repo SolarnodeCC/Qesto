@@ -24,8 +24,8 @@ Validates scale-proof metadata for the **50k concurrent voter** staging gate (mo
 # Local dev (auto-reduced to 100 VUs / 30s):
 k6 run tests/load/townhall-scale-50k.js -e BASE_URL=http://localhost:8787
 
-# Staging with dedicated k6 cloud (50,000 VUs, 17-minute ramp):
-k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://staging.qesto.cc
+# Dedicated k6 cloud (50,000 VUs, 17-minute ramp):
+k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://<target-host>
 ```
 
 Full load scenario for the **50k concurrent voter** evidence gate. Exercises townhall join → submit question → upvote queue rankings under production scale. Validates:

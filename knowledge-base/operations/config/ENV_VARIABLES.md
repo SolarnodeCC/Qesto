@@ -56,8 +56,6 @@ Complete reference for all environment variables used in Qesto.
 - **Usage**: CORS allowed-origin, CSRF checks, magic link emails
 - **Examples**:
   - Production: `https://qesto.cc`
-  - Staging: `https://staging.qesto.cc`
-
 #### API_URL
 - **Type**: String (URL)
 - **Required**: Yes
@@ -66,8 +64,6 @@ Complete reference for all environment variables used in Qesto.
 - **Usage**: OAuth redirect_uri, email magic-link base URL
 - **Examples**:
   - Production: `https://qesto.cc`
-  - Staging: `https://staging.qesto.cc`
-
 #### COMMIT_SHA
 - **Type**: String (git SHA or version identifier)
 - **Required**: No
@@ -96,8 +92,6 @@ Complete reference for all environment variables used in Qesto.
 - **Usage**: SAML authentication handshake
 - **Examples**:
   - Production: `https://qesto.cc`
-  - Staging: `https://staging.qesto.cc`
-
 #### SAML_ACS_URL
 - **Type**: String (URL)
 - **Required**: If using SAML SSO
@@ -106,7 +100,6 @@ Complete reference for all environment variables used in Qesto.
 - **Usage**: SAML IdP returns auth response to this URL
 - **Examples**:
   - Production: `https://qesto.cc/api/auth/saml/callback`
-  - Staging: `https://staging.qesto.cc/api/auth/saml/callback`
 
 #### CF_ACCESS_AUDIENCE
 - **Type**: String (Cloudflare Access app UUID)
@@ -195,7 +188,6 @@ Complete reference for all environment variables used in Qesto.
 - **Description**: Sender identity for Resend emails (must be verified in Resend)
 - **Examples**:
   - Production: `Qesto <login@qesto.cc>`
-  - Staging: `Qesto Staging <login@staging.qesto.cc>`
 
 #### MARKETING_WEBHOOK_SECRET
 - **Type**: String (cryptographic key)
@@ -232,7 +224,6 @@ Complete reference for all environment variables used in Qesto.
 - **Description**: Stripe checkout portal URL
 - **Examples**:
   - Production: `https://checkout.qesto.cc`
-  - Staging: `https://checkout-staging.qesto.cc`
 
 ---
 
@@ -569,7 +560,7 @@ Complete reference for all environment variables used in Qesto.
 # Frontend only
 VITE_API_BASE_URL=          # Leave empty; uses Vite proxy to :8787
 VITE_SUPERUSER_EMAIL=your-email@example.com
-VITE_CHECKOUT_URL=https://checkout-staging.qesto.cc
+VITE_CHECKOUT_URL=https://checkout.qesto.cc
 
 # Backend secrets (optional, for testing integrations)
 # export RESEND_API_KEY=your-key
@@ -580,19 +571,6 @@ VITE_CHECKOUT_URL=https://checkout-staging.qesto.cc
 Then run:
 ```bash
 npm run dev       # Starts Vite + wrangler dev
-```
-
-### Staging Environment
-
-Configured in `wrangler.toml [env.staging]`:
-- Uses staging D1 database
-- Uses staging KV namespaces
-- Uses staging Stripe keys (via secrets)
-- Uses staging.qesto.cc URLs
-
-Deploy with:
-```bash
-wrangler pages deploy --env staging
 ```
 
 ### Production Environment
@@ -620,9 +598,6 @@ Never commit secrets to source control. Use `wrangler secret put`:
 ```bash
 # Set a secret (interactive)
 wrangler secret put RESEND_API_KEY
-
-# Set for specific environment
-wrangler secret put JWT_SECRET --env staging
 
 # View list of set secrets (values hidden)
 wrangler secret list

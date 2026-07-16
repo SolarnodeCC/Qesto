@@ -61,14 +61,7 @@ binding = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 ```
 
-**Staging:**
-```toml
-[[env.staging.workflows]]
-binding = "WORKFLOWS"
-class_name = "TemplateGenerationWorkflow"
-```
-
-✅ Both environments configured.
+✅ Production configured.
 
 ### 4. Env Type ✅
 

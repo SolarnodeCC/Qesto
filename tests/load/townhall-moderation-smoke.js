@@ -1,7 +1,7 @@
 /**
  * TOWNHALL-SCALE-PROOF-50K-01 — k6 smoke for townhall moderation path (Sprint 84).
- * Full 50k concurrent voter proof is a staging gate; run with dedicated infra:
- *   k6 run tests/load/townhall-moderation-smoke.js -e BASE_URL=https://staging.qesto.cc
+ * Full 50k concurrent voter proof is a scale gate; run with dedicated infra:
+ *   k6 run tests/load/townhall-moderation-smoke.js -e BASE_URL=https://<target-host>
  *
  * This smoke validates scale-proof metadata and health endpoints before the 50k gate.
  */

@@ -368,12 +368,6 @@ Production:
   • KV namespaces: qesto-* (prod)
   • Custom domain: qesto.com
 
-Staging:
-  • Cloudflare Pages (staging.pages.dev)
-  • D1 database: qesto-staging
-  • KV namespaces: qesto-*-staging
-  • Custom domain: staging.qesto.com
-
 Development:
   • Local: npm run dev (Vite dev server)
   • Wrangler: wrangler pages dev (local Functions)

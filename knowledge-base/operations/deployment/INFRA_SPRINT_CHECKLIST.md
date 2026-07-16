@@ -25,140 +25,24 @@ relates_to:
 
 **Timeline:** May 13–27, 2026  
 **Owner:** DevOps + Backend  
-**Blockers:** Staging must be ready before Sprint 21 kicks off  
+**Blockers:** Deploy pipeline + foundational libraries ready before Sprint 21 kicks off  
 
 ---
 
 ## Overview
 
-Sprint 20 pre-work prepares Qesto for v2.2 development. Without this checklist complete, Sprints 21–26 will be blocked on staging validation, feature flag wiring, and foundational libraries.
+Sprint 20 pre-work prepares Qesto for v2.2 development. Without this checklist complete, Sprints 21–26 will be blocked on deploy-pipeline readiness, feature flag wiring, and foundational libraries.
 
 **Estimated Effort:** 2–3 days DevOps + 1 day Backend + 1 day coordination
 
 ---
 
-## Phase 1: Staging Environment (DevOps, 2 days)
+## Phase 1: Deploy Pipeline (DevOps, 0.5 days)
 
-### Create Staging D1 Database
-
-- [ ] Create D1 database named `qesto-staging` via wrangler
-  ```bash
-  wrangler d1 create qesto-staging --remote
-  ```
-- [ ] Verify database UUID (save for binding in wrangler.toml)
-- [ ] Apply latest schema migrations to staging
-  ```bash
-  wrangler d1 execute qesto-staging --remote --file schema.sql
-  ```
-- [ ] Verify tables exist: `sessions`, `questions`, `votes`, `users`, `teams`, `audit_events`
-
-### Create Staging KV Namespaces
-
-Provision the following KV namespaces with `--preview` suffix:
-
-- [ ] `SESSIONS_KV_STAGING` — Session state cache
-- [ ] `USERS_KV_STAGING` — User profile cache
-- [ ] `TEAMS_KV_STAGING` — Team metadata cache
-- [ ] `TEMPLATES_KV_STAGING` — Template cache
-- [ ] `DECISIONS_KV_STAGING` — Decision/analytics cache
-- [ ] `AUDIT_KV_STAGING` — Audit log staging
-- [ ] `CIRCUIT_BREAKER_KV_STAGING` — Circuit breaker state (new)
-- [ ] `INTEGRATIONS_KV_STAGING` — Integration tokens (new)
-- [ ] `METRICS_KV_STAGING` — Live metrics snapshots
-
-```bash
-for ns in SESSIONS USERS TEAMS TEMPLATES DECISIONS AUDIT CIRCUIT_BREAKER INTEGRATIONS METRICS; do
-  wrangler kv:namespace create "${ns}_STAGING" --preview
-done
-```
-
-- [ ] Verify all namespaces created (check output for IDs)
-
-### Update `wrangler.toml`
-
-Add staging environment configuration:
-
-```toml
-[env.staging]
-name = "qesto-staging"
-routes = [
-  { pattern = "staging.qesto.cc/api/*", zone_name = "qesto.cc" }
-]
-vars = {
-  ENV = "staging"
-  LIVE_ENERGIZERS_ENABLED = "true"
-  CIRCUIT_BREAKER_ENABLED = "true"
-  INTEGRATION_ENABLED = "true"
-}
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "qesto-staging"
-database_id = "12345678-abcd-1234-abcd-1234567890ab"  # Replace with actual UUID
-
-[[env.staging.kv_namespaces]]
-binding = "SESSIONS_KV"
-id = "..."  # From wrangler output
-[[env.staging.kv_namespaces]]
-binding = "USERS_KV"
-id = "..."
-# ... repeat for all KV namespaces
-
-# Analytics Engine (shared with production)
-[[env.staging.analytics_engine_datasets]]
-binding = "METRICS_AE"
-dataset = "qesto_metrics"
-
-# Durable Objects (staging SO)
-[[env.staging.durable_objects.bindings]]
-name = "SESSION_ROOM"
-class_name = "SessionRoom"
-script_name = "qesto-staging"
-environment = "staging"
-```
-
-- [ ] Verify `wrangler.toml` is syntactically valid
-  ```bash
-  wrangler deploy --env staging --dry-run
-  ```
-
-### Provision Stripe Test Keys (Staging Secrets)
-
-- [ ] Create test Stripe account (if not exists): stripe.com/dashboard
-- [ ] Retrieve test secret key (format: `sk_test_*`)
-- [ ] Inject as staging secret:
-  ```bash
-  wrangler pages secret put STRIPE_SECRET_KEY --env staging
-  # Paste: sk_test_4eC39HqLyjWDarhtfr3SPGw
-  ```
-- [ ] Retrieve test publishable key
-  ```bash
-  wrangler pages secret put STRIPE_PUBLISHABLE_KEY --env staging
-  # Paste: pk_test_51I...
-  ```
-- [ ] Retrieve test product IDs from Stripe dashboard, add as staging secrets:
-  ```bash
-  wrangler pages secret put STRIPE_STARTER_MONTHLY_PRICE_ID --env staging
-  # Paste: price_1ISsHr2eZvKYlo2C1p4jTuqa  (test mode)
-  ```
-- [ ] Verify secrets are readable by staging deployment (do NOT echo the value)
-
-### Provision Resend Test Key (Staging Secret)
-
-- [ ] Create Resend account: resend.com/dashboard
-- [ ] Retrieve test API key (format: `re_*`)
-- [ ] Inject as staging secret:
-  ```bash
-  wrangler pages secret put RESEND_API_KEY --env staging
-  # Paste: re_test_abc123def456...
-  ```
-- [ ] Test email delivery:
-  ```bash
-  curl -X POST https://api.resend.com/emails \
-    -H "Authorization: Bearer re_test_..." \
-    -H "Content-Type: application/json" \
-    -d '{"from": "onboarding@resend.dev", "to": "test@example.com", "subject": "Test", "html": "<p>Hello</p>"}'
-  ```
+> Note: Qesto does not run a dedicated staging environment (none is planned).
+> The original staging-provisioning steps here (D1/KV/secrets/`[env.staging]`)
+> have been retired; deploys go straight to the `qesto` production Pages
+> project. Only the commit-SHA fix below remains from this phase.
 
 ### Fix Production Commit SHA (DevOps, 0.5 days)
 
@@ -358,13 +242,13 @@ CREATE INDEX idx_custom_roles_team ON custom_roles(team_id);
   ```bash
   npx wrangler d1 execute --local --file migration.sql
   ```
-- [ ] Apply to staging:
+- [ ] Apply to production:
   ```bash
-  wrangler d1 execute qesto-staging --remote --file migration.sql
+  wrangler d1 execute qesto_3_db --remote --file migration.sql
   ```
 - [ ] Verify schema:
   ```bash
-  wrangler d1 execute qesto-staging --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
+  wrangler d1 execute qesto_3_db --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
   ```
 
 ---
@@ -373,13 +257,13 @@ CREATE INDEX idx_custom_roles_team ON custom_roles(team_id);
 
 Before Sprint 21 begins, run full verification:
 
-- [ ] **Staging D1 + KV:** `wrangler d1 query qesto-staging --remote "SELECT COUNT(*) FROM sessions"`
+- [ ] **Production D1 + KV:** `wrangler d1 query qesto_3_db --remote "SELECT COUNT(*) FROM sessions"`
 - [ ] **Feature flags wired:** `npm run typecheck` (no errors)
 - [ ] **Kill-switch pattern:** Document in RUNBOOKS.md
 - [ ] **PII sanitization:** `npm run test -- tests/unit/lib/log.test.ts` (all pass)
 - [ ] **Circuit breaker:** `npm run test -- tests/unit/lib/resilience/**` (all pass)
 - [ ] **Integration foundation:** `npm run test -- tests/unit/lib/integrations/**` (all pass)
-- [ ] **Schema migrations:** Staging D1 has new tables + columns
+- [ ] **Schema migrations:** Production D1 has new tables + columns
 - [ ] **CI gate:** `npm run lint` includes PII check
 - [ ] **Commit SHA:** `curl https://qesto.cc/api/version` returns JSON with commit hash
 - [ ] **Full build:** `npm run build` completes without warnings (CSS import warnings OK)
@@ -401,7 +285,7 @@ Before Sprint 21 begins, run full verification:
 
 ## Sign-Off
 
-- [ ] **DevOps Lead:** Staging environment ready + commit SHA fixed
+- [ ] **DevOps Lead:** Deploy pipeline verified + commit SHA fixed
 - [ ] **Backend Lead:** Circuit breaker + integration foundation + PII helper implemented + tests pass
 - [ ] **Security Lead:** PII denylist approved + CI gate active
 - [ ] **Product Lead:** Feature flags documented for rollout plan

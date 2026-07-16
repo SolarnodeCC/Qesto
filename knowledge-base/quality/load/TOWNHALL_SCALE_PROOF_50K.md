@@ -142,13 +142,13 @@ Expected: Pass in < 1 minute. Thresholds auto-relaxed for localhost. Validates h
 ```bash
 # Requires k6 cloud account and token
 k6 login cloud
-k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://staging.qesto.cc --cloud
+k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://<target-host> --cloud
 ```
 
 **Option B: Dedicated on-prem k6 infrastructure**
 ```bash
 # On dedicated load-generation machine(s) with k6 binary
-k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://staging.qesto.cc
+k6 run tests/load/townhall-scale-50k.js -e BASE_URL=https://<target-host>
 ```
 
 ### Interpreting Results

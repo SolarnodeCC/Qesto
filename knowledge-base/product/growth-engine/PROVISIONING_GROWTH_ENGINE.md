@@ -22,9 +22,6 @@ openssl rand -hex 32
 ```bash
 # Production
 echo "YOUR_SECRET_HERE" | wrangler secret put MARKETING_WEBHOOK_SECRET
-
-# Staging
-echo "YOUR_SECRET_HERE" | wrangler secret put MARKETING_WEBHOOK_SECRET --env staging
 ```
 
 **Verify:**
@@ -39,16 +36,7 @@ wrangler secret list
 
 The migration adds `is_public` column to sessions table.
 
-**Staging (safe to test first):**
-```bash
-wrangler d1 migrations apply qesto-staging --env staging
-
-# Output should show:
-# ✓ Migrations applied successfully
-# Applied: 0044_sessions_is_public.sql
-```
-
-**Production (after staging verification):**
+**Production:**
 ```bash
 wrangler d1 migrations apply qesto_3_db
 
@@ -56,17 +44,12 @@ wrangler d1 migrations apply qesto_3_db
 # Migration should be backward-compatible (adds column with DEFAULT 1)
 ```
 
-**Verify on each environment:**
+**Verify:**
 ```bash
-# Staging
-wrangler d1 execute qesto-staging --env staging \
-  "SELECT name FROM pragma_table_info('sessions') WHERE name='is_public';"
-
-# Production
 wrangler d1 execute qesto_3_db \
   "SELECT name FROM pragma_table_info('sessions') WHERE name='is_public';"
 
-# Both should return: is_public
+# Should return: is_public
 ```
 
 ---
@@ -101,14 +84,14 @@ curl -X POST https://qesto.cc/api/webhooks/marketing -i
 
 ## Phase 2: Manual E2E Testing Checklist
 
-### Environment: Staging (preferred for first round)
+### Environment: Production
 
 ---
 
 ### Test 1: Session Creation with is_public Toggle
 
 **Steps:**
-1. Go to staging frontend: https://staging.qesto.cc
+1. Go to the frontend: https://qesto.cc
 2. Create new session → Step 1: Title + Goal
 3. Step 2: Add questions (any method)
 4. Step 3: Skip energizers
@@ -121,7 +104,7 @@ curl -X POST https://qesto.cc/api/webhooks/marketing -i
 **Verification:**
 ```bash
 # Check session is_public flag in D1
-wrangler d1 execute qesto-staging --env staging \
+wrangler d1 execute qesto_3_db \
   "SELECT id, is_public FROM sessions WHERE status='draft' ORDER BY created_at DESC LIMIT 1;"
 
 # Should show: is_public = 1
@@ -135,7 +118,7 @@ wrangler d1 execute qesto-staging --env staging \
 1. Complete a session (as host, run it live, close it)
 2. Call close endpoint:
    ```bash
-   curl -X POST https://staging.qesto.cc/api/sessions/{SESSION_ID}/close \
+   curl -X POST https://qesto.cc/api/sessions/{SESSION_ID}/close \
      -H "Authorization: Bearer {MAGIC_LINK_JWT}" \
      -H "Content-Type: application/json"
    ```
@@ -143,7 +126,7 @@ wrangler d1 execute qesto-staging --env staging \
 
 **Verification — Check Worker logs:**
 ```bash
-wrangler tail --env staging
+wrangler tail
 
 # Should see:
 # - event: webhook.marketing.skipped_no_secret (if secret not set)
@@ -156,7 +139,7 @@ wrangler tail --env staging
 ### Test 3: Template Gallery Page
 
 **Steps:**
-1. Go to: https://staging.qesto.cc/templates
+1. Go to: https://qesto.cc/templates
 2. **Verify page loads** (no auth required)
    - ✅ Responsive grid visible
    - ✅ Filter dropdowns: Industry, Theme, Language
@@ -242,7 +225,7 @@ wrangler tail --env staging
 ### Test 8: Performance
 
 **Steps:**
-1. Open `/templates` on staging
+1. Open `/templates` in production
 2. **Measure load time:**
    - ✅ DOMContentLoaded < 1.5s
    - ✅ Fully Loaded < 2.5s
@@ -253,7 +236,7 @@ wrangler tail --env staging
 ### Test 9: Error Cases
 
 **9a: Invalid template ID**
-- Go to: `https://staging.qesto.cc/templates/tmpl_invalid123`
+- Go to: `https://qesto.cc/templates/tmpl_invalid123`
 - ✅ Page shows "Template not found" message
 
 **9b: Webhook signature mismatch**
@@ -294,7 +277,7 @@ wrangler tail --env staging
 
 ## Phase 3: Post-Testing Checklist
 
-- [ ] All 12 test phases passed on staging
+- [ ] All 12 test phases passed in production
 - [ ] No console errors or warnings
 - [ ] Analytics events fire correctly (`event: webhook.marketing.*`)
 - [ ] MARKETING_KV has ≥ 5 templates (if workflow is active)

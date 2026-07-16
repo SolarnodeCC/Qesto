@@ -33,7 +33,6 @@ helper script:
 
 ```bash
 scripts/grant-platform-admin.sh <email>                 # production grant
-scripts/grant-platform-admin.sh <email> --env staging   # staging grant
 scripts/grant-platform-admin.sh <email> --revoke        # revoke
 ```
 
@@ -45,7 +44,7 @@ query.
 never signed in, no `users` row exists and the grant inserts **zero rows**
 (verification shows nothing). Have them sign in once, then re-run.
 
-D1 database names (`wrangler.toml`): prod `qesto_3_db`, staging `qesto-staging`.
+D1 database name (`wrangler.toml`): prod `qesto_3_db`.
 
 ## 3. Bootstrap env allowlist (initial setup)
 

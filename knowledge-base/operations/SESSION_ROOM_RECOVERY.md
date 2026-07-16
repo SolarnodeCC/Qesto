@@ -115,9 +115,6 @@ in at deploy time. Re-run the latest "build · deploy" GitHub Action, or:
 npx wrangler pages deploy dist --project-name=qesto
 ```
 
-For staging, the equivalent binding uses `script_name = "qesto-staging"`
-against the `qesto-staging` Pages project.
-
 ## 5. Verify recovery
 
 Re-run the tail command from §2 and start a session. A healthy request looks

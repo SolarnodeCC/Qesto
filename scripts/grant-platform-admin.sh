@@ -9,18 +9,17 @@
 # Requires Cloudflare auth: `wrangler login` or CLOUDFLARE_API_TOKEN in the env.
 #
 # Usage:
-#   scripts/grant-platform-admin.sh <email> [--env staging] [--revoke] [--local]
+#   scripts/grant-platform-admin.sh <email> [--revoke] [--local]
 #
 # Examples:
 #   scripts/grant-platform-admin.sh oostelaar@hotmail.com                # prod grant
-#   scripts/grant-platform-admin.sh oostelaar@hotmail.com --env staging  # staging grant
 #   scripts/grant-platform-admin.sh oostelaar@hotmail.com --revoke       # prod revoke
 #   scripts/grant-platform-admin.sh oostelaar@hotmail.com --local        # local D1
 set -euo pipefail
 
 EMAIL="${1:-}"
 if [ -z "$EMAIL" ]; then
-  echo "Usage: $0 <email> [--env staging] [--revoke] [--local]" >&2
+  echo "Usage: $0 <email> [--revoke] [--local]" >&2
   exit 2
 fi
 shift
@@ -33,16 +32,6 @@ ACTION="grant"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --env)
-      shift
-      if [ "${1:-}" = "staging" ]; then
-        DB="qesto-staging"
-        ENV_FLAG="--env staging"
-      else
-        echo "Unknown --env value: ${1:-}" >&2
-        exit 2
-      fi
-      ;;
     --revoke) ACTION="revoke" ;;
     --local)  REMOTE_FLAG="--local" ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
