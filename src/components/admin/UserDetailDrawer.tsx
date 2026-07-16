@@ -23,7 +23,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
   const { detail, loading, error, impersonate, gdprDelete, downloadExport } = useAdminUserDetail(userId)
   const [busy, setBusy] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDeletion, setConfirmDeletion] = useState(false)
 
   async function handleImpersonate() {
     setBusy('impersonate')
@@ -45,7 +45,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
     setNotice(null)
     const res = await gdprDelete()
     setBusy(null)
-    setConfirmDelete(false)
+    setConfirmDeletion(false)
     if (res && res.ok) {
       setNotice(`Deleted: ${res.data.sessionsDeleted} sessions, ${res.data.vectorsDeleted} vectors purged, account ${res.data.userRowDeleted ? 'removed' : 'not found'}.`)
     } else {
@@ -119,20 +119,20 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
                 <Button variant="secondary" size="sm" onClick={downloadExport}>
                   Export data (JSON)
                 </Button>
-                {confirmDelete ? (
+                {confirmDeletion ? (
                   <>
                     <Button variant="danger" size="sm" disabled={busy !== null} onClick={handleDelete}>
                       {busy === 'delete' ? '…' : 'Confirm GDPR delete'}
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmDeletion(false)}>Cancel</Button>
                   </>
                 ) : (
-                  <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>
+                  <Button variant="danger" size="sm" onClick={() => setConfirmDeletion(true)}>
                     GDPR delete…
                   </Button>
                 )}
               </div>
-              {confirmDelete && (
+              {confirmDeletion && (
                 <Caption className="text-red-600">
                   Irreversible. Purges all three privacy layers: session content, metadata, and decision vectors.
                 </Caption>
