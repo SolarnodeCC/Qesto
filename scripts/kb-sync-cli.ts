@@ -470,8 +470,12 @@ async function reset(): Promise<void> {
 }
 
 async function main() {
-  const cmd = process.argv[2] || 'sync';
-  const hasDeleteFlag = process.argv.includes('--delete') || process.argv.includes('-d');
+  // argv[2] isn't reliably the command — CI invokes this as
+  // `npm run kb:sync -- --delete`, which puts the flag in that slot. Find the
+  // first non-flag argument instead, defaulting to 'sync' when there is none.
+  const args = process.argv.slice(2);
+  const cmd = args.find((a) => !a.startsWith('-')) || 'sync';
+  const hasDeleteFlag = args.includes('--delete') || args.includes('-d');
 
   try {
     switch (cmd) {
