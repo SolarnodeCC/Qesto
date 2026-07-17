@@ -30,6 +30,13 @@ const MANIFEST_FILE = '.kb-sync-manifest.json';
 const KB_DIR = 'knowledge-base';
 const BATCH_SIZE = 200;
 
+export function parseKbSyncCliArgs(args: string[]): { cmd: string; hasDeleteFlag: boolean } {
+  return {
+    cmd: args.find((a) => !a.startsWith('-')) || 'sync',
+    hasDeleteFlag: args.includes('--delete') || args.includes('-d'),
+  };
+}
+
 function loadManifest(): SyncManifest {
   const empty: SyncManifest = { version: 1, lastSync: 0, syncCount: 0, files: {} };
   if (!fs.existsSync(MANIFEST_FILE)) return empty;
@@ -473,9 +480,7 @@ async function main() {
   // argv[2] isn't reliably the command — CI invokes this as
   // `npm run kb:sync -- --delete`, which puts the flag in that slot. Find the
   // first non-flag argument instead, defaulting to 'sync' when there is none.
-  const args = process.argv.slice(2);
-  const cmd = args.find((a) => !a.startsWith('-')) || 'sync';
-  const hasDeleteFlag = args.includes('--delete') || args.includes('-d');
+  const { cmd, hasDeleteFlag } = parseKbSyncCliArgs(process.argv.slice(2));
 
   try {
     switch (cmd) {
@@ -534,4 +539,7 @@ For production/CI:
   }
 }
 
-main();
+// Keep pure helper imports side-effect free for tests.
+if (process.argv[1]?.endsWith('kb-sync-cli.ts')) {
+  main();
+}
