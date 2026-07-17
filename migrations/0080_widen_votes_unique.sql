@@ -41,10 +41,14 @@ SELECT id, session_id, question_id, voter_id, option_id, submitted_at FROM votes
 DROP TABLE votes;
 ALTER TABLE votes__unique_fix RENAME TO votes;
 
--- Recreate BOTH indexes the rebuild dropped: idx_votes_session (schema.sql) and
--- idx_votes_session_id_submitted_at (added in 0025_phase2_vote_buffering.sql).
+-- Recreate every votes index the rebuild dropped. These cover recap/export,
+-- result aggregation, and voter-scoped lookup paths on production-sized tables.
 CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
 CREATE INDEX IF NOT EXISTS idx_votes_session_id_submitted_at ON votes(session_id, submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
+CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
+CREATE INDEX IF NOT EXISTS idx_votes_session_submitted ON votes(session_id, submitted_at);
+CREATE INDEX IF NOT EXISTS idx_votes_session_voter ON votes(session_id, voter_id);
 
 PRAGMA foreign_keys=ON;
 
