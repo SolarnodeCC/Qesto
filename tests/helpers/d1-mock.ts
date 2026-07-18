@@ -2019,6 +2019,13 @@ export class D1PreparedStatementMock {
       const m = rows.length ? Math.max(...rows.map((t) => t.computed_at)) : null
       return { m } as T
     }
+    if (this.sql.includes('MAX(computed_at)') && this.sql.includes('FROM team_insight_rollup')) {
+      // Team insights /refresh debounce: newest materialized rollup for a team.
+      const [team_id] = this.args as [string]
+      const rows = [...this.db.teamInsightRollups.values()].filter((r) => r.team_id === team_id)
+      const m = rows.length ? Math.max(...rows.map((r) => r.computed_at)) : null
+      return { m } as T
+    }
     if (this.sql.includes('FROM workspace_trend') && this.sql.includes('payload_json')) {
       const [workspace_id, kind, window] = this.args as [string, string, string]
       const key = `${workspace_id}:${kind}:${window}`
