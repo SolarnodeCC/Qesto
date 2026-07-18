@@ -65,11 +65,10 @@ function seedRollup(db: D1Mock, computedAt: number): void {
 }
 
 async function refresh(env: Env, cookie?: string): Promise<Response> {
+  const init: RequestInit = { method: 'POST' }
+  if (cookie) init.headers = { cookie }
   return createApp().fetch(
-    new Request(`http://local/api/teams/${TEAM_ID}/insights/refresh`, {
-      method: 'POST',
-      headers: cookie ? { cookie } : undefined,
-    }),
+    new Request(`http://local/api/teams/${TEAM_ID}/insights/refresh`, init),
     env,
   )
 }
