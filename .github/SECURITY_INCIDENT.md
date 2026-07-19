@@ -2,7 +2,7 @@
 
 **Date Discovered**: 2026-05-26  
 **Severity**: CRITICAL  
-**Status**: REMEDIATED  
+**Status**: REMEDIATED — pending operator rotation sign-off (see Closeout below)  
 **Finding**: HLT-010-SECRET-SPRAWL
 
 ## Summary
@@ -57,3 +57,26 @@ Two JWT tokens (ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN) were exposed in `
 2. Update `.claude/settings.local.json` with new token values (GitHub Actions only)
 3. Close this incident in next security review
 4. Document in incident registry for Q2 2026 review
+
+## Closeout checklist (operator sign-off)
+
+This incident stays open until every box below is ticked with a date + initials.
+The rotation itself is an operator action in the Anthropic console — it cannot be
+performed from the repository.
+
+- [ ] `ANTHROPIC_AUTH_TOKEN` rotated (new token issued)
+- [ ] Exposed OAuth client `110d04a1-8e60-4157-9c43-fcbe4e014a85` **revoked**
+- [ ] `CLAUDE_CODE_OAUTH_TOKEN` rotated / revoked as applicable
+- [ ] New values stored only in GitHub Actions (or environment) secrets — never in tracked files
+- [ ] GitHub Actions run logs from the exposure window reviewed for token echo
+- [ ] Repo history re-scanned clean (`bash ops/ci/secret-scan.sh` + gitleaks via `ops/ci/supply-chain.sh`)
+
+**Preventive controls in place / recommended:**
+
+- ✅ Push-time pattern scan for JWT / `sk_live` / token env assignments —
+  [`ops/ci/secret-scan.sh`](../ops/ci/secret-scan.sh).
+- ✅ gitleaks secret scan — [`ops/ci/supply-chain.sh`](../ops/ci/supply-chain.sh).
+- ⏳ **Enable GitHub-native secret scanning + push protection** (Settings →
+  Security) as a belt-and-suspenders block at the platform layer.
+
+**Sign-off:** _rotation confirmed by ______________ on __________ → set `Status:` to `CLOSED`._

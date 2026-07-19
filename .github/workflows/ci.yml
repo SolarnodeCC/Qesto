@@ -67,6 +67,13 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Gate the production deploy behind the `production` Environment. Configure it
+    # in Settings → Environments with a required reviewer (or a wait-timer) and
+    # move the Cloudflare secrets below to environment scope, so a push to main
+    # pauses for approval before wrangler deploys + purges cache instead of
+    # shipping straight to qesto.cc. See
+    # knowledge-base/operations/security/GITHUB_INFRA_AUDIT_2026-07.md (finding C2).
+    environment: production
     permissions:
       contents: read
     steps:

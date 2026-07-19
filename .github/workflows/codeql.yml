@@ -1,0 +1,52 @@
+name: CodeQL
+
+# GitHub-native static analysis (SAST) for JS/TS, feeding results into the
+# repository Security tab. Complements — does not replace — the existing
+# homegrown scans: secret-scan.sh (token patterns), supply-chain.sh (npm audit +
+# gitleaks), and the jankurai audit. Runs on PRs to main and weekly.
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    # Mondays 04:27 UTC — offset from the other scheduled lanes.
+    - cron: '27 4 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: analyze · javascript-typescript
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write # upload findings to the Security tab
+    steps:
+      # Pin to full commit SHA — tag refs can change without review.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # Advisory (non-blocking), matching the jankurai.yml lanes. Code scanning on a
+      # PRIVATE repo requires GitHub Advanced Security (or the private-repo "default
+      # setup"); without it the init/analyze upload fails. continue-on-error keeps
+      # this check from reddening the PR until GHAS is enabled — drop it to make
+      # CodeQL a hard gate once Advanced Security is on.
+      - name: Initialize CodeQL
+        continue-on-error: true
+        uses: github/codeql-action/init@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3.37.1
+        with:
+          languages: javascript-typescript
+          # JS/TS is interpreted — no compiler invocation needed.
+          build-mode: none
+
+      - name: Perform CodeQL Analysis
+        continue-on-error: true
+        uses: github/codeql-action/analyze@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3.37.1
+        with:
+          category: "/language:javascript-typescript"
