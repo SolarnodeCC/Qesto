@@ -32,7 +32,13 @@ jobs:
       # Pin to full commit SHA — tag refs can change without review.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
+      # Advisory (non-blocking), matching the jankurai.yml lanes. Code scanning on a
+      # PRIVATE repo requires GitHub Advanced Security (or the private-repo "default
+      # setup"); without it the init/analyze upload fails. continue-on-error keeps
+      # this check from reddening the PR until GHAS is enabled — drop it to make
+      # CodeQL a hard gate once Advanced Security is on.
       - name: Initialize CodeQL
+        continue-on-error: true
         uses: github/codeql-action/init@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3.37.1
         with:
           languages: javascript-typescript
@@ -40,6 +46,7 @@ jobs:
           build-mode: none
 
       - name: Perform CodeQL Analysis
+        continue-on-error: true
         uses: github/codeql-action/analyze@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3.37.1
         with:
           category: "/language:javascript-typescript"
