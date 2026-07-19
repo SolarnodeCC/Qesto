@@ -6,7 +6,11 @@ description: |
   and project recommendations.
 
 on:
-  schedule: daily
+  # Weekly (Mondays), not daily, to cut Actions-minute burn. Run on demand any
+  # time via workflow_dispatch. NOTE: keep the cron in daily-repo-status.lock.yml
+  # in sync — regenerate with `gh aw compile` when the CLI is available.
+  schedule:
+    - cron: "5 23 * * 1"
   workflow_dispatch:
 
 permissions:

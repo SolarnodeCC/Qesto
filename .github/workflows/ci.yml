@@ -1,10 +1,17 @@
 name: CI
 
 on:
+  # Feature branches are validated once, on their PR — not also on every branch
+  # push (that doubled every run). main still runs full CI + the deploy job.
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
     branches: [main]
+    # Docs-only changes don't need the test/build suite.
+    paths-ignore:
+      - '**/*.md'
+      - 'knowledge-base/**'
+      - 'docs/**'
 
 permissions:
   contents: read

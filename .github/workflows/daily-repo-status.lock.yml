@@ -54,8 +54,9 @@
 name: "Repo Status"
 on:
   schedule:
-  - cron: "5 23 * * *"
-    # Friendly format: daily (scattered)
+  - cron: "5 23 * * 1"
+    # Friendly format: weekly on Monday (hand-synced with daily-repo-status.md;
+    # regenerate via `gh aw compile` when the CLI is available)
   workflow_dispatch:
     inputs:
       aw_context:
