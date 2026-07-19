@@ -149,7 +149,7 @@ export class TeamsProvider implements IntegrationProvider {
    * Inbound webhooks (Graph change-notifications) are not part of TEAMS-01.
    */
   async verifyWebhook(_req: Request, _secret: string): Promise<WebhookEvent> {
-    throw new Error('Teams inbound webhooks not implemented')
+    throw new Error('Teams inbound webhooks are unsupported')
   }
 
   /**
