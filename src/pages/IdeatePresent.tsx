@@ -164,7 +164,7 @@ export default function IdeatePresent() {
                         variant="present"
                         showCounts={state.rankingRevealed}
                         onDismiss={dismiss}
-                        onMergeSelect={setMergeSourceId}
+                        onMergePick={setMergeSourceId}
                         onMergeInto={handleMergeInto}
                         mergeSourceId={mergeSourceId}
                         t={t}
@@ -186,7 +186,7 @@ export default function IdeatePresent() {
                   variant="present"
                   showCounts={state.rankingRevealed}
                   onDismiss={dismiss}
-                  onMergeSelect={setMergeSourceId}
+                  onMergePick={setMergeSourceId}
                   onMergeInto={handleMergeInto}
                   mergeSourceId={mergeSourceId}
                   t={t}

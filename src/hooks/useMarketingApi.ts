@@ -215,7 +215,7 @@ export function useCalendar(filter: { status?: string } = {}) {
     [refresh],
   )
 
-  const update = useCallback(
+  const updateItem = useCallback(
     async (id: string, fields: Partial<Pick<CalendarItem, 'topic' | 'scheduled_for' | 'notes' | 'video_asset_id'>>) => {
       const res = await api<{ id: string }>(`/api/marketing/calendar/${id}`, { method: 'PATCH', body: fields })
       if (res.ok) await refresh()
@@ -233,7 +233,7 @@ export function useCalendar(filter: { status?: string } = {}) {
     [refresh],
   )
 
-  return { items, loading, error, refresh, create, update, remove }
+  return { items, loading, error, refresh, create, update: updateItem, remove }
 }
 
 // ─── Video Assets ────────────────────────────────────────────────────────────
