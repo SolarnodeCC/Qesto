@@ -81,7 +81,7 @@ function GenerateVideoPanel({ onDone }: { onDone: () => void }) {
         className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
         aria-label="Generation model"
       >
-        <option value="">Select a model</option>
+        <option value="">Choose a model</option>
         {models.map((m) => (
           <option key={m.id} value={m.id}>
             {m.label}

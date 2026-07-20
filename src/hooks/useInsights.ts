@@ -91,6 +91,7 @@ const INSIGHTS_STORAGE_KEY = 'qesto:insights:v1'
 
 function loadPersistedCache(): Map<string, RawInsights> {
   try {
+    // jankurai:allow websec.storage.token (HLT-039) reason=insights themes cache with no credential material; detector keyword 'session' self-matches the sessionStorage API name expires=2027-06-30
     const raw = sessionStorage.getItem(INSIGHTS_STORAGE_KEY)
     if (!raw) return new Map()
     const entries = JSON.parse(raw) as Array<[string, RawInsights]>
@@ -102,6 +103,7 @@ function loadPersistedCache(): Map<string, RawInsights> {
 
 function persistCache(cache: Map<string, RawInsights>): void {
   try {
+    // jankurai:allow websec.storage.token (HLT-039) reason=insights themes cache with no credential material; detector keyword 'session' self-matches the sessionStorage API name expires=2027-06-30
     sessionStorage.setItem(INSIGHTS_STORAGE_KEY, JSON.stringify([...cache]))
   } catch {
     // sessionStorage full/unavailable — in-memory cache still works.

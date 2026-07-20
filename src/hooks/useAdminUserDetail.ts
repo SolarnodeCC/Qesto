@@ -52,7 +52,7 @@ export function useAdminUserDetail(userId: string | null) {
     return res
   }, [userId])
 
-  const gdprDelete = useCallback(async () => {
+  const gdprDeleteUser = useCallback(async () => {
     if (!userId) return null
     return api<{ sessionsDeleted: number; userRowDeleted: boolean; vectorsDeleted: number }>(
       `/api/admin/users/${userId}/gdpr-delete`,
@@ -66,5 +66,5 @@ export function useAdminUserDetail(userId: string | null) {
     window.open(`${API_BASE_URL}/api/admin/users/${userId}/gdpr-export`, '_blank', 'noopener')
   }, [userId])
 
-  return { detail, loading, error, refresh, impersonate, gdprDelete, downloadExport }
+  return { detail, loading, error, refresh, impersonate, gdprDeleteUser, downloadExport }
 }

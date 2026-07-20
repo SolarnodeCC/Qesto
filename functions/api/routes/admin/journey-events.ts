@@ -3,7 +3,7 @@ import { errorResponse } from '../../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
-import type { Sprint19Baseline as JourneyEventBaseline } from './types' // TODO: rename JourneyEventBaseline → JourneyEventBaseline
+import type { JourneyEventBaseline } from './types'
 
 let schemaPatched = false
 async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
