@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@capacitor/android": "^7.6.7",
-    "@capacitor/cli": "^7.6.7",
+    "@capacitor/cli": "^7.6.8",
     "@capacitor/ios": "^7.6.7",
     "@cloudflare/workers-types": "^4.20260702.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
