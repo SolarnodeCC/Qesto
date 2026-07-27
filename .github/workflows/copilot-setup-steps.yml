@@ -28,6 +28,6 @@ jobs:
       - name: Install gh-aw extension
         # CLI installer lives in github/gh-aw (actions/setup-cli); the gh-aw-actions/setup
         # action used by compiled lock files is a different, runtime-only action.
-        uses: github/gh-aw/actions/setup-cli@eed4304d8740f0593f2797276cb8299d228ffd9b # v0.81.6
+        uses: github/gh-aw/actions/setup-cli@6268b9870d9f3bd9ce7526cb9d9cac988ffcfa35 # v0.83.1
         with:
           version: v0.79.8
