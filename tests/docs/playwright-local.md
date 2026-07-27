@@ -46,7 +46,8 @@ Apply the local D1 migrations:
 npm run e2e:db:local
 ```
 
-Start the Pages dev server:
+Start the local fullstack server (Worker entrypoint + `dist/` SPA assets —
+not `wrangler pages dev`, which cannot export the SessionRoom Durable Object):
 
 ```bash
 npm run e2e:serve:fullstack
