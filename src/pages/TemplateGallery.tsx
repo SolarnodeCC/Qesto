@@ -145,6 +145,7 @@ export default function TemplateGallery() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
   const [industry, setIndustry] = useState<Industry | ''>('')
   const [theme, setTheme] = useState<Theme | ''>('')
   const rawLang = (document.documentElement.lang?.slice(0, 2) as Lang) || 'en'
@@ -185,7 +186,7 @@ export default function TemplateGallery() {
       })
 
     return () => controller.abort()
-  }, [industry, theme, lang, offset])
+  }, [industry, theme, lang, offset, retryKey])
 
   // SEO: Collection page schema
   const collectionSchema = {
@@ -310,7 +311,7 @@ export default function TemplateGallery() {
             <div className="text-center py-20">
               <p className="text-pulse-600 dark:text-[#8893AD] mb-4">{t('error')}</p>
               <button
-                onClick={() => setIndustry(industry)}
+                onClick={() => setRetryKey((k) => k + 1)}
                 className="text-sm text-teal-600 dark:text-teal-400 underline"
               >
                 {t('retry')}

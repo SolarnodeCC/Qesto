@@ -7,10 +7,17 @@ type ApiResponse<T> = {
   status?: number
 }
 
+/** Browser-serialisable subset of RequestInit (avoids CF Workers/DOM RequestInit clashes). */
+type BrowserRequestInit = {
+  method?: string
+  headers?: Record<string, string>
+  body?: string
+}
+
 export async function apiFetch<T>(
   page: Page,
   path: string,
-  init?: RequestInit,
+  init?: BrowserRequestInit,
 ): Promise<{ ok: boolean; status: number; data?: T | undefined; error?: ApiResponse<T>['error'] }> {
   return page.evaluate(async ({ url, requestInit }) => {
     const token = sessionStorage.getItem('qesto_token')
@@ -20,7 +27,7 @@ export async function apiFetch<T>(
       headers: {
         'content-type': 'application/json',
         ...(token ? { authorization: `Bearer ${token}` } : {}),
-        ...(requestInit?.headers as Record<string, string> | undefined),
+        ...(requestInit?.headers ?? {}),
       },
     })
     const json = await res.json().catch(() => ({})) as ApiResponse<T>
