@@ -1685,6 +1685,11 @@ export class D1PreparedStatementMock {
       if (this.sql.startsWith('SELECT COUNT(*) AS n')) {
         return { n: this.filterMarketingTemplates(rows).length } as T
       }
+      if (this.sql.includes('WHERE content_hash = ?1')) {
+        const [content_hash] = this.args as [string]
+        const row = rows.find((r) => r.content_hash === content_hash)
+        return (row ? { id: row.id } : null) as T | null
+      }
       if (this.sql.includes('WHERE id = ?1')) {
         const [id] = this.args as [string]
         const row = this.db.marketingTemplates.get(id)

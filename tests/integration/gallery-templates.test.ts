@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import type { Env } from '../../functions/api/types'
 import type { TemplateRecord } from '../../functions/api/lib/template-schemas'
-import { storeTemplate } from '../../functions/api/lib/templates-kv'
+import { getTemplate, storeTemplate } from '../../functions/api/lib/templates-kv'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
@@ -38,6 +38,18 @@ function makeEnv(db: D1Mock): Env {
 /** MARKETING_KV is typed optional on Env; in these tests it's always bound. */
 function mkt(env: Env): KVNamespace {
   return env.MARKETING_KV as KVNamespace
+}
+
+class FailFirstTemplatePutKV extends KVMock {
+  private failed = false
+
+  override async put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void> {
+    if (!this.failed && key.startsWith('template:')) {
+      this.failed = true
+      throw new Error('transient KV write failure')
+    }
+    return super.put(key, value, opts)
+  }
 }
 
 let seq = 0
@@ -129,6 +141,19 @@ describe('Gallery templates (/api/gallery)', () => {
     expect(r1.status).toBe(200)
     const r2 = await app.fetch(new Request('http://local/api/gallery', { method: 'POST', headers: auth, body: JSON.stringify(dup) }), env)
     expect(r2.status).toBe(409)
+  })
+
+  it('keeps template storage retry-safe when the first KV blob write fails', async () => {
+    const db = new D1Mock()
+    const kv = new FailFirstTemplatePutKV() as unknown as KVNamespace
+    const tmpl = makeTemplate()
+
+    await expect(storeTemplate(db as unknown as D1Database, kv, tmpl)).rejects.toThrow('transient KV write failure')
+    expect(await getTemplate(db as unknown as D1Database, kv, tmpl.id)).toBeNull()
+
+    await expect(storeTemplate(db as unknown as D1Database, kv, tmpl)).resolves.toEqual({ stored: true })
+    const stored = await getTemplate(db as unknown as D1Database, kv, tmpl.id)
+    expect(stored?.id).toBe(tmpl.id)
   })
 
   it('requires the internal bearer to store or publish', async () => {
