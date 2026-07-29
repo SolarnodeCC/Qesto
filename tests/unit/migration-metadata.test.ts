@@ -23,6 +23,14 @@ const FLAGGED = [
 // this suite fails the same way the CI gate does when a destructive migration
 // lands without its .meta.toml sidecar (regression guard for #689).
 const DESTRUCTIVE_PATTERNS = [/drop\s+table/i, /truncate/i, /drop\s+column/i, /drop\s+constraint/i]
+const VOTES_INDEXES = [
+  'idx_votes_session',
+  'idx_votes_question',
+  'idx_votes_session_id_submitted_at',
+  'idx_votes_session_question',
+  'idx_votes_session_submitted',
+  'idx_votes_session_voter',
+]
 
 function executableSql(name: string): string {
   return readFileSync(join(MIGRATIONS, name), 'utf8')
@@ -78,6 +86,16 @@ describe('migration safety metadata (HLT-021/HLT-030)', () => {
       const sql = readFileSync(join(MIGRATIONS, `${stem}.sql`), 'utf8').toLowerCase()
       expect(sql).toContain('foreign_key_check')
       expect(sql).toContain('quick_check')
+    }
+  })
+
+  it('0080 recreates and verifies every votes index after its table rebuild', () => {
+    const sql = readFileSync(join(MIGRATIONS, '0080_widen_votes_unique.sql'), 'utf8')
+    const verify = readFileSync(join(MIGRATIONS, '0080_widen_votes_unique.verify.sql'), 'utf8')
+
+    for (const indexName of VOTES_INDEXES) {
+      expect(sql, `0080 should recreate ${indexName}`).toContain(`CREATE INDEX IF NOT EXISTS ${indexName}`)
+      expect(verify, `0080 verify should assert ${indexName}`).toContain(`'${indexName}'`)
     }
   })
 
