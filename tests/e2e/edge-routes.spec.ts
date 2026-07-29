@@ -19,13 +19,13 @@ test.describe('Edge route behavior', () => {
     await signupWithPassword(page, email, 'PlaywrightPass123!')
     await expectAuthenticatedDashboard(page)
 
-    await page.getByRole('button', { name: /insights/i }).click()
+    await page.getByRole('button', { name: 'Insights', exact: true }).click()
     await expect(page.locator('#section-insights')).toBeVisible()
 
-    await page.getByRole('button', { name: /teams/i }).click()
+    await page.getByRole('button', { name: 'Teams', exact: true }).click()
     await expect(page.locator('#section-teams')).toBeVisible()
 
-    await page.getByRole('button', { name: /templates/i }).click()
+    await page.getByRole('button', { name: 'Templates', exact: true }).click()
     await expect(page.locator('#section-templates')).toBeVisible()
   })
 })

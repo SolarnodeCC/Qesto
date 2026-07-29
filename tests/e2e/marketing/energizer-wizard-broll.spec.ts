@@ -31,7 +31,7 @@ test.describe('Marketing — energizer wizard B-roll', () => {
     await expect(page.getByLabel(/qr code/i)).toBeVisible({ timeout: 15_000 })
     await settle(page)
 
-    await expect(page.getByText(/energizers \(1\)/i)).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Energizers' })).toBeVisible()
     await expect(page.getByRole('button', { name: /start emoji poll/i })).toBeVisible()
     await settle(page)
   })
