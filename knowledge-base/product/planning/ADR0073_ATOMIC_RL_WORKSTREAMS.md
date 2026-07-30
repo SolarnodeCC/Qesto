@@ -198,6 +198,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 |-------|-------|
 | **Story** | `SEC-RL-ATOMIC-TIER-A-01` |
 | **Pts** | 8 |
+| **Status** | **Done** (2026-07-30) — [[ADR0073_WS3_WS5_AUDIT]] |
 | **Agents** | backend, tester, security (embed RG-1) |
 | **Depends** | WS-2 green ≥ canary window (staging + short prod soak) |
 | **Do not co-land** | WS-4 |
@@ -226,6 +227,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 |-------|-------|
 | **Story** | `SEC-RL-ATOMIC-TIER-B-01` |
 | **Pts** | 5 |
+| **Status** | **Done** (2026-07-30) — [[ADR0073_WS3_WS5_AUDIT]] |
 | **Agents** | backend + security |
 | **Depends** | WS-3 |
 | **Do not co-land** | WS-3 |
@@ -253,6 +255,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 | Field | Value |
 |-------|-------|
 | **Stories** | `SEC-RL-ATOMIC-CLEANUP-01` (3) + optional `SEC-RL-ATOMIC-L0-WAF-01` (5) |
+| **Status** | **Cleanup Done**; L0 WAF deferred (ops) — [[ADR0073_WS3_WS5_AUDIT]] |
 | **Agents** | backend, devops, knowledge |
 | **Depends** | WS-4 |
 

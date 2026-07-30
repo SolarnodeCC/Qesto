@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { readKvText, writeKvJson, deleteKv } from '../../lib/kv'
 import { sendEmail } from '../../lib/email'
-import { rateLimit } from '../../lib/rate-limit'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { hashPassword, verifyPassword, passwordNeedsRehash } from '../../lib/password'
@@ -108,18 +108,29 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
           429,
         )
       const ip = c.req.header('cf-connecting-ip') ?? null
+      // ADR-0073 Tier B: L1 auth_burst + L2 login window.
       if (ip) {
-        const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
-          max: LOGIN_MAX_PER_IP,
-          windowSeconds: LOGIN_WINDOW_SECONDS,
-          prefix: 'auth-login',
+        const ipGate = await atomicRateLimitDual(c.env, {
+          key: `ip:${ip}`,
+          burst: 'auth_burst',
+          sustained: {
+            max: LOGIN_MAX_PER_IP,
+            windowSeconds: LOGIN_WINDOW_SECONDS,
+            prefix: 'auth-login',
+          },
+          profileLabel: 'auth_login_ip',
         })
         if (!ipGate.allowed) return rateLimitedResponse()
       }
-      const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${normalEmail}`, {
-        max: LOGIN_MAX_PER_EMAIL,
-        windowSeconds: LOGIN_WINDOW_SECONDS,
-        prefix: 'auth-login',
+      const emailGate = await atomicRateLimitDual(c.env, {
+        key: `email:${normalEmail}`,
+        burst: 'auth_burst',
+        sustained: {
+          max: LOGIN_MAX_PER_EMAIL,
+          windowSeconds: LOGIN_WINDOW_SECONDS,
+          prefix: 'auth-login',
+        },
+        profileLabel: 'auth_login_email',
       })
       if (!emailGate.allowed) return rateLimitedResponse()
 

@@ -27,7 +27,7 @@ import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
 import { sendEmail, templateSessionEmail } from '../lib/email'
-import { rateLimit } from '../lib/rate-limit'
+import { atomicRateLimitDual } from '../lib/atomic-rate-limit'
 import { authEmailRequestSchema } from './auth/schemas'
 import { MAGIC_LINK_TTL_MS } from './auth/constants'
 import { ensurePersonalTeam } from './teams'
@@ -154,19 +154,29 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
     // Same anti-abuse posture as the auth magic-link request: this endpoint
     // creates accounts and sends email.
     if (ip) {
-      const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
-        max: USE_TEMPLATE_MAX_PER_IP,
-        windowSeconds: USE_TEMPLATE_WINDOW_SECONDS,
-        prefix: 'gallery-use',
+      const ipGate = await atomicRateLimitDual(c.env, {
+        key: `ip:${ip}`,
+        burst: 'auth_burst',
+        sustained: {
+          max: USE_TEMPLATE_MAX_PER_IP,
+          windowSeconds: USE_TEMPLATE_WINDOW_SECONDS,
+          prefix: 'gallery-use',
+        },
+        profileLabel: 'gallery_use_ip',
       })
       if (!ipGate.allowed) {
         return c.json({ error: 'Too many requests. Try again later.' }, 429)
       }
     }
-    const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${email}`, {
-      max: USE_TEMPLATE_MAX_PER_EMAIL,
-      windowSeconds: USE_TEMPLATE_WINDOW_SECONDS,
-      prefix: 'gallery-use',
+    const emailGate = await atomicRateLimitDual(c.env, {
+      key: `email:${email}`,
+      burst: 'auth_burst',
+      sustained: {
+        max: USE_TEMPLATE_MAX_PER_EMAIL,
+        windowSeconds: USE_TEMPLATE_WINDOW_SECONDS,
+        prefix: 'gallery-use',
+      },
+      profileLabel: 'gallery_use_email',
     })
     if (!emailGate.allowed) {
       // Mirror the auth endpoint: don't leak throttling per email.

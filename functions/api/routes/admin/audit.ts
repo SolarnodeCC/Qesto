@@ -5,8 +5,11 @@ import { rateLimit } from '../../middleware/rate-limit'
 import { queryAuditEvents } from '../../lib/audit'
 import type { Env } from '../../types'
 
-const auditQueryLimit = rateLimit({ namespace: 'admin-audit', limit: 120, windowSec: 60 })
-const auditExportLimit = rateLimit({ namespace: 'admin-audit', limit: 10, windowSec: 3600 })
+const auditQueryLimit = rateLimit({ profile: 'admin_audit_query' })
+const auditExportLimit = rateLimit({
+  sustained: { max: 10, windowSeconds: 3600, prefix: 'mw-admin-audit-export' },
+  profileLabel: 'admin_audit_export',
+})
 
 export function mountAuditRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
   app.get('/audit', auditQueryLimit, authMiddleware, adminMiddleware, async (c) => {

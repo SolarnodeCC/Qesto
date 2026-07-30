@@ -23,7 +23,7 @@ import {
 import { checkInsightsAllowed } from '../lib/insights-guards'
 import { errorResponse, sanitizeError } from '../lib/error-handler'
 import { readKvJson, writeKvJson } from '../lib/kv'
-import { rateLimit } from '../lib/rate-limit'
+import { atomicRateLimitDual } from '../lib/atomic-rate-limit'
 import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
 import type { Anonymity, Env } from '../types'
 
@@ -236,7 +236,12 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     }
 
     // Rate limit only applies to fresh AI calls.
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
+    const rl = await atomicRateLimitDual(c.env, {
+      key: user.sub,
+      burst: 'ai_burst',
+      sustained: AI_RATE_LIMIT,
+      profileLabel: 'ai_insights',
+    })
     if (!rl.allowed) {
       return errorResponse(c, 429, 'rate_limited', 'Too many insights requests; try again later')
     }

@@ -134,7 +134,7 @@ export function mountUserSupportRoutes(
   // restores it without re-login. The jti encodes the acting admin for
   // downstream traceability, and a user.impersonate event is written first — if
   // the audit write fails, no cookie is issued.
-  app.post('/users/:id/impersonate', rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 }), authMiddleware, adminMiddleware, async (c) => {
+  app.post('/users/:id/impersonate', rateLimit({ sustained: { max: 10, windowSeconds: 600, prefix: 'mw-admin-destructive' }, profileLabel: 'admin_destructive' }), authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const actor = c.get('user')
     const userId = c.req.param('id')
@@ -258,7 +258,7 @@ export function mountUserSupportRoutes(
   // Three-layer deletion (content + metadata + DECISIONS_VECTORIZE). Requires an
   // explicit confirm flag; the destructive confirmation UX lives client-side.
   const DeleteSchema = z.object({ confirm: z.literal(true) })
-  app.post('/users/:id/gdpr-delete', rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 }), authMiddleware, adminMiddleware, async (c) => {
+  app.post('/users/:id/gdpr-delete', rateLimit({ sustained: { max: 10, windowSeconds: 600, prefix: 'mw-admin-destructive' }, profileLabel: 'admin_destructive' }), authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const actor = c.get('user')
     const userId = c.req.param('id')

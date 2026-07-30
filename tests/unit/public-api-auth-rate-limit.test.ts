@@ -119,7 +119,7 @@ describe('publicApiKeyMiddleware rate limit (ADR-0073 WS-2)', () => {
     expect(dp.blobs[5]).toContain('profile=api_key')
   })
 
-  it('flag on: Workers RL allow dual-writes legacy KV counter', async () => {
+  it('flag on: Workers RL allow does not require legacy KV dual-write', async () => {
     const env = makeEnv({
       ATOMIC_RATE_LIMIT_ENABLED: 'true',
       RL_API_KEY: fakeRateLimitBinding([true]),
@@ -128,7 +128,8 @@ describe('publicApiKeyMiddleware rate limit (ADR-0073 WS-2)', () => {
     expect(res.status).toBe(200)
     const windowStart = Math.floor(Date.now() / 1000 / 60) * 60
     const legacy = await actions.get(apiKeyRateLimitKey(record.id, windowStart))
-    expect(legacy).toBe('1')
+    // WS-5: dual-write removed — legacy counter stays untouched under Workers RL.
+    expect(legacy).toBeNull()
   })
 
   it('flag on + missing binding falls back without 500', async () => {

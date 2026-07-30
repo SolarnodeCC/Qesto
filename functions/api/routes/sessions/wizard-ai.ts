@@ -9,7 +9,7 @@
 import type { Context } from 'hono'
 import type { Env, Session } from '../../types'
 import type { SessionVars } from './shared'
-import { rateLimit } from '../../lib/rate-limit'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { WizardAIError, WizardValidationError } from '../../lib/ai-wizard'
 import { sanitizeError } from '../../lib/error-handler'
 import { requireFound, requireDraft, type DraftGateReason } from '../../lib/session-lifecycle'
@@ -28,10 +28,11 @@ export async function enforceWizardAiRateLimit(
   opts: { max: number; prefix: string; message: string },
 ): Promise<Response | null> {
   const user = c.get('user')
-  const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
-    max: opts.max,
-    windowSeconds: 3600,
-    prefix: opts.prefix,
+  const rl = await atomicRateLimitDual(c.env, {
+    key: user.sub,
+    burst: 'ai_burst',
+    sustained: { max: opts.max, windowSeconds: 3600, prefix: opts.prefix },
+    profileLabel: 'ai_wizard',
   })
   if (rl.allowed) return null
   writeEvent(c.env.METRICS_AE, {

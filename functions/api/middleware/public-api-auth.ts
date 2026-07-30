@@ -1,9 +1,12 @@
 /**
  * Shared Bearer API key auth + per-key rate limit (SEC-APIKEY-QUOTA-01).
  *
- * ADR-0073 / WS-2 canary: when `ATOMIC_RATE_LIMIT_ENABLED=true`, allow/deny goes
- * through `atomicRateLimit` (`RL_API_KEY`). Flag off keeps the legacy KV
- * read-modify-write path byte-compatible for rollback (<5 min config flip).
+ * ADR-0073: when `ATOMIC_RATE_LIMIT_ENABLED=true`, allow/deny goes through
+ * `atomicRateLimit` (`RL_API_KEY`). Flag off keeps the legacy KV
+ * read-modify-write path for rollback (<5 min config flip).
+ *
+ * WS-5: dual-write of legacy KV during canary removed — L1 is authoritative
+ * when the flag is on.
  */
 import type { Context, Next } from 'hono'
 import { API_KEY_RECORD_TTL_SECONDS } from '../lib/constants'
@@ -53,31 +56,12 @@ async function legacyKvRateLimit(
   return { limited: false }
 }
 
-/**
- * Dual-write the legacy KV counter while Workers RL is authoritative (canary).
- * Metrics / comparison only — never overrides an allow/deny decision.
- */
-async function dualWriteLegacyKv(env: Env, keyId: string): Promise<void> {
-  const rlKv = env.ACTIONS_KV ?? env.INTEGRATIONS_KV
-  if (!rlKv) return
-  try {
-    const windowStart = Math.floor(Date.now() / 1000 / KEY_WINDOW_SEC) * KEY_WINDOW_SEC
-    const rlKey = apiKeyRateLimitKey(keyId, windowStart)
-    const count = Number((await rlKv.get(rlKey)) ?? '0')
-    await rlKv.put(rlKey, String(count + 1), { expirationTtl: KEY_WINDOW_SEC * 2 })
-  } catch {
-    /* fail-open: dual-write must not affect the request */
-  }
-}
-
 export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variables: ApiKeyVars }>, next: Next) {
   const auth = c.req.header('authorization')
   if (!auth?.startsWith('Bearer ')) {
     return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Bearer API key required' } }, 401)
   }
   const raw = auth.slice(7).trim()
-  // Cheap format gate before hashing + KV lookups: keys are only ever minted
-  // as `qesto_` + 32 hex chars (generateApiKey), so anything else is garbage.
   if (!API_KEY_FORMAT.test(raw)) {
     return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Invalid API key' } }, 401)
   }
@@ -114,10 +98,6 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
         { 'Retry-After': String(rl.retryAfterSec) },
       )
     }
-    // Canary dual-write: L1 (Workers RL) decided allow; mirror into legacy KV.
-    if (rl.backend === 'workers_rl') {
-      await dualWriteLegacyKv(c.env, apiKeyId)
-    }
   } else {
     const { limited } = await legacyKvRateLimit(c.env, apiKeyId, teamId)
     if (limited) {
@@ -140,8 +120,6 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     detail: `${c.req.method} ${c.req.path}`,
   })
 
-  // ENTERPRISE-POLISH s8a: quota overage threshold detection.
-  // Fire at 80% (warn) and 100% (exceeded) -- once per day per level.
   try {
     const quotaKv = c.env.ACTIONS_KV ?? c.env.INTEGRATIONS_KV
     if (quotaKv) {
@@ -157,7 +135,7 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
         }
       }
     }
-  } catch { /* fail-open: quota tracking must not block requests */ }
+  } catch { /* fail-open */ }
 
   c.set('apiKey', updated)
   await next()

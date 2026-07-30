@@ -78,7 +78,7 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
   app.post(
     '/search',
     authMiddleware,
-    rateLimit<Vars>({ namespace: 'kb-search', limit: 60, windowSec: 60 }),
+    rateLimit<Vars>({ profile: 'kb_search' }),
     async (c) => {
       const startTime = Date.now()
 

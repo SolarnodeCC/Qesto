@@ -264,6 +264,11 @@ name = "RL_ADMIN_AUDIT_Q"
 namespace_id = "1010"
 simple = { limit = 120, period = 60 }
 
+[[ratelimits]]
+name = "RL_AI_BURST"
+namespace_id = "1011"
+simple = { limit = 10, period = 60 }
+
 [triggers]
 # Daily KB vector retrieval health watchdog at 02:00 UTC (worker/index.ts -> handleScheduled).
 # This does NOT embed/sync — the embed+sync runs in CI on knowledge-base/ changes

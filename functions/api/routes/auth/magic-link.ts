@@ -1,7 +1,7 @@
 import { errorResponse } from '../../lib/error-handler'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../../lib/email'
-import { rateLimit } from '../../lib/rate-limit'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { ulid } from '../../lib/ulid'
 import { writeEvent } from '../../lib/observability'
 import { signJwt } from '../../lib/jwt'
@@ -32,20 +32,31 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
       // SEC M-6: trust only the unspoofable edge header for rate-limit keys.
       const ip = c.req.header('cf-connecting-ip') ?? null
 
+      // ADR-0073 Tier B: L1 auth_burst + L2 product window (15m).
       if (ip) {
-        const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
-          max: MAGIC_LINK_MAX_PER_IP,
-          windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
-          prefix: 'auth-req',
+        const ipGate = await atomicRateLimitDual(c.env, {
+          key: `ip:${ip}`,
+          burst: 'auth_burst',
+          sustained: {
+            max: MAGIC_LINK_MAX_PER_IP,
+            windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
+            prefix: 'auth-req',
+          },
+          profileLabel: 'auth_magic_ip',
         })
         if (!ipGate.allowed) {
           return errorResponse(c, 429, 'rate_limited', 'Too many requests. Try again later.')
         }
       }
-      const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${email}`, {
-        max: MAGIC_LINK_MAX_PER_EMAIL,
-        windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
-        prefix: 'auth-req',
+      const emailGate = await atomicRateLimitDual(c.env, {
+        key: `email:${email}`,
+        burst: 'auth_burst',
+        sustained: {
+          max: MAGIC_LINK_MAX_PER_EMAIL,
+          windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
+          prefix: 'auth-req',
+        },
+        profileLabel: 'auth_magic_email',
       })
       if (!emailGate.allowed) {
         return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)

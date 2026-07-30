@@ -247,10 +247,10 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 
 | ID | WS | Pts | Pri | Owner | Depends | Acceptance signal |
 |----|----|----:|-----|-------|---------|-------------------|
-| `SEC-RL-ATOMIC-TIER-A-01` | WS-3 | 8 | P2 | backend | WS-2 soak | embed/join/webhook/public-event/admin-audit on L1; RG-1 green |
-| `SEC-RL-ATOMIC-TIER-B-01` | WS-4 | 5 | P2 | backend + security | WS-3 | L1 burst + L2 KV for auth/AI/admin; product windows preserved |
-| `SEC-RL-ATOMIC-CLEANUP-01` | WS-5 | 3 | P2 | backend + knowledge | WS-4 | Dead Tier A KV RMW removed; audit backlog closed; ADR → Implemented |
-| `SEC-RL-ATOMIC-L0-WAF-01` | WS-5 | 5 | P2 | devops | optional | Zone WAF on auth/WS (ADR-042 §1.2); separate PR; not epic-blocking |
+| `SEC-RL-ATOMIC-TIER-A-01` | WS-3 | 8 | P2 | backend | WS-2 | **Done** — Tier A on atomic facade; agenda/feed→public_event; RG-1 green |
+| `SEC-RL-ATOMIC-TIER-B-01` | WS-4 | 5 | P2 | backend + security | WS-3 | **Done** — dual-layer auth/report/AI; admin long-window sustained-only |
+| `SEC-RL-ATOMIC-CLEANUP-01` | WS-5 | 3 | P2 | backend + knowledge | WS-4 | **Done** — dual-write removed; ADR Implemented; audit [[ADR0073_WS3_WS5_AUDIT]] |
+| `SEC-RL-ATOMIC-L0-WAF-01` | WS-5 | 5 | P2 | devops | optional | **Deferred** — dashboard ops only (ADR-042 §1.2) |
 
 ---
 
@@ -259,7 +259,7 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | Item | Reason | Promote when |
 |------|--------|--------------|
 | XR GA (`FE-XR-LAUNCHER` polish, WebGL engine) | Beta only; Path B in RT-03 | RT-02 close + Path B decision table green |
-| ADR-0073 atomic RL (WS-3…WS-5) | Train A code Done (WS-0…WS-2); flag off until staging burst | Promote Train B after WS-2 prod soak |
+| ADR-0073 L0 WAF only | Epic code Done; flag off until staging burst | Enable flag after burst evidence; optional zone WAF |
 | CONNECT expansion | RT-03 Path A default | RT-02 complete + VALID-ADVERSARY-01 |
 | v7.1 epic net-new | Conditional RT-03 | PO path decision at RT-02 closeout |
 | Full `BACKLOG_MASTER` historical registries | Delivered / archive | Never auto-promote without PO |
@@ -285,6 +285,7 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
+| 2026-07-30 | ADR-0073 **WS-3/4/5 Done** — Tier A+B migrate + cleanup; audit [`ADR0073_WS3_WS5_AUDIT.md`](../../operations/ADR0073_WS3_WS5_AUDIT.md); ADR Implemented; flag still false |
 | 2026-07-30 | ADR-0073 WS-1b + WS-2 **Done (code)** — AE dims, burst harness, API-key canary behind flag; evidence [`ADR0073_WS1B_WS2_EVIDENCE.md`](../../operations/ADR0073_WS1B_WS2_EVIDENCE.md) |
 | 2026-07-30 | ADR-0073 **Accepted**; WS-0 + WS-1 Done (bindings + facade); Train A promoted in RT-02 addendum — [`ADR0073_WS0_WS1_EVIDENCE.md`](../../operations/ADR0073_WS0_WS1_EVIDENCE.md) |
 | 2026-07-30 | ADR-0073 atomic rate limiting organised into build workstreams ([`ADR0073_ATOMIC_RL_WORKSTREAMS.md`](../planning/ADR0073_ATOMIC_RL_WORKSTREAMS.md)); security follow-ups split into Train A/B candidate tables |

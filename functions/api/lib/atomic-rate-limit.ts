@@ -1,19 +1,15 @@
 /**
- * ADR-0073 / WS-1 — Atomic rate-limit facade over Workers Rate Limiting + KV.
+ * ADR-0073 — Atomic rate-limit facade (Workers Rate Limiting + KV).
  *
- * Critical constraints (do not "simplify" away):
- *  - `simple.period` is only 10 or 60 on the Workers binding — long product
- *    windows stay on KV (Tier B dual-layer lands in WS-4, not here).
- *  - Limit budgets are binding-static; profiles map to Env bindings, they do
- *    not accept a runtime `max`.
- *  - Workers RL returns only `{ success }` — `remaining` is non-authoritative
- *    for `backend: 'workers_rl'`.
- *  - Colo-local / permissive accuracy — not a global ledger.
- *  - Empty keys are denied (shared empty-key bucket would be an abuse hole).
+ * Tier A: `atomicRateLimit(profile)` — L1 Workers RL when flag on, else KV.
+ * Tier B: `atomicRateLimitDual({ burst, sustained })` — L1 burst then L2
+ *         product-window KV (preserves auth 5/15m, AI 10/h, etc.).
  *
- * WS-1 ships the facade + tests only. No production callers until WS-2
- * (API-key canary). While `ATOMIC_RATE_LIMIT_ENABLED` is false, this falls
- * back to the existing KV helper when a profile declares `kvFallback`.
+ * Critical constraints:
+ *  - Workers `simple.period` ∈ {10,60}; long windows stay on KV (L2).
+ *  - Budgets are binding-static; profiles do not accept runtime `max`.
+ *  - `remaining` is non-authoritative for `backend: 'workers_rl'`.
+ *  - Empty keys are denied.
  */
 
 import type { Env } from '../types'
@@ -27,20 +23,13 @@ export type AtomicRateLimitBackend = 'workers_rl' | 'kv' | 'bypass' | 'deny'
 export type AtomicRateLimitResult = {
   allowed: boolean
   backend: AtomicRateLimitBackend
-  /** Configured binding/KV max — for X-RateLimit-Limit headers. */
   limit: number
-  /** Window length in seconds (binding period or KV window). */
   periodSec: number
-  /**
-   * Best-effort remaining. Authoritative only for `backend: 'kv'`.
-   * For Workers RL: `0` on deny, `limit` on allow (non-authoritative).
-   */
   remaining: number
   resetAt: number
   retryAfterSec: number
 }
 
-/** Profiles that map 1:1 onto a `[[ratelimits]]` binding (ADR registry). */
 export type AtomicRateLimitProfile =
   | 'api_key'
   | 'embed_read'
@@ -52,6 +41,7 @@ export type AtomicRateLimitProfile =
   | 'report_burst'
   | 'kb_search'
   | 'admin_audit_query'
+  | 'ai_burst'
 
 type BindingName =
   | 'RL_API_KEY'
@@ -64,19 +54,22 @@ type BindingName =
   | 'RL_REPORT_BURST'
   | 'RL_KB_SEARCH'
   | 'RL_ADMIN_AUDIT_Q'
+  | 'RL_AI_BURST'
 
 type ProfileConfig = {
   binding: BindingName
   limit: number
   periodSec: 60
-  /** Used when flag off / binding missing — soft KV path (lib/rate-limit). */
+  /** Flag-off / missing-binding soft path — prefixes match pre-migration keys where possible. */
   kvFallback: { max: number; windowSeconds: number; prefix: string }
 }
 
-/**
- * Static profile registry. Budgets must match wrangler `[[ratelimits]]` and
- * RATE_LIMIT_BINDINGS_SETUP.md — change both in the same PR.
- */
+export type SustainedKvOpts = {
+  max: number
+  windowSeconds: number
+  prefix: string
+}
+
 export const ATOMIC_RATE_LIMIT_PROFILES: Record<AtomicRateLimitProfile, ProfileConfig> = {
   api_key: {
     binding: 'RL_API_KEY',
@@ -84,17 +77,18 @@ export const ATOMIC_RATE_LIMIT_PROFILES: Record<AtomicRateLimitProfile, ProfileC
     periodSec: 60,
     kvFallback: { max: 120, windowSeconds: 60, prefix: 'atomic-api-key' },
   },
+  // Match pre-migration embed KV prefixes so flag-off / PEN5 fixtures stay valid.
   embed_read: {
     binding: 'RL_EMBED_READ',
     limit: 120,
     periodSec: 60,
-    kvFallback: { max: 120, windowSeconds: 60, prefix: 'atomic-embed-read' },
+    kvFallback: { max: 120, windowSeconds: 60, prefix: 'embed-read' },
   },
   embed_handshake: {
     binding: 'RL_EMBED_HANDSHAKE',
     limit: 30,
     periodSec: 60,
-    kvFallback: { max: 30, windowSeconds: 60, prefix: 'atomic-embed-hs' },
+    kvFallback: { max: 30, windowSeconds: 60, prefix: 'embed-hs' },
   },
   join: {
     binding: 'RL_JOIN',
@@ -138,6 +132,12 @@ export const ATOMIC_RATE_LIMIT_PROFILES: Record<AtomicRateLimitProfile, ProfileC
     periodSec: 60,
     kvFallback: { max: 120, windowSeconds: 60, prefix: 'atomic-admin-audit-q' },
   },
+  ai_burst: {
+    binding: 'RL_AI_BURST',
+    limit: 10,
+    periodSec: 60,
+    kvFallback: { max: 10, windowSeconds: 60, prefix: 'atomic-ai-burst' },
+  },
 }
 
 function bindingOf(env: Env, name: BindingName): RateLimit | undefined {
@@ -145,19 +145,20 @@ function bindingOf(env: Env, name: BindingName): RateLimit | undefined {
 }
 
 function denyResult(
-  profile: ProfileConfig,
+  limit: number,
+  periodSec: number,
   backend: AtomicRateLimitBackend,
   now = Date.now(),
 ): AtomicRateLimitResult {
-  const resetAt = now + profile.periodSec * 1000
+  const resetAt = now + periodSec * 1000
   return {
     allowed: false,
     backend,
-    limit: profile.limit,
-    periodSec: profile.periodSec,
+    limit,
+    periodSec,
     remaining: 0,
     resetAt,
-    retryAfterSec: profile.periodSec,
+    retryAfterSec: periodSec,
   }
 }
 
@@ -168,86 +169,43 @@ function allowWorkers(profile: ProfileConfig, now = Date.now()): AtomicRateLimit
     backend: 'workers_rl',
     limit: profile.limit,
     periodSec: profile.periodSec,
-    // Non-authoritative — Workers RL does not return remaining.
     remaining: profile.limit,
     resetAt,
     retryAfterSec: profile.periodSec,
   }
 }
 
-async function kvFallback(
+async function runKv(
   env: Env,
   key: string,
-  profile: ProfileConfig,
+  opts: SustainedKvOpts,
 ): Promise<AtomicRateLimitResult> {
   const kv = env.ACTIONS_KV
   const failClosed = getFlag(env, 'RATE_LIMIT_FAIL_CLOSED')
-  const r = await rateLimit(kv, key, {
-    ...profile.kvFallback,
-    failClosed,
-  })
+  const r = await rateLimit(kv, key, { ...opts, failClosed })
   const retryAfterSec = Math.max(1, Math.ceil((r.resetAt - Date.now()) / 1000))
   return {
     allowed: r.allowed,
     backend: kv ? 'kv' : 'bypass',
-    limit: profile.limit,
-    periodSec: profile.kvFallback.windowSeconds,
+    limit: opts.max,
+    periodSec: opts.windowSeconds,
     remaining: r.remaining,
     resetAt: r.resetAt,
     retryAfterSec,
   }
 }
 
-/**
- * Consume one unit for `key` under `profile`.
- *
- * @param key Stable actor id (api key id, wid:origin, ip hash, …). Must be non-empty.
- */
-export async function atomicRateLimit(
+async function tryWorkersRl(
   env: Env,
   profileName: AtomicRateLimitProfile,
   key: string,
-): Promise<AtomicRateLimitResult> {
+): Promise<AtomicRateLimitResult | 'fallback'> {
   const profile = ATOMIC_RATE_LIMIT_PROFILES[profileName]
-  const now = Date.now()
-
-  if (!key || !key.trim()) {
-    logEvent({
-      event: 'rate_limit.empty_key',
-      profile: profileName,
-      level: 'warn',
-    })
-    return denyResult(profile, 'deny', now)
-  }
-
   const atomicOn = getFlag(env, 'ATOMIC_RATE_LIMIT_ENABLED')
-  const binding = bindingOf(env, profile.binding)
+  if (!atomicOn) return 'fallback'
 
-  if (atomicOn && binding) {
-    try {
-      const { success } = await binding.limit({ key })
-      if (!success) {
-        return denyResult(profile, 'workers_rl', now)
-      }
-      return allowWorkers(profile, now)
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err)
-      logEvent({
-        event: 'rate_limit.workers_rl_failure',
-        profile: profileName,
-        binding: profile.binding,
-        error,
-        level: 'error',
-      })
-      writeEvent(env.METRICS_AE, {
-        name: 'rate_limit.backend_fallback',
-        profile: profileName,
-        backend: 'kv',
-        detail: `reason=workers_rl_error;binding=${profile.binding}`,
-      })
-      // Fall through to KV / fail-closed — do not hard-500 the request path.
-    }
-  } else if (atomicOn && !binding) {
+  const binding = bindingOf(env, profile.binding)
+  if (!binding) {
     logEvent({
       event: 'rate_limit.backend_fallback',
       profile: profileName,
@@ -260,13 +218,92 @@ export async function atomicRateLimit(
       backend: 'kv',
       detail: `reason=binding_missing;binding=${profile.binding}`,
     })
+    return 'fallback'
+  }
+
+  try {
+    const { success } = await binding.limit({ key })
+    if (!success) return denyResult(profile.limit, profile.periodSec, 'workers_rl')
+    return allowWorkers(profile)
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err)
+    logEvent({
+      event: 'rate_limit.workers_rl_failure',
+      profile: profileName,
+      binding: profile.binding,
+      error,
+      level: 'error',
+    })
+    writeEvent(env.METRICS_AE, {
+      name: 'rate_limit.backend_fallback',
+      profile: profileName,
+      backend: 'kv',
+      detail: `reason=workers_rl_error;binding=${profile.binding}`,
+    })
+    return 'fallback'
+  }
+}
+
+/**
+ * Tier A — single budget (Workers RL when flag on, else profile KV fallback).
+ */
+export async function atomicRateLimit(
+  env: Env,
+  profileName: AtomicRateLimitProfile,
+  key: string,
+): Promise<AtomicRateLimitResult> {
+  const profile = ATOMIC_RATE_LIMIT_PROFILES[profileName]
+
+  if (!key || !key.trim()) {
+    logEvent({ event: 'rate_limit.empty_key', profile: profileName, level: 'warn' })
+    return denyResult(profile.limit, profile.periodSec, 'deny')
+  }
+
+  const workers = await tryWorkersRl(env, profileName, key)
+  if (workers !== 'fallback') return workers
+
+  if (getFlag(env, 'RATE_LIMIT_FAIL_CLOSED') && !env.ACTIONS_KV) {
+    return denyResult(profile.limit, profile.periodSec, 'deny')
+  }
+
+  return runKv(env, key, profile.kvFallback)
+}
+
+/**
+ * Tier B — L1 burst (optional profile) then L2 sustained KV product window.
+ * Sustained always runs on allow from L1 so long windows stay product-correct.
+ */
+export async function atomicRateLimitDual(
+  env: Env,
+  opts: {
+    key: string
+    burst?: AtomicRateLimitProfile
+    sustained: SustainedKvOpts
+    /** Profile label for AE when only sustained applies. */
+    profileLabel?: string
+  },
+): Promise<AtomicRateLimitResult> {
+  const { key, burst, sustained, profileLabel = burst ?? 'sustained' } = opts
+
+  if (!key || !key.trim()) {
+    logEvent({ event: 'rate_limit.empty_key', profile: profileLabel, level: 'warn' })
+    return denyResult(sustained.max, sustained.windowSeconds, 'deny')
+  }
+
+  if (burst) {
+    const burstResult = await tryWorkersRl(env, burst, key)
+    if (burstResult !== 'fallback' && !burstResult.allowed) {
+      return burstResult
+    }
+    // If Workers RL allowed, still enforce sustained KV.
+    // If fallback, sustained KV is the only gate (flag off / missing binding).
   }
 
   if (getFlag(env, 'RATE_LIMIT_FAIL_CLOSED') && !env.ACTIONS_KV) {
-    return denyResult(profile, 'deny', now)
+    return denyResult(sustained.max, sustained.windowSeconds, 'deny')
   }
 
-  return kvFallback(env, key, profile)
+  return runKv(env, key, sustained)
 }
 
 /** Test helper — scripted Workers RateLimit binding. */

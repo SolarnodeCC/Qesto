@@ -155,19 +155,38 @@ export function createApp() {
   // preserved, and BEFORE auth so attacker requests never touch route logic.
   app.use('*', csrfMiddleware)
 
-  // Per-route rate limits (KV-backed, fail-open).
-  app.use('/api/auth/request', rateLimit<Vars>({ namespace: 'auth', limit: 5, windowSec: 600 }))
+  // Per-route rate limits (ADR-0073 — Tier A profile / Tier B dual-layer).
+  app.use(
+    '/api/auth/request',
+    rateLimit<Vars>({
+      burst: 'auth_burst',
+      sustained: { max: 5, windowSeconds: 600, prefix: 'mw-auth' },
+      profileLabel: 'auth',
+    }),
+  )
   app.use('/api/sessions', async (c, next) => {
     if (c.req.method === 'POST') {
-      return rateLimit<Vars>({ namespace: 'session-create', limit: 30, windowSec: 3600 })(c, next)
+      // Sustained-only (no dedicated session-create burst binding).
+      return rateLimit<Vars>({
+        sustained: { max: 30, windowSeconds: 3600, prefix: 'mw-session-create' },
+        profileLabel: 'session_create',
+      })(c, next)
     }
     await next()
   })
-  app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
-  app.use('/api/events/:code/agenda', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
-  app.use('/api/events/:code/feed', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
-  // DSA Art. 16 — limit content reports to 5 per 10 min per IP to prevent abuse
-  app.use('/api/report-content', rateLimit<Vars>({ namespace: 'report-content', limit: 5, windowSec: 600 }))
+  app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ profile: 'join' }))
+  // Critical fix: agenda/feed were mis-tagged as `join` with limit 60 — use public_event.
+  app.use('/api/events/:code/agenda', rateLimit<Vars>({ profile: 'public_event' }))
+  app.use('/api/events/:code/feed', rateLimit<Vars>({ profile: 'public_event' }))
+  // DSA Art. 16 — 5 per 10 min sustained + burst shield
+  app.use(
+    '/api/report-content',
+    rateLimit<Vars>({
+      burst: 'report_burst',
+      sustained: { max: 5, windowSeconds: 600, prefix: 'mw-report' },
+      profileLabel: 'report_content',
+    }),
+  )
 
   // Stripe webhook — public endpoint with signature verification (no user auth)
   mountStripeWebhookRoutes(app)

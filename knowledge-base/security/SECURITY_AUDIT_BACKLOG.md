@@ -57,7 +57,7 @@ relates_to:
 
 ---
 
-### SEC-APIKEY-LIMITER-ATOMIC-01 (LOW, P2 — remediated in code via ADR-0073 WS-2; flag default off)
+### SEC-APIKEY-LIMITER-ATOMIC-01 (LOW — **CLOSED** via ADR-0073; flag default off until staging burst)
 
 **Severity**: LOW (bounded impact; soft quota, not security boundary)  
 **Location**: `functions/api/middleware/public-api-auth.ts:52–67`
@@ -123,7 +123,7 @@ relates_to:
 ## Next Steps (PO Discretion)
 
 1. **SEC-SAML-VERIFY-01**: Schedule XML-DSig implementation for SAML GA release train (currently blocked behind SAML_SSO_ENABLED feature gate).
-2. **SEC-APIKEY-LIMITER-ATOMIC-01**: **Remediated in code** (WS-2 canary behind `ATOMIC_RATE_LIMIT_ENABLED`; default off). Enable on staging → `npm run burst:api-key-rate-limit` → prod. Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse. Evidence: [[ADR0073_WS1B_WS2_EVIDENCE]].
+2. **SEC-APIKEY-LIMITER-ATOMIC-01**: **Closed** (ADR-0073 Implemented — full Tier A/B). Enable flag on staging → burst harness → prod. Evidence: [[ADR0073_WS3_WS5_AUDIT]].
 3. **SEC-DISPLAY-FRAMING-01**: Add to tech-debt checklist; act if `/display/*` interactivity is ever planned.
 4. **CSRF-INFO-01**: Review if non-browser session-cookie callers are ever added.
 

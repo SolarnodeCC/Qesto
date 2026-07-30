@@ -236,4 +236,6 @@ export type Env = {
   RL_REPORT_BURST?: RateLimit
   RL_KB_SEARCH?: RateLimit
   RL_ADMIN_AUDIT_Q?: RateLimit
+  /** ADR-0073 Tier B — AI insights/coaching/wizard burst (10/60). */
+  RL_AI_BURST?: RateLimit
 }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ATOMIC_RATE_LIMIT_PROFILES,
   atomicRateLimit,
+  atomicRateLimitDual,
   fakeRateLimitBinding,
   type AtomicRateLimitProfile,
 } from '../../functions/api/lib/atomic-rate-limit'
@@ -68,7 +69,10 @@ describe('atomicRateLimit (ADR-0073 WS-1)', () => {
       report_burst: 5,
       kb_search: 60,
       admin_audit_query: 120,
+      ai_burst: 10,
     }
+    expect(ATOMIC_RATE_LIMIT_PROFILES.embed_read.kvFallback.prefix).toBe('embed-read')
+    expect(ATOMIC_RATE_LIMIT_PROFILES.embed_handshake.kvFallback.prefix).toBe('embed-hs')
     for (const [name, limit] of Object.entries(expected) as [AtomicRateLimitProfile, number][]) {
       expect(ATOMIC_RATE_LIMIT_PROFILES[name].limit).toBe(limit)
       expect(ATOMIC_RATE_LIMIT_PROFILES[name].periodSec).toBe(60)
@@ -176,5 +180,33 @@ describe('atomicRateLimit (ADR-0073 WS-1)', () => {
     const blocked = await atomicRateLimit(env, 'api_key', 'burst-key')
     expect(blocked.allowed).toBe(false)
     expect(blocked.backend).toBe('kv')
+  })
+
+  it('dual-layer: Workers burst deny short-circuits before sustained KV', async () => {
+    env = baseEnv({
+      ATOMIC_RATE_LIMIT_ENABLED: 'true',
+      RL_AUTH_BURST: fakeRateLimitBinding([false]),
+    })
+    const r = await atomicRateLimitDual(env, {
+      key: 'user-1',
+      burst: 'auth_burst',
+      sustained: { max: 100, windowSeconds: 600, prefix: 'sustained-test' },
+      profileLabel: 'auth_dual',
+    })
+    expect(r.allowed).toBe(false)
+    expect(r.backend).toBe('workers_rl')
+  })
+
+  it('dual-layer: sustained KV still enforced after burst allow', async () => {
+    env = baseEnv({
+      ATOMIC_RATE_LIMIT_ENABLED: 'true',
+      RL_AUTH_BURST: fakeRateLimitBinding([true, true, true]),
+    })
+    const sustained = { max: 2, windowSeconds: 600, prefix: 'sustained-cap' }
+    expect((await atomicRateLimitDual(env, { key: 'u', burst: 'auth_burst', sustained })).allowed).toBe(true)
+    expect((await atomicRateLimitDual(env, { key: 'u', burst: 'auth_burst', sustained })).allowed).toBe(true)
+    const third = await atomicRateLimitDual(env, { key: 'u', burst: 'auth_burst', sustained })
+    expect(third.allowed).toBe(false)
+    expect(third.backend).toBe('kv')
   })
 })

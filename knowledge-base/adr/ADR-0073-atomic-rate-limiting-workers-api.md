@@ -1,7 +1,7 @@
 ---
 id: ADR-0073
 title: Atomic Rate Limiting via Workers Rate Limiting API
-status: accepted
+status: implemented
 date: 2026-07-30
 accepted: 2026-07-30
 deciders: architect, backend, devops, security
@@ -26,10 +26,10 @@ tags:
 
 ## Status
 
-**Accepted** (2026-07-30). Layered Workers Rate Limiting design approved for implementation.
+**Implemented** (2026-07-30). Layered Workers Rate Limiting shipped for Tier A + Tier B dual-layer; prod flag default **false** until staging burst.
 
 **Build organisation:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]].  
-**WS-0 + WS-1 evidence:** [[ADR0073_WS0_WS1_EVIDENCE]] — foundation (bindings + facade) landed with `ATOMIC_RATE_LIMIT_ENABLED=false` and **no production callers**. Implementation continues at WS-2 (API-key canary).
+**Evidence:** [[ADR0073_WS0_WS1_EVIDENCE]], [[ADR0073_WS1B_WS2_EVIDENCE]], [[ADR0073_WS3_WS5_AUDIT]].
 
 ## Problem
 
