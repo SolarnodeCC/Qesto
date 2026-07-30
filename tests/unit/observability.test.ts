@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { recordSpan, recordSpanSafe, writeEvent } from '../../functions/api/lib/observability'
+import {
+  composeRateLimitDetail,
+  recordSpan,
+  recordSpanSafe,
+  writeEvent,
+} from '../../functions/api/lib/observability'
 import type { AnalyticsEngineDataset } from '@cloudflare/workers-types'
 
 describe('Observability — Span Tracing', () => {
@@ -154,5 +159,31 @@ describe('writeEvent — Analytics Engine', () => {
     }
     expect(dp.blobs[0]).toBe('launchpad.launch_success')
     expect(dp.doubles[1]).toBe(1)
+  })
+
+  it('composeRateLimitDetail encodes profile + backend into blob6', () => {
+    expect(
+      composeRateLimitDetail({
+        profile: 'api_key',
+        backend: 'workers_rl',
+        detail: 'actor=key:k1',
+      }),
+    ).toBe('profile=api_key;backend=workers_rl;actor=key:k1')
+  })
+
+  it('rate_limit.hit writeEvent merges profile/backend into detail blob', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, {
+      name: 'rate_limit.hit',
+      teamId: 't1',
+      profile: 'api_key',
+      backend: 'kv',
+      detail: 'actor=key:k1',
+    })
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+    }
+    expect(dp.blobs[0]).toBe('rate_limit.hit')
+    expect(dp.blobs[5]).toBe('profile=api_key;backend=kv;actor=key:k1')
   })
 })

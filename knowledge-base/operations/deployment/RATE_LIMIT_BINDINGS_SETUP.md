@@ -94,43 +94,76 @@ Fail-closed parity: existing `RATE_LIMIT_FAIL_CLOSED` continues to govern KV / m
 
 ## Rollback
 
+`public-api-auth` keeps the **legacy KV RMW path** when the flag is false (WS-2 design). Flip flag off to restore prior behaviour without code rollback.
+
 ```bash
-# Immediate — no redeploy of bindings required
+# Fastest: secret overrides [vars] — no full config rewrite required
 wrangler secret put ATOMIC_RATE_LIMIT_ENABLED
 # value: false
 ```
 
-Or set `[vars] ATOMIC_RATE_LIMIT_ENABLED = "false"` and redeploy if using vars. Traffic returns to KV path. Leave `[[ratelimits]]` in place (harmless when unused).
+Or set `[vars] ATOMIC_RATE_LIMIT_ENABLED = "false"` and redeploy. Leave `[[ratelimits]]` in place (harmless when unused).
 
-## Monitoring
+## Monitoring (WS-1b)
 
 Workers Rate Limiting bindings are **not** visible in the Cloudflare dashboard.
 
 | Signal | How |
 |---|---|
 | 429 rate | Workers Observability / logs filter `status=429` |
-| Deny by backend | AE `rate_limit.hit` with `backend=workers_rl` |
-| Fallback | AE `rate_limit.backend_fallback` |
+| Deny by backend | AE `rate_limit.hit` — blob6 contains `profile=…;backend=workers_rl\|kv;actor=key:<id>` |
+| Fallback | AE `rate_limit.backend_fallback` — blob6 `reason=binding_missing` or `workers_rl_error` |
 | KV path errors | existing `rate_limit.kv_failure` / `rate_limit_kv_error` |
+
+**AE detail contract (blob6):** `profile=<AtomicRateLimitProfile>;backend=<workers_rl|kv|bypass|deny>;…` — never raw API keys or IPs.
+
+Example Analytics Engine SQL (dataset `qesto_metrics`, adjust account/table names per env):
+
+```sql
+SELECT
+  blob1 AS event,
+  blob6 AS detail,
+  COUNT(*) AS n
+FROM qesto_metrics
+WHERE blob1 IN ('rate_limit.hit', 'rate_limit.backend_fallback')
+  AND timestamp > NOW() - INTERVAL '1' HOUR
+GROUP BY blob1, blob6
+ORDER BY n DESC
+```
+
+Filter canary: `blob6 LIKE '%profile=api_key%'` and `blob6 LIKE '%backend=workers_rl%'`.
 
 Suggested canary alert: 5-minute spike of `rate_limit.hit` > 3× baseline on `profile=api_key` after flag flip → investigate false positives before expanding Tier A.
 
+## Burst harness (WS-1b / WS-2)
+
+```bash
+API_KEY=qesto_… npm run burst:api-key-rate-limit -- https://qesto.cc 150 50
+# or: node scripts/burst-api-key-rate-limit.mjs [BASE_URL] [TOTAL] [CONCURRENCY]
+```
+
+**Colo slack:** Workers RL is per-location. A single-region canary should see `okish ≲ 120` per minute for one key; multi-colo fan-out can exceed that in aggregate. Document observed `okish` / `limited429` in the canary PR.
+
+**Staging sequence:** deploy with flag false → dry-run bindings → set flag true on staging → run burst harness → compare AE `backend=workers_rl` hits → only then consider prod flag.
+
 ## Local development
 
-- `wrangler dev --local`: binding support may be limited; facade must treat missing `env.RL_*` as bypass (or in-memory mock in Vitest).
+- `wrangler dev --local`: binding support may be limited; facade must treat missing `env.RL_*` as KV fallback (+ AE `backend_fallback`).
 - Unit tests **must not** call real colo counters — inject a fake `{ limit: async () => ({ success }) }`.
 
 ## Verification checklist (per env)
 
-- [ ] All registry rows present in wrangler for that env
-- [ ] `namespace_id` values match this runbook
-- [ ] `Env` TypeScript includes optional `RL_*` bindings
-- [ ] `ATOMIC_RATE_LIMIT_ENABLED` documented in deploy notes
-- [ ] AE dashboard / query includes `backend` dimension
-- [ ] Rollback owner named in release train notes
+- [x] All registry rows present in wrangler for that env (default Worker config)
+- [x] `namespace_id` values match this runbook
+- [x] `Env` TypeScript includes optional `RL_*` bindings
+- [x] `ATOMIC_RATE_LIMIT_ENABLED` documented (default false)
+- [x] AE `backend` / `profile` encoded in blob6 for rate-limit events
+- [ ] Rollback owner named in release train notes (operator)
 
 ## Related
 
 - [[ADR-0073-atomic-rate-limiting-workers-api]]
+- [[ADR0073_ATOMIC_RL_WORKSTREAMS]]
+- [[ADR0073_WS0_WS1_EVIDENCE]]
 - [[DEPLOY_BOOTSTRAP]] — general binding bootstrap
 - ADR-042 §1.2 — optional L0 zone WAF rate rules (complementary, not a substitute)

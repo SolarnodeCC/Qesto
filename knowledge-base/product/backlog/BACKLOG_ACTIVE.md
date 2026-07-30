@@ -240,8 +240,8 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | `SEC-RL-ATOMIC-ADR-01` | WS-0 | 3 | P2 | architect | **Done** | ADR Accepted + runbook + workstreams; evidence linked |
 | `SEC-RL-ATOMIC-BINDINGS-01` | WS-1 | 3 | P2 | devops | **Done** | `[[ratelimits]]` 1001–1010; `ATOMIC_RATE_LIMIT_ENABLED=false`; dry-run lists all `RL_*` |
 | `SEC-RL-ATOMIC-FACADE-01` | WS-1 | 5 | P2 | backend | **Done** | `lib/atomic-rate-limit.ts` + Env/flag + Vitest; no production callers |
-| `SEC-RL-ATOMIC-OBS-01` | WS-1b | 3 | P2 | devops + analytics | Open (next) | AE `backend`/`profile` + burst harness |
-| `SEC-APIKEY-LIMITER-ATOMIC-01` | WS-2 | 5 | P2 | backend + security | Open (next) | API-key path on `RL_API_KEY`; burst ≤120/min/colo; flag-off rollback |
+| `SEC-RL-ATOMIC-OBS-01` | WS-1b | 3 | P2 | devops + analytics | **Done** | AE blob6 `profile`/`backend` + `burst:api-key-rate-limit` + runbook SQL |
+| `SEC-APIKEY-LIMITER-ATOMIC-01` | WS-2 | 5 | P2 | backend + security | **Done (code)** | Facade canary in `public-api-auth`; flag still false in wrangler; ops burst on staging |
 
 #### Train B (conditional — promote after WS-2 soak)
 
@@ -259,7 +259,7 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | Item | Reason | Promote when |
 |------|--------|--------------|
 | XR GA (`FE-XR-LAUNCHER` polish, WebGL engine) | Beta only; Path B in RT-03 | RT-02 close + Path B decision table green |
-| ADR-0073 atomic RL (WS-1b…WS-5) | WS-0/WS-1 Done; remainder conditional | Promote WS-1b/WS-2 when Train A capacity allows |
+| ADR-0073 atomic RL (WS-3…WS-5) | Train A code Done (WS-0…WS-2); flag off until staging burst | Promote Train B after WS-2 prod soak |
 | CONNECT expansion | RT-03 Path A default | RT-02 complete + VALID-ADVERSARY-01 |
 | v7.1 epic net-new | Conditional RT-03 | PO path decision at RT-02 closeout |
 | Full `BACKLOG_MASTER` historical registries | Delivered / archive | Never auto-promote without PO |
@@ -285,6 +285,7 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
+| 2026-07-30 | ADR-0073 WS-1b + WS-2 **Done (code)** — AE dims, burst harness, API-key canary behind flag; evidence [`ADR0073_WS1B_WS2_EVIDENCE.md`](../../operations/ADR0073_WS1B_WS2_EVIDENCE.md) |
 | 2026-07-30 | ADR-0073 **Accepted**; WS-0 + WS-1 Done (bindings + facade); Train A promoted in RT-02 addendum — [`ADR0073_WS0_WS1_EVIDENCE.md`](../../operations/ADR0073_WS0_WS1_EVIDENCE.md) |
 | 2026-07-30 | ADR-0073 atomic rate limiting organised into build workstreams ([`ADR0073_ATOMIC_RL_WORKSTREAMS.md`](../planning/ADR0073_ATOMIC_RL_WORKSTREAMS.md)); security follow-ups split into Train A/B candidate tables |
 | 2026-07-14 | **Backlog audit & reconciliation** ([`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md)): RT-01 closed with P0 exception (CI blocked on GitHub billing); carry-overs moved to RT-02 (`OPS-CI-RUNNER-01`, `MKTG-V70-GA-COPY-01`, `ARCH-ERROR-BUILDER-MIGRATE-01` @324, `ARCH-REPO-LAYER-01` @313); `ARCH-AI-GATEWAY-MIGRATE-01` marked Done (gateway baseline 3, verified by core-features audit); RT-02 target reset to 2026-07-31 and marked Active; criticals committed (`KB-BILLING-COPY-01`, `GDPR-RETENTION-CLAIM-01`); retroactive Done row `MKTG-TEMPLATE-PIPELINE-FIX-01` (commit `6335af3`); new Audit-triage section for all remaining open findings |

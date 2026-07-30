@@ -19,6 +19,7 @@
 import type { Env } from '../types'
 import { getFlag } from './flags'
 import { logEvent } from './log'
+import { writeEvent } from './observability'
 import { rateLimit } from './rate-limit'
 
 export type AtomicRateLimitBackend = 'workers_rl' | 'kv' | 'bypass' | 'deny'
@@ -230,12 +231,19 @@ export async function atomicRateLimit(
       }
       return allowWorkers(profile, now)
     } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
       logEvent({
         event: 'rate_limit.workers_rl_failure',
         profile: profileName,
         binding: profile.binding,
-        error: err instanceof Error ? err.message : String(err),
+        error,
         level: 'error',
+      })
+      writeEvent(env.METRICS_AE, {
+        name: 'rate_limit.backend_fallback',
+        profile: profileName,
+        backend: 'kv',
+        detail: `reason=workers_rl_error;binding=${profile.binding}`,
       })
       // Fall through to KV / fail-closed — do not hard-500 the request path.
     }
@@ -245,6 +253,12 @@ export async function atomicRateLimit(
       profile: profileName,
       reason: 'binding_missing',
       level: 'warn',
+    })
+    writeEvent(env.METRICS_AE, {
+      name: 'rate_limit.backend_fallback',
+      profile: profileName,
+      backend: 'kv',
+      detail: `reason=binding_missing;binding=${profile.binding}`,
     })
   }
 

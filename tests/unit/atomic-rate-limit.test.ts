@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ATOMIC_RATE_LIMIT_PROFILES,
   atomicRateLimit,
@@ -114,14 +114,21 @@ describe('atomicRateLimit (ADR-0073 WS-1)', () => {
     expect(r.remaining).toBe(120)
   })
 
-  it('flag on + missing binding falls back to KV', async () => {
+  it('flag on + missing binding falls back to KV and emits AE backend_fallback', async () => {
+    const ae = { writeDataPoint: vi.fn() }
     env = baseEnv({
       ATOMIC_RATE_LIMIT_ENABLED: 'true',
+      METRICS_AE: ae as unknown as AnalyticsEngineDataset,
       // no RL_API_KEY
     })
     const r = await atomicRateLimit(env, 'api_key', 'key-1')
     expect(r.allowed).toBe(true)
     expect(r.backend).toBe('kv')
+    expect(ae.writeDataPoint).toHaveBeenCalled()
+    const dp = ae.writeDataPoint.mock.calls[0][0] as { blobs: string[] }
+    expect(dp.blobs[0]).toBe('rate_limit.backend_fallback')
+    expect(dp.blobs[5]).toContain('profile=api_key')
+    expect(dp.blobs[5]).toContain('reason=binding_missing')
   })
 
   it('Workers RL throw falls back to KV (availability)', async () => {

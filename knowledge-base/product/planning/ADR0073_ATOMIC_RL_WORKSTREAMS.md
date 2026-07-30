@@ -144,6 +144,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 |-------|-------|
 | **Story** | `SEC-RL-ATOMIC-OBS-01` |
 | **Pts** | 3 |
+| **Status** | **Done** (2026-07-30) — [[ADR0073_WS1B_WS2_EVIDENCE]] |
 | **Agents** | devops + analytics (E13), tester |
 | **Depends** | WS-1 merged |
 
@@ -169,6 +170,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 |-------|-------|
 | **Story** | `SEC-APIKEY-LIMITER-ATOMIC-01` |
 | **Pts** | 5 |
+| **Status** | **Done (code)** (2026-07-30) — [[ADR0073_WS1B_WS2_EVIDENCE]]; prod flag flip = ops |
 | **Agents** | backend (lead), security (E10), devops (flag) |
 | **Files** | `middleware/public-api-auth.ts` **only** |
 | **Depends** | WS-1 |
