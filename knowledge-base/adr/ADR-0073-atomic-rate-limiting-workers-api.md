@@ -10,6 +10,9 @@ relates_to:
   - ADR-0001-do-per-session
   - ADR-042-cloudflare-capability-expansion
   - ADR-0050-embeddable-sdk-auth-widget-origin-sandboxing
+  - ADR0073_ATOMIC_RL_WORKSTREAMS
+  - RATE_LIMIT_BINDINGS_SETUP
+  - BACKLOG_ACTIVE
 tags:
   - security
   - infrastructure
@@ -21,7 +24,9 @@ tags:
 
 ## Status
 
-**Proposed** (2026-07-30). Architecture + ops plan only — no production code change in this ADR. Implementation is gated behind backlog stories in [[BACKLOG_ACTIVE]] / security follow-ups.
+**Proposed** (2026-07-30). Architecture + ops plan only — no production code change in this ADR.
+
+**Build organisation:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]] — six workstreams (WS-0…WS-5), two-train capacity split, file ownership, and do-not-co-land rules. Promote stories from that doc into [[BACKLOG_ACTIVE]] train tables when PO commits capacity.
 
 ## Problem
 
@@ -193,44 +198,21 @@ Do not invent fake remaining counts from KV when L1 is authoritative.
 - Hashed `cf-connecting-ip` remains acceptable for anonymous surfaces (join, report) — CF docs discourage raw IP for *user fairness*; for **abuse shields** IP hash is still correct (matches today’s SEC M-6 posture). Document the deliberate exception in the facade.
 - Never use client-supplied `X-Forwarded-For` (already enforced).
 
-## Implementation phases
+## Implementation phases → workstreams
 
-### Phase 0 — Plan freeze (this ADR)
+Phases map 1:1 onto build workstreams in [[ADR0073_ATOMIC_RL_WORKSTREAMS]]. Prefer that doc for story IDs, pts, file ownership, and train slicing.
 
-- Accept ADR; reserve `namespace_id` block; publish ops runbook.
-- Stories: `SEC-RL-ATOMIC-ADR-01` (done by this PR), registry doc.
+| Phase | Workstream | Story IDs | Pts |
+|------:|------------|-----------|----:|
+| 0 | WS-0 Plan freeze | `SEC-RL-ATOMIC-ADR-01` | 3 |
+| 1 | WS-1 Foundation | `SEC-RL-ATOMIC-BINDINGS-01` + `SEC-RL-ATOMIC-FACADE-01` | 8 |
+| 1b | WS-1b Observability | `SEC-RL-ATOMIC-OBS-01` | 3 |
+| 2 | WS-2 API-key canary | `SEC-APIKEY-LIMITER-ATOMIC-01` | 5 |
+| 3 | WS-3 Tier A migrate | `SEC-RL-ATOMIC-TIER-A-01` | 8 |
+| 4 | WS-4 Tier B dual-layer | `SEC-RL-ATOMIC-TIER-B-01` | 5 |
+| 5 | WS-5 Cleanup (+ optional L0) | `SEC-RL-ATOMIC-CLEANUP-01` (+ `SEC-RL-ATOMIC-L0-WAF-01`) | 3 (+5) |
 
-### Phase 1 — Infra + facade (devops + backend)
-
-- Add `[[ratelimits]]` to `wrangler.toml` (prod/preview/staging).
-- Extend `Env` + `wrangler types` / hand types.
-- Implement facade + Vitest mock `RateLimit` binding.
-- Flag `ATOMIC_RATE_LIMIT_ENABLED=false` in prod.
-- **Acceptance:** `npm test` + `npm run typecheck`; local `wrangler dev --local` starts with bindings present or safely absent.
-
-### Phase 2 — Canary Tier A (`SEC-APIKEY-LIMITER-ATOMIC-01`)
-
-- Switch public API key limiter to `RL_API_KEY` behind flag.
-- Dual-write optional for one train: L1 decide, still write KV for comparison metrics (`rate_limit.backend` AE field).
-- **Acceptance:** load/burst test shows deny rate under N concurrent ≤ configured budget ± colo permissiveness; AE `rate_limit.hit` tagged `backend=workers_rl`; flag-off restores KV.
-
-### Phase 3 — Remaining Tier A
-
-- Embed read/handshake, join, public event, webhook, admin-audit query.
-- Remove dual-write once confidence ≥ 1 train.
-- **Acceptance:** no regression in `embed-rate-limit`, `rate-limit-middleware`, webhook tests; pentest RG-1 still green.
-
-### Phase 4 — Tier B dual-layer
-
-- Auth / report / AI / session-create: L1 burst derived from product intent + L2 KV sustained.
-- Example auth: L1 `RL_AUTH_BURST` 5/60 **and** L2 KV 5/600 — L1 stops SMS/email storms; L2 preserves product “5 per 10 minutes”.
-- **Acceptance:** documented matrix of L1+L2 budgets; security sign-off that magic-link / Resend cost risk is reduced.
-
-### Phase 5 — Cleanup
-
-- Delete dead KV counter paths for Tier A; keep KV helper for Tier B only.
-- Update SPEC / SECURITY docs; close `SEC-APIKEY-LIMITER-ATOMIC-01` as remediated.
-- Optional: enable ADR-042 §1.2 L0 rules for `/api/auth/*` and WS upgrade.
+**Train A (~19 pts):** WS-0 → WS-1 → (WS-1b ∥ WS-2). **Train B (~13–21 pts):** WS-3 → WS-4 → WS-5. **Do not co-land WS-3 with WS-4.**
 
 ## Ops plan
 

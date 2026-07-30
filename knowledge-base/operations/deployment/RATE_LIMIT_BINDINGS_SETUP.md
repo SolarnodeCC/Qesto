@@ -21,6 +21,8 @@ relates_to:
 
 Companion runbook for [[ADR-0073-atomic-rate-limiting-workers-api]]. Bindings are **declarative in `wrangler.toml`** — there is no `wrangler ratelimit create` CLI step. Ops owns ID hygiene, env mirroring, flag rollout, and monitoring.
 
+**Build workstreams:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]] — this runbook is executed primarily in **WS-1** (bindings) and **WS-1b** (monitoring); flag flips happen in **WS-2+**.
+
 ## Prerequisites
 
 - Cloudflare account with Workers Paid (Rate Limiting binding is a Workers runtime API; confirm plan entitlement before prod canary).

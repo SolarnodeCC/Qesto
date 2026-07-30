@@ -66,9 +66,9 @@ relates_to:
 
 **Why Acceptable today**: This is an **abuse/cost control**, not a security boundary. Impact is bounded to modest quota overage under concentrated attack. The limit is soft and documented.
 
-**Remediation (planned)**: [[ADR-0073-atomic-rate-limiting-workers-api]] — layered Workers Rate Limiting API (L1) + KV long-window soft quota (L2). Canary surface = this API-key limiter (`RL_API_KEY`, 120/60). Ops: [[RATE_LIMIT_BINDINGS_SETUP]]. Do **not** treat as a 20-line patch; requires `[[ratelimits]]` bindings, facade, flag, and AE monitoring.
+**Remediation (planned)**: [[ADR-0073-atomic-rate-limiting-workers-api]] — layered Workers Rate Limiting API (L1) + KV long-window soft quota (L2). **Build order:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]] (WS-0…WS-5). Canary surface = this API-key limiter (`RL_API_KEY`, 120/60) in **WS-2**. Ops: [[RATE_LIMIT_BINDINGS_SETUP]]. Do **not** treat as a 20-line patch; requires `[[ratelimits]]` bindings, facade, flag, and AE monitoring.
 
-**Backlog**: `SEC-APIKEY-LIMITER-ATOMIC-01` (canary) + `SEC-RL-ATOMIC-FACADE-01` / `SEC-RL-ATOMIC-TIER-A-01` / `SEC-RL-ATOMIC-TIER-B-01` — see [[BACKLOG_ACTIVE]] security follow-ups. Priority **P2**, promote when a release train has infra capacity.
+**Backlog**: Train A/B candidate tables in [[BACKLOG_ACTIVE]] under “Atomic rate limiting — build workstreams”. Priority **P2**, promote when a release train has infra capacity.
 
 ---
 
@@ -123,7 +123,7 @@ relates_to:
 ## Next Steps (PO Discretion)
 
 1. **SEC-SAML-VERIFY-01**: Schedule XML-DSig implementation for SAML GA release train (currently blocked behind SAML_SSO_ENABLED feature gate).
-2. **SEC-APIKEY-LIMITER-ATOMIC-01**: Execute [[ADR-0073-atomic-rate-limiting-workers-api]] Phase 1–2 (Workers Rate Limiting canary on API keys). Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse.
+2. **SEC-APIKEY-LIMITER-ATOMIC-01**: Execute [[ADR0073_ATOMIC_RL_WORKSTREAMS]] Train A (WS-1 facade → WS-2 canary). Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse.
 3. **SEC-DISPLAY-FRAMING-01**: Add to tech-debt checklist; act if `/display/*` interactivity is ever planned.
 4. **CSRF-INFO-01**: Review if non-browser session-cookie callers are ever added.
 
