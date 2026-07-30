@@ -41,7 +41,7 @@ Companion runbook for [[ADR-0073-atomic-rate-limiting-workers-api]]. Bindings ar
 | `1006` | `RL_WEBHOOK` | 100 / 60s | prod |
 | `1007` | `RL_AUTH_BURST` | 5 / 60s | prod |
 | `1008` | `RL_REPORT_BURST` | 5 / 60s | prod |
-| `1009` | `RL_KB_SEARCH` | TBD / 60s | prod |
+| `1009` | `RL_KB_SEARCH` | 60 / 60s | prod |
 | `1010` | `RL_ADMIN_AUDIT_Q` | 120 / 60s | prod |
 | `1001–1099` | *(reserved block)* | — | Do not use outside Qesto API |
 

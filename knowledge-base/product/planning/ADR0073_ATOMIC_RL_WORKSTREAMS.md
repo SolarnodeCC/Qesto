@@ -114,6 +114,8 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 - GIVEN wrangler config WHEN dry-run THEN all Tier A+B bindings listed in [[RATE_LIMIT_BINDINGS_SETUP]] are present  
 - GIVEN local bootstrap without remote THEN Worker starts (bindings optional / inert)
 
+**Status (2026-07-30):** ✅ Landed — `wrangler deploy --dry-run` lists all 10 `RL_*` bindings; flag `"false"`. `RL_KB_SEARCH` budget set to **60/60** (matches `kb-search` middleware; was TBD in registry). No `[env.preview]` mirror (repo intentionally has no preview env block).
+
 ### `SEC-RL-ATOMIC-FACADE-01` (backend, 5 pts)
 
 **Build**
@@ -130,6 +132,8 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 - GIVEN fake binding deny WHEN facade used THEN `{ allowed: false, backend: 'workers_rl' }`
 
 **Exit gate:** `npm test` + `npm run typecheck` green. **No production flag flip.**
+
+**Status (2026-07-30):** ✅ Landed — facade + `tests/unit/atomic-rate-limit.test.ts`. **Critical choices:** (1) **no production callers** in this package (WS-2 owns canary); (2) **no dual-layer L1+L2** yet (WS-4); (3) empty keys **denied**; (4) Workers RL errors fall back to KV (availability); (5) `remaining` non-authoritative for `workers_rl`.
 
 ---
 
