@@ -77,4 +77,4 @@ relates_to:
 - Operator must run `burst:api-key-rate-limit` on staging with flag on before prod flip.
 - Help-ask (10/60) and deliberate cast/verify/observe still on `lib/rate-limit` — promote later if abuse appears.
 - Optional `SEC-RL-ATOMIC-L0-WAF-01` zone rules for auth/WS.
-- After prod soak, ADR status → **Implemented** (set in this closeout once tests green).
+- ADR status set to **Implemented**; prod enablement remains flag-gated.
