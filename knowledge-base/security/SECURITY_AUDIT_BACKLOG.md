@@ -123,7 +123,7 @@ relates_to:
 ## Next Steps (PO Discretion)
 
 1. **SEC-SAML-VERIFY-01**: Schedule XML-DSig implementation for SAML GA release train (currently blocked behind SAML_SSO_ENABLED feature gate).
-2. **SEC-APIKEY-LIMITER-ATOMIC-01**: Execute [[ADR0073_ATOMIC_RL_WORKSTREAMS]] Train A (WS-1 facade → WS-2 canary). Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse.
+2. **SEC-APIKEY-LIMITER-ATOMIC-01**: WS-0 + WS-1 **Done** (ADR Accepted, bindings + facade). Next: WS-2 canary on `public-api-auth.ts` per [[ADR0073_ATOMIC_RL_WORKSTREAMS]]. Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse.
 3. **SEC-DISPLAY-FRAMING-01**: Add to tech-debt checklist; act if `/display/*` interactivity is ever planned.
 4. **CSRF-INFO-01**: Review if non-browser session-cookie callers are ever added.
 

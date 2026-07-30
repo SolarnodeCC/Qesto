@@ -82,7 +82,7 @@
 | [ADR-0070](./ADR-0070-single-error-response-builder.md) | Single API Error-Response Builder (`errorResponse`) | Backend | Accepted |
 | [ADR-0071](./ADR-0071-design-system-v1.md) | Design System v1: token aliases, icon policy, component radius | Frontend | Accepted |
 | [ADR-0072](./ADR-0072-theming-mechanisms.md) | Theming mechanisms: three bounded systems | Frontend | Accepted |
-| [ADR-0073](./ADR-0073-atomic-rate-limiting-workers-api.md) | Atomic Rate Limiting via Workers Rate Limiting API | Security | Proposed |
+| [ADR-0073](./ADR-0073-atomic-rate-limiting-workers-api.md) | Atomic Rate Limiting via Workers Rate Limiting API | Security | Accepted |
 | [ADR-AI-Latency](./ADR-AI-Latency.md) | Workers AI Latency Budgets & Precomputation Strategy | AI/Performance | Accepted |
 | [ADR-DO-Timers](./ADR-DO-Timers.md) | Timer Semantics in Durable Objects | Realtime | Accepted |
 | [ADR-KV-Tenant-Conventions](./ADR-KV-Tenant-Conventions.md) | KV Key Scoping & Tenant-Isolation Conventions | Data | Accepted |

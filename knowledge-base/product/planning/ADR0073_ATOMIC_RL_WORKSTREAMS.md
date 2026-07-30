@@ -80,7 +80,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 |-------|-------|
 | **Story** | `SEC-RL-ATOMIC-ADR-01` |
 | **Pts** | 3 |
-| **Status** | Done in ADR PR (docs only) |
+| **Status** | **Done** (2026-07-30) — [[ADR0073_WS0_WS1_EVIDENCE]] |
 | **Agents** | architect → PO (accept) → security (ack) |
 | **Handoffs** | E4 architect→backend/devops; E12 binding spec→devops |
 
@@ -88,8 +88,8 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 
 - [x] ADR-0073 proposed with layered model + binding registry
 - [x] [[RATE_LIMIT_BINDINGS_SETUP]] published
-- [ ] ADR status → **Accepted** (PO + architect + security)
-- [ ] Stories below promoted into `BACKLOG_ACTIVE` train table (not only follow-ups)
+- [x] ADR status → **Accepted** (PO + architect + security)
+- [x] Stories promoted into `BACKLOG_ACTIVE` RT-02 addendum (Train A)
 
 ---
 
@@ -98,6 +98,7 @@ WS-0 Plan ──► WS-1 Foundation ──┬──► WS-2 Canary (API key) ─
 | Field | Value |
 |-------|-------|
 | **Stories** | `SEC-RL-ATOMIC-BINDINGS-01` (3) + `SEC-RL-ATOMIC-FACADE-01` (5) = **8** |
+| **Status** | **Done** (2026-07-30) — [[ADR0073_WS0_WS1_EVIDENCE]] |
 | **Agents** | devops (bindings), backend (facade), architect (review Env) |
 | **Handoffs** | E12 → devops; E5 backend→devops; E9 tester gate |
 

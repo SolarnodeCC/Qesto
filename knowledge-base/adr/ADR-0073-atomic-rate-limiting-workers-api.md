@@ -1,8 +1,9 @@
 ---
 id: ADR-0073
 title: Atomic Rate Limiting via Workers Rate Limiting API
-status: proposed
+status: accepted
 date: 2026-07-30
+accepted: 2026-07-30
 deciders: architect, backend, devops, security
 relates_to:
   - SEC-APIKEY-LIMITER-ATOMIC-01
@@ -13,6 +14,7 @@ relates_to:
   - ADR0073_ATOMIC_RL_WORKSTREAMS
   - RATE_LIMIT_BINDINGS_SETUP
   - BACKLOG_ACTIVE
+  - ADR0073_WS0_WS1_EVIDENCE
 tags:
   - security
   - infrastructure
@@ -24,9 +26,10 @@ tags:
 
 ## Status
 
-**Proposed** (2026-07-30). Architecture + ops plan only — no production code change in this ADR.
+**Accepted** (2026-07-30). Layered Workers Rate Limiting design approved for implementation.
 
-**Build organisation:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]] — six workstreams (WS-0…WS-5), two-train capacity split, file ownership, and do-not-co-land rules. Promote stories from that doc into [[BACKLOG_ACTIVE]] train tables when PO commits capacity.
+**Build organisation:** [[ADR0073_ATOMIC_RL_WORKSTREAMS]].  
+**WS-0 + WS-1 evidence:** [[ADR0073_WS0_WS1_EVIDENCE]] — foundation (bindings + facade) landed with `ATOMIC_RATE_LIMIT_ENABLED=false` and **no production callers**. Implementation continues at WS-2 (API-key canary).
 
 ## Problem
 
