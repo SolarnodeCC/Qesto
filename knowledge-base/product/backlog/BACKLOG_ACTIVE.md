@@ -6,7 +6,7 @@ category: backlog
 status: active
 version: 1.1
 created: 2026-06-19
-updated: 2026-07-14
+updated: 2026-07-30
 tags:
   - backlog
   - release-train
@@ -224,7 +224,10 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | ID | Severity | Description | Remediation | Priority | Notes |
 |----|----|---|---|---|---|
 | `SEC-SAML-VERIFY-01` | LOW | SAML assertions are parsed by regex with no XML-DSig verification (currently feature-gated fail-closed) | Implement XML-DSig verification before SAML GA; currently disabled via `SAML_SIGNATURE_VERIFY_ENABLED` flag (both `SAML_SSO_ENABLED` and signature-verify default false in `wrangler.toml`) | P1 (SAML GA blocker) | Location: `functions/api/lib/saml.ts:19–29`; referenced in backlog as BACKLOG-SEC-SAML-01 / #529 |
-| `SEC-APIKEY-LIMITER-ATOMIC-01` | LOW | Per-key rate limiter (120 req/min) is a non-atomic read-then-write (TOCTOU); concurrent requests can bypass under burst | Acceptable as soft quota; if tighter enforcement needed, back with DO or CF's native rate-limiting binding | P2 | Location: `functions/api/middleware/public-api-auth.ts:52–67`; impact bounded to modest quota overage; not a security boundary |
+| `SEC-APIKEY-LIMITER-ATOMIC-01` | LOW | Per-key rate limiter (120 req/min) is a non-atomic read-then-write (TOCTOU); concurrent requests can bypass under burst | **Remediate via [[ADR-0073-atomic-rate-limiting-workers-api]]** — Workers Rate Limiting L1 canary (`RL_API_KEY`); not a KV one-liner | P2 | Location: `functions/api/middleware/public-api-auth.ts:52–67`; plan+ops: [[RATE_LIMIT_BINDINGS_SETUP]] |
+| `SEC-RL-ATOMIC-FACADE-01` | — | Infra: `[[ratelimits]]` bindings + `atomic-rate-limit` facade + flag + Vitest mocks | Land Phase 0–1 of ADR-0073 (bindings inert until flag on) | P2 | Owners: devops + backend; pts ~8; depends on ADR accept |
+| `SEC-RL-ATOMIC-TIER-A-01` | — | Migrate embed / join / webhook / public-event / admin-audit-query to L1 | Phase 3 ADR-0073 after API-key canary green | P2 | Owners: backend; pts ~8; do not co-land with Tier B |
+| `SEC-RL-ATOMIC-TIER-B-01` | — | Dual-layer L1 burst + L2 KV for auth/AI/admin long windows | Phase 4 ADR-0073; preserve product windows (5/600, 10/3600) | P2 | Owners: backend + security; pts ~5 |
 | `SEC-DISPLAY-FRAMING-01` | LOW | `/display/*` pages intentionally embeddable (CSP `frame-ancestors *`) but have mixed signals with `X-Frame-Options: SAMEORIGIN` | If interactive controls ever added to display pages, scope `frame-ancestors` to specific embedding origins rather than `*` | P2 (monitoring only) | Location: `public/_headers` (`/display/*` rule); currently safe (no state-changing controls on display pages) |
 | `CSRF-INFO-01` | INFO | CSRF validation is permissive when both Origin and Referer headers are absent (deliberate decision documented in code) | No action required; documented follow-up if server-to-server cookie callers are ever added | Monitoring | Location: `functions/api/middleware/csrf.ts:74–99`; residual risk (cookie-bearing non-browser client) is acceptable and documented |
 

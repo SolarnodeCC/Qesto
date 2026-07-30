@@ -57,18 +57,18 @@ relates_to:
 
 ---
 
-### SEC-APIKEY-LIMITER-ATOMIC-01 (LOW, P2 — soft quota)
+### SEC-APIKEY-LIMITER-ATOMIC-01 (LOW, P2 — soft quota → remediate via ADR-0073)
 
 **Severity**: LOW (bounded impact; soft quota, not security boundary)  
 **Location**: `functions/api/middleware/public-api-auth.ts:52–67`
 
-**Issue**: The 120-req/min per-API-key limit reads the KV counter, checks it, then writes `count+1` without atomicity. Concurrent requests in the same window can each read the same value and all pass. KV has no strong consistency, so the counter under-counts under burst.
+**Issue**: The 120-req/min per-API-key limit reads the KV counter, checks it, then writes `count+1` without atomicity. Concurrent requests in the same window can each read the same value and all pass. KV has no strong consistency, so the counter under-counts under burst. The same TOCTOU pattern exists on other KV limiters (`middleware/rate-limit.ts`, `lib/rate-limit.ts`, embed, webhooks).
 
-**Why Acceptable**: This is an **abuse/cost control**, not a security boundary. Impact is bounded to modest quota overage under concentrated attack. The limit is soft and documented.
+**Why Acceptable today**: This is an **abuse/cost control**, not a security boundary. Impact is bounded to modest quota overage under concentrated attack. The limit is soft and documented.
 
-**Remediation**: If tighter enforcement is ever needed, back the counter with a Durable Object or Cloudflare's native rate-limiting binding. Accept as-is otherwise.
+**Remediation (planned)**: [[ADR-0073-atomic-rate-limiting-workers-api]] — layered Workers Rate Limiting API (L1) + KV long-window soft quota (L2). Canary surface = this API-key limiter (`RL_API_KEY`, 120/60). Ops: [[RATE_LIMIT_BINDINGS_SETUP]]. Do **not** treat as a 20-line patch; requires `[[ratelimits]]` bindings, facade, flag, and AE monitoring.
 
-**Backlog**: `SEC-APIKEY-LIMITER-ATOMIC-01`, backlog priority **P2** (nice-to-have), horizon **conditional on abuse patterns**.
+**Backlog**: `SEC-APIKEY-LIMITER-ATOMIC-01` (canary) + `SEC-RL-ATOMIC-FACADE-01` / `SEC-RL-ATOMIC-TIER-A-01` / `SEC-RL-ATOMIC-TIER-B-01` — see [[BACKLOG_ACTIVE]] security follow-ups. Priority **P2**, promote when a release train has infra capacity.
 
 ---
 
@@ -123,7 +123,7 @@ relates_to:
 ## Next Steps (PO Discretion)
 
 1. **SEC-SAML-VERIFY-01**: Schedule XML-DSig implementation for SAML GA release train (currently blocked behind SAML_SSO_ENABLED feature gate).
-2. **SEC-APIKEY-LIMITER-ATOMIC-01**: Monitor real-world abuse patterns; escalate to DO-backed counter if quota abuse observed.
+2. **SEC-APIKEY-LIMITER-ATOMIC-01**: Execute [[ADR-0073-atomic-rate-limiting-workers-api]] Phase 1–2 (Workers Rate Limiting canary on API keys). Escalate to DO only if colo-local L1 + L2 still insufficient under measured abuse.
 3. **SEC-DISPLAY-FRAMING-01**: Add to tech-debt checklist; act if `/display/*` interactivity is ever planned.
 4. **CSRF-INFO-01**: Review if non-browser session-cookie callers are ever added.
 
