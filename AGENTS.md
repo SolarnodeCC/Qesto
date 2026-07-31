@@ -62,18 +62,19 @@ wrangler pages deploy  # Deployen naar Cloudflare Pages (qesto project)
 ### Full-stack local dev (backend API)
 - The simplest approach: create `.dev.vars` with `JWT_SECRET`, `ENVIRONMENT`, and `APP_URL`, then run `npx wrangler dev --port 8787 --local`. The `worker/index.ts` entry point delegates to the Hono app in `functions/api/app.ts`.
 - Without `--local`, wrangler tries remote proxy for the `[ai]` binding and requires `CLOUDFLARE_API_TOKEN`. With `--local`, AI and Vectorize show as "not supported" but the server starts and all REST API endpoints work.
-- **D1 schema**: Apply the schema to the local D1 database on first run: `npx wrangler d1 execute qesto_2_db --local --file=schema.sql`. The database name in `wrangler.toml` is `qesto_2_db` and the schema file is at the repo root (`schema.sql`).
+- **D1 schema**: Apply migrations to the local D1 database on first run: `npm run e2e:db:local` (runs `wrangler d1 migrations apply qesto_3_db --local`). The database name in `wrangler.toml` is `qesto_3_db`; migrations live in `migrations/` (the root `schema.sql` is the consolidated reference, not the apply path).
 - **Durable Objects**: `SESSION_ROOM` runs locally. WebSocket/realtime features work in local mode.
-- **Magic links in dev**: Without `RESEND_API_KEY`, the dev server logs the magic link to the console as `[email:dev] to=<email> subject=...` followed by the full URL. Use that URL (replacing `https://qesto.cc` with `http://localhost:8787`) to complete auth.
+- **Magic links in dev**: Without `RESEND_API_KEY`, the dev server logs the magic link as `[email:dev] to=<email> subject=...` followed by the full URL (with `PAGES_URL`/`API_URL` base). GOTCHA: in Cursor Cloud, the 64-hex token is scrubbed by secret-redaction in captured terminal/log output, so you cannot copy the logged link to finish auth. Instead seed a row directly in local D1 and call the callback: pick a 64-hex `RAW` token, insert `magic_links(token_hash=SHA-256(RAW), email, created_at, expires_at=now+900000, consumed_at=NULL)` via `wrangler d1 execute qesto_3_db --local`, then `GET /api/auth/callback?token=<RAW>` (saves the `qesto_session` cookie). Setting `PAGES_URL`/`API_URL` in `.dev.vars` to `http://localhost:5173`/`http://localhost:8787` keeps the post-callback redirect and CSRF origin local for browser flows.
 
 ### Testing
-- `npm test` — Vitest unit tests (485 tests across 54 suites).
+- `npm test` — Vitest unit tests (currently 2580 tests across 302 files).
 - `npm run typecheck` — TypeScript check (`tsc --noEmit`).
-- `npm run check` — Runs `check:wrangler`, `check:api`, and `check:i18n`. The `check:wrangler` script requires Cloudflare authentication and will fail without it.
+- `npm run check:i18n` — i18n key validation. NOTE: currently fails on pre-existing missing NL/ES/DE/FR translation keys (a repo content gap, not an environment problem). There is no top-level `npm run check` script; the heavy full local gate is `npm run check:rc` (includes build + eval + a11y).
 - `npm run build` — Production build to `dist/`.
 
 ### Gotchas
 - `.npmrc` must have `legacy-peer-deps=true` — npm install requires this for dependency resolution. Create `.npmrc` if it doesn't exist.
 - `.dev.vars` is gitignored and should be used for local secrets (JWT_SECRET, ENVIRONMENT, APP_URL, RESEND_API_KEY, etc.).
 - Only `wrangler.toml` exists (no `wrangler.jsonc`).
-- The `npm run build` step includes `npm run tokens:build` which generates `src/ui/tokens.ts` and `src/ui/tailwind-theme.ts` — these are committed but regenerated on every build.
+- `npm run build` is just `vite build` (there is no separate `tokens:build` step in the build pipeline).
+- Free-plan users get `403 feature_not_available` on plan-gated endpoints (e.g. team insights/trends/scorecard, AI question generation) — this is expected entitlement gating, not a bug.
