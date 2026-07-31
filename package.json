@@ -83,7 +83,7 @@
     "@capacitor/cli": "^7.6.8",
     "@capacitor/ios": "^7.6.8",
     "@cloudflare/workers-types": "^4.20260702.1",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@playwright/test": "^1.62.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
