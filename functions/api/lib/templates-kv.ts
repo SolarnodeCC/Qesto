@@ -33,6 +33,10 @@ interface RegistryRow {
   usage_count: number
 }
 
+interface ContentHashRow {
+  id: string
+}
+
 async function readRecord(kv: KVNamespace, templateId: string): Promise<TemplateRecord | null> {
   const raw = await kv.get(templateKey(templateId), 'json')
   if (!raw) return null
@@ -149,8 +153,9 @@ export type StoreTemplateResult = { stored: true } | { stored: false; reason: 'd
 
 /**
  * Validate and persist a template: registry row first (its UNIQUE content_hash
- * is the atomic dedup gate), KV blob only after the insert wins. A duplicate
- * leaves both stores untouched.
+ * is the atomic dedup gate), KV blob only after the insert wins. If the KV
+ * write failed after the row was inserted, a workflow retry heals that partial
+ * state when the content hash belongs to the same template id.
  */
 export async function storeTemplate(
   db: D1Database,
@@ -195,6 +200,14 @@ export async function storeTemplate(
     .run()
 
   if ((insert.meta?.changes ?? 0) === 0) {
+    const existing = await db
+      .prepare(`SELECT id FROM marketing_templates WHERE content_hash = ?1`)
+      .bind(contentHash)
+      .first<ContentHashRow>()
+    if (existing?.id === record.id && !(await readRecord(kv, record.id))) {
+      await kv.put(templateKey(record.id), JSON.stringify(record))
+      return { stored: true }
+    }
     return { stored: false, reason: 'duplicate' }
   }
   await kv.put(templateKey(record.id), JSON.stringify(record))

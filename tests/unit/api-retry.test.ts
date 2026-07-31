@@ -58,4 +58,17 @@ describe('apiRetry', () => {
     // initial attempt + 2 retries
     expect(fetchMock).toHaveBeenCalledTimes(3)
   })
+
+  it('normalises plain-string backend errors to ApiError', async () => {
+    const { api } = await import('../../src/api/client')
+    mockFetch(async () => jsonResponse({ error: 'gallery unavailable' }, 503))
+
+    const res = await api('/api/gallery')
+
+    expect(res.ok).toBe(false)
+    if (!res.ok) {
+      expect(res.error.code).toBe('api_error')
+      expect(res.error.message).toBe('gallery unavailable')
+    }
+  })
 })

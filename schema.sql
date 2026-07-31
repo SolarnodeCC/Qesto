@@ -195,6 +195,10 @@ CREATE INDEX IF NOT EXISTS idx_townhall_q_author ON townhall_questions(author_ha
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
+-- Vote buffering / close-path indexes (0025 / 0045 / 0063)
+CREATE INDEX IF NOT EXISTS idx_votes_session_id_submitted_at ON votes(session_id, submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_votes_session_submitted ON votes(session_id, submitted_at);
+CREATE INDEX IF NOT EXISTS idx_votes_session_voter ON votes(session_id, voter_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_log — append-only trail for security, GDPR, ops
