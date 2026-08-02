@@ -23,7 +23,10 @@ concurrency:
 jobs:
   kb-sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 40 min: a defense-in-depth margin on top of the embed-kb.ts concurrency
+    # fix (EMBED_CONCURRENCY) — protects against a slow Workers AI endpoint or
+    # a future large doc dump re-triggering the same timeout failure mode.
+    timeout-minutes: 40
     # The secrets context is not allowed in step `if:` expressions — map the
     # webhook into job env so the Slack step can gate on `env.*` instead.
     env:
