@@ -14,7 +14,7 @@ import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import { z } from 'zod'
-import type { KbSyncRecord } from '../functions/api/types/knowledge-base'
+import type { KbSyncDocumentFields, KbSyncRecord } from '../functions/api/types/knowledge-base'
 
 // Local imports (must build/transpile mdChunker first or inline here)
 // For now, we'll inline the essentials to avoid require() complexity in ts-node
@@ -58,6 +58,12 @@ const kbRoot = path.join(process.cwd(), 'knowledge-base')
 const apiKey = process.env.CLOUDFLARE_API_TOKEN || ''
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
 const dbId = process.env.CLOUDFLARE_D1_DATABASE_ID || ''
+// Path to a JSON array of file paths to restrict embedding to (written by
+// kb-sync-cli.ts for incremental syncs). Unset/missing means "embed everything".
+const embedFilesListPath = process.env.KB_EMBED_FILES
+// Sequential per-chunk embedding calls (one HTTP round-trip each) don't scale to
+// the full ~480-file corpus within CI's job timeout — bound concurrency instead.
+const EMBED_CONCURRENCY = Number(process.env.KB_EMBED_CONCURRENCY) || 8
 
 function sha256(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex')
@@ -401,6 +407,35 @@ function walkKbFiles(): string[] {
   return files
 }
 
+/**
+ * Runs `worker` over `items` with at most `concurrency` in flight at once,
+ * preserving per-item settlement (success/failure) without one slow/failed
+ * item blocking the rest. Used to bound the ~480-file corpus's embedding
+ * calls to a CI-timeout-safe wall-clock time instead of running sequentially.
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length)
+  let next = 0
+  async function runOne() {
+    while (next < items.length) {
+      const index = next++
+      try {
+        const value = await worker(items[index], index)
+        results[index] = { status: 'fulfilled', value }
+      } catch (reason) {
+        results[index] = { status: 'rejected', reason }
+      }
+    }
+  }
+  const workerCount = Math.max(1, Math.min(concurrency, items.length))
+  await Promise.all(Array.from({ length: workerCount }, runOne))
+  return results
+}
+
 async function main() {
   if (!isDryRun && (!apiKey || !accountId || !dbId)) {
     console.error(
@@ -415,18 +450,38 @@ async function main() {
   if (limitFiles) console.log(`Limit: ${limitFiles} files`)
   console.log()
 
-  const files = walkKbFiles()
+  let files = walkKbFiles()
+  const totalFileCount = files.length
+
+  // Incremental sync: kb-sync-cli.ts writes the changed-file subset to a JSON
+  // file and points KB_EMBED_FILES at it. Restrict the walk to that subset so
+  // routine merges (a handful of changed docs) don't re-embed the whole
+  // ~480-file corpus. Absent/missing means "embed everything" (first run,
+  // manual `npm run kb:embed`, etc).
+  if (embedFilesListPath && fs.existsSync(embedFilesListPath)) {
+    const raw: unknown = JSON.parse(fs.readFileSync(embedFilesListPath, 'utf8'))
+    const requested = Array.isArray(raw) ? raw.filter((f): f is string => typeof f === 'string') : []
+    const requestedAbs = new Set(requested.map((f) => path.resolve(f)))
+    files = files.filter((f) => requestedAbs.has(path.resolve(f)))
+    console.log(`KB_EMBED_FILES: restricting to ${files.length} of ${totalFileCount} file(s)`)
+  }
+
   console.log(`Found ${files.length} markdown files`)
 
   let processedCount = 0
-  let chunkCount = 0
-  let embeddingCount = 0
-  let errorCount = 0
   let fileErrorCount = 0
 
-  const vectorUpserts: KbSyncRecord[] = []
+  interface PendingChunk {
+    meta: FrontmatterMeta
+    docFields: KbSyncDocumentFields
+    chunk: Chunk
+  }
+  const pending: PendingChunk[] = []
   const startTime = Date.now()
 
+  // Phase 1: walk, parse frontmatter, and chunk every file. Cheap/synchronous
+  // aside from disk reads, so this stays a plain sequential loop — the cost
+  // that needs bounding is the embedding HTTP call in phase 2 below.
   for (const file of files) {
     if (limitFiles && processedCount >= limitFiles) break
 
@@ -465,45 +520,8 @@ async function main() {
           updated_at: now,
         }
 
-        // Embed each chunk and emit a self-contained sync record (vector + the
-        // kb_documents / kb_chunks rows needed for search to hydrate).
         for (const chunk of chunks) {
-          try {
-            console.log(`  Embedding: ${chunk.hash.slice(0, 8)}...`)
-            const vector = await embedViaAPI(formatEmbeddingInput(chunk, meta))
-            const chunkId = `${meta.id}#${chunk.chunkIndex}`
-
-            vectorUpserts.push({
-              id: chunkId,
-              values: vector,
-              metadata: {
-                doc_id: meta.id,
-                chunk_id: chunkId,
-                type: meta.type as KbSyncRecord['metadata']['type'],
-                domain: meta.domain,
-                status: meta.status as KbSyncRecord['metadata']['status'],
-                tags: meta.tags,
-                heading_path: chunk.headingPath.slice(0, 120),
-              },
-              document: docFields,
-              chunk: {
-                chunk_index: chunk.chunkIndex,
-                heading_path: chunk.headingPath.slice(0, 120),
-                start_line: chunk.startLine,
-                end_line: chunk.endLine,
-                text: chunk.text,
-                token_estimate: chunk.tokenEstimate,
-                chunk_hash: chunk.hash,
-                embedded_at: now,
-              },
-            })
-
-            embeddingCount++
-            chunkCount++
-          } catch (e) {
-            console.error(`    Error embedding chunk: ${(e as Error).message}`)
-            errorCount++
-          }
+          pending.push({ meta, docFields, chunk })
         }
       }
 
@@ -511,6 +529,63 @@ async function main() {
     } catch (e) {
       console.error(`✗ ${file}: ${(e as Error).message}`)
       fileErrorCount++
+    }
+  }
+
+  const chunkCount = pending.length
+  let embeddingCount = 0
+  let errorCount = 0
+  const vectorUpserts: KbSyncRecord[] = []
+
+  // Phase 2: embed every chunk with bounded concurrency. The corpus is large
+  // enough (~480 files, thousands of chunks) that one HTTP round-trip per
+  // chunk run sequentially blows past CI's job timeout; EMBED_CONCURRENCY
+  // in-flight requests cuts wall-clock roughly proportional to its value.
+  if (!isDryRun && pending.length > 0) {
+    console.log(`\n📝 Embedding ${pending.length} chunk(s) (concurrency=${EMBED_CONCURRENCY})...`)
+    let completed = 0
+    const results = await mapWithConcurrency(pending, EMBED_CONCURRENCY, async ({ meta, docFields, chunk }) => {
+      const vector = await embedViaAPI(formatEmbeddingInput(chunk, meta))
+      const chunkId = `${meta.id}#${chunk.chunkIndex}`
+      completed++
+      if (completed % 50 === 0 || completed === pending.length) {
+        console.log(`  Embedded ${completed}/${pending.length}...`)
+      }
+      return {
+        id: chunkId,
+        values: vector,
+        metadata: {
+          doc_id: meta.id,
+          chunk_id: chunkId,
+          type: meta.type as KbSyncRecord['metadata']['type'],
+          domain: meta.domain,
+          status: meta.status as KbSyncRecord['metadata']['status'],
+          tags: meta.tags,
+          heading_path: chunk.headingPath.slice(0, 120),
+        },
+        document: docFields,
+        chunk: {
+          chunk_index: chunk.chunkIndex,
+          heading_path: chunk.headingPath.slice(0, 120),
+          start_line: chunk.startLine,
+          end_line: chunk.endLine,
+          text: chunk.text,
+          token_estimate: chunk.tokenEstimate,
+          chunk_hash: chunk.hash,
+          embedded_at: docFields.updated_at,
+        },
+      } satisfies KbSyncRecord
+    })
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        vectorUpserts.push(result.value)
+        embeddingCount++
+      } else {
+        const reason = result.reason
+        console.error(`    Error embedding chunk: ${reason instanceof Error ? reason.message : String(reason)}`)
+        errorCount++
+      }
     }
   }
 
