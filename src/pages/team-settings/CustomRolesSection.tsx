@@ -183,7 +183,7 @@ export function CustomRolesSection({
                 disabled={roleSaving || !roleName.trim() || selectedPermissions.length === 0}
                 className="rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-4 py-2 font-medium text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
-                {roleSaving ? 'Saving…' : editingRoleId ? 'Update role' : 'Create role'}
+                {roleSaving ? 'Saving…' : editingRoleId ? 'Save role' : 'Create role'}
               </button>
               {editingRoleId ? (
                 <button

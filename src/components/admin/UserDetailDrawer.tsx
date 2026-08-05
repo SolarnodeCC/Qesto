@@ -20,7 +20,7 @@ function fmt(ts: number | null) {
 }
 
 export default function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => void }) {
-  const { detail, loading, error, impersonate, gdprDelete, downloadExport } = useAdminUserDetail(userId)
+  const { detail, loading, error, impersonate, gdprDeleteUser, downloadExport } = useAdminUserDetail(userId)
   const [busy, setBusy] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [confirmDeletion, setConfirmDeletion] = useState(false)
@@ -43,7 +43,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
   async function handleDelete() {
     setBusy('delete')
     setNotice(null)
-    const res = await gdprDelete()
+    const res = await gdprDeleteUser()
     setBusy(null)
     setConfirmDeletion(false)
     if (res && res.ok) {

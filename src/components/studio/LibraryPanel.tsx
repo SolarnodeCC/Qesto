@@ -1,4 +1,4 @@
-// STUDIO-LIBRARY-01 — list, fork, delete saved library items.
+// STUDIO-LIBRARY-01 — list, fork, remove saved library items.
 import type { StudioLibraryItem } from './types'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   onDelete: (id: string) => void
 }
 
-export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork, onDelete }: Props) {
+export function LibraryPanel({ t, items, loading, forkingId, deletingId, onDelete, onFork }: Props) {
   return (
     <section aria-labelledby="studio-library-heading" className="rounded-lg border border-pulse-200 bg-white p-6 dark:border-[#2A3858] dark:bg-pulse-900/40">
       <h2 id="studio-library-heading" className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">

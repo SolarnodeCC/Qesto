@@ -100,7 +100,7 @@ type IdeaCardProps = {
   mergeSourceId: string | null
   onUpvote: (id: string) => void
   onDismiss: (id: string) => void
-  onMergeSelect: (id: string) => void
+  onMergePick: (id: string) => void
   onMergeInto: (targetId: string) => void
   t: TFn
 }
@@ -114,7 +114,7 @@ function FacilitatorIdeaCard({
   mergeSourceId,
   onUpvote,
   onDismiss,
-  onMergeSelect,
+  onMergePick,
   onMergeInto,
   t,
 }: IdeaCardProps) {
@@ -162,11 +162,11 @@ function FacilitatorIdeaCard({
           {t('moderate.dismiss')}
         </button>
 
-        {/* Merge select */}
+        {/* Merge picker */}
         {!mergeSourceId && (
           <button
             type="button"
-            onClick={() => onMergeSelect(idea.id)}
+            onClick={() => onMergePick(idea.id)}
             className="min-h-[32px] rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
             aria-label={t('board.mergeSelectAria', { body: idea.body })}
           >
@@ -203,7 +203,7 @@ type ClusterPanelProps = {
   mergeSourceId: string | null
   onUpvote: (id: string) => void
   onDismiss: (id: string) => void
-  onMergeSelect: (id: string) => void
+  onMergePick: (id: string) => void
   onMergeInto: (targetId: string) => void
   t: TFn
 }
@@ -219,7 +219,7 @@ function ClusterPanel({
   mergeSourceId,
   onUpvote,
   onDismiss,
-  onMergeSelect,
+  onMergePick,
   onMergeInto,
   t,
 }: ClusterPanelProps) {
@@ -285,7 +285,7 @@ function ClusterPanel({
                 mergeSourceId={mergeSourceId}
                 onUpvote={onUpvote}
                 onDismiss={onDismiss}
-                onMergeSelect={onMergeSelect}
+                onMergePick={onMergePick}
                 onMergeInto={onMergeInto}
                 t={t}
               />
@@ -401,7 +401,7 @@ export function IdeateFacilitatorBoard({
                 mergeSourceId={mergeSourceId}
                 onUpvote={onUpvote}
                 onDismiss={onDismiss}
-                onMergeSelect={setMergeSourceId}
+                onMergePick={setMergeSourceId}
                 onMergeInto={handleMergeInto}
                 t={t}
               />
@@ -431,7 +431,7 @@ export function IdeateFacilitatorBoard({
                 mergeSourceId={mergeSourceId}
                 onUpvote={onUpvote}
                 onDismiss={onDismiss}
-                onMergeSelect={setMergeSourceId}
+                onMergePick={setMergeSourceId}
                 onMergeInto={handleMergeInto}
                 t={t}
               />

@@ -183,7 +183,7 @@ export class SlackProvider implements IntegrationProvider {
    * The provider only handles outbound notifications today.
    */
   async verifyWebhook(_req: Request, _secret: string): Promise<WebhookEvent> {
-    throw new Error('Slack inbound webhooks not implemented in v2.2')
+    throw new Error('Slack inbound webhooks are unsupported in v2.2')
   }
 
   canSyncFormat(format: 'json' | 'pdf' | 'docx'): boolean {

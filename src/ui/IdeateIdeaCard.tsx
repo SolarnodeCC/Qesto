@@ -10,7 +10,7 @@ type Props = {
   showCounts?: boolean
   onUpvote?: (id: string) => void
   onDismiss?: (id: string) => void
-  onMergeSelect?: (id: string) => void
+  onMergePick?: (id: string) => void
   onMergeInto?: (targetId: string) => void
   mergeSourceId?: string | null
   t: TFn
@@ -24,13 +24,13 @@ export function IdeateIdeaCard({
   showCounts = false,
   onUpvote,
   onDismiss,
-  onMergeSelect,
+  onMergePick,
   onMergeInto,
   mergeSourceId,
   t,
 }: Props) {
   const showVote = variant === 'join'
-  const showModeration = variant === 'present' && (onDismiss || onMergeSelect || onMergeInto)
+  const showModeration = variant === 'present' && (onDismiss || onMergePick || onMergeInto)
   const isMergeSource = mergeSourceId === idea.id
   const canMergeHere = mergeSourceId && mergeSourceId !== idea.id
 
@@ -75,10 +75,10 @@ export function IdeateIdeaCard({
               {t('moderate.dismiss')}
             </button>
           )}
-          {onMergeSelect && !mergeSourceId && (
+          {onMergePick && !mergeSourceId && (
             <button
               type="button"
-              onClick={() => onMergeSelect(idea.id)}
+              onClick={() => onMergePick(idea.id)}
               className="rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
             >
               {t('moderate.merge')}

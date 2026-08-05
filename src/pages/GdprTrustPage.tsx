@@ -36,7 +36,7 @@ export default function GdprTrustPage() {
             {
               question: 'What rights do account holders have?',
               answer:
-                'Account holders can request export or deletion of personal data via DELETE /api/users/me/gdpr-delete (self-service, in-app) — this cascades to owned sessions, votes, and questions, and is covered by automated tests. Verified deletion requests are processed within 72 hours. The public GDPR compliance badge (target Q3 2026) and a downloadable evidence pack remain on the roadmap — contact privacy@qesto.cc for current documentation.',
+                'Account holders can request export or deletion of personal data via the self-service erasure endpoint (/api/users/me/gdpr-delete, HTTP DELETE, in-app) — this cascades to owned sessions, votes, and questions, and is covered by automated tests. Verified deletion requests are processed within 72 hours. The public GDPR compliance badge (target Q3 2026) and a downloadable evidence pack remain on the roadmap — contact privacy@qesto.cc for current documentation.',
             },
             {
               question: 'How long is data retained?',

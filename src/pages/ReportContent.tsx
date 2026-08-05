@@ -172,7 +172,7 @@ export default function ReportContent() {
                     onChange={(e) => setIllegalityType(e.target.value)}
                     className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-[#1A1E2E] text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    <option value="" disabled>Select a category…</option>
+                    <option value="" disabled>Choose a category…</option>
                     {ILLEGALITY_TYPES.map((t) => (
                       <option key={t} value={t}>{t}</option>
                     ))}
