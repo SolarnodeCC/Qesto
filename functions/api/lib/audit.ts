@@ -5,6 +5,7 @@
 
 import type { Env } from '../types'
 import { validateData, AuditContextSchema, UserContextSchema } from './protocol-schemas'
+import type { AuditEventRow } from './db-row-types'
 
 export type AuditAction =
   | 'session.create'
@@ -311,7 +312,7 @@ export async function queryAuditEvents(
     limit?: number
     offset?: number
   },
-): Promise<{ events: any[]; total: number }> {
+): Promise<{ events: AuditEventRow[]; total: number }> {
   const limit = options.limit ?? 100
   const offset = options.offset ?? 0
 
@@ -331,7 +332,7 @@ export async function queryAuditEvents(
 
     const listStmt = c.env.DB.prepare(listSql).bind(...bindValues, limit, offset)
 
-    const result = await listStmt.all()
+    const result = await listStmt.all<AuditEventRow>()
     return {
       events: result.results ?? [],
       total: countResult?.count ?? 0,

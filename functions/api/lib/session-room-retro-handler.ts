@@ -59,19 +59,25 @@ export class RetroHandler {
 
   async loadAllItems(): Promise<RetroItem[]> {
     const index = (await this.ctx.storage.get<string[]>(RETRO_KEYS.index)) ?? []
+    if (index.length === 0) return []
+    const itemsByKey = await this.ctx.storage.getMany<RetroItem>(index.map((id) => RETRO_KEYS.item(id)))
     const items: RetroItem[] = []
     for (const id of index) {
-      const item = await this.loadItem(id)
+      const item = itemsByKey.get(RETRO_KEYS.item(id))
       if (item) items.push(item)
     }
     return items
   }
 
   private async loadVoterVoteState(voterId: string, items: RetroItem[]): Promise<{ myUpvotes: string[]; dotsUsed: number }> {
+    const actionItems = items.filter((item) => item.column === 'actions')
+    const upvotersByKey =
+      actionItems.length === 0
+        ? new Map<string, string[]>()
+        : await this.ctx.storage.getMany<string[]>(actionItems.map((item) => RETRO_KEYS.upvoters(item.id)))
     const myUpvotes: string[] = []
-    for (const item of items) {
-      if (item.column !== 'actions') continue
-      const upvoters = (await this.ctx.storage.get<string[]>(RETRO_KEYS.upvoters(item.id))) ?? []
+    for (const item of actionItems) {
+      const upvoters = upvotersByKey.get(RETRO_KEYS.upvoters(item.id)) ?? []
       if (upvoters.includes(voterId)) myUpvotes.push(item.id)
     }
     const dotsUsed = (await this.ctx.storage.get<number>(RETRO_KEYS.voterDots(voterId))) ?? 0

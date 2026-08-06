@@ -29,22 +29,6 @@ export async function getTenantQuota(kv: KVNamespace | undefined, teamId: string
   return stored ?? { teamId, ...DEFAULT_QUOTA, updatedAt: 0 }
 }
 
-export async function checkTenantApiQuota(kv: KVNamespace | undefined, teamId: string): Promise<{ allowed: boolean; used: number; limit: number }> {
-  const quota = await getTenantQuota(kv, teamId)
-  if (!kv) return { allowed: true, used: 0, limit: quota.apiRequestsPerDay }
-  const dayStart = Math.floor(Date.now() / 86400000)
-  const key = tenantApiUsageDayKey(teamId, dayStart)
-  const used = Number((await kv.get(key)) ?? '0')
-  return { allowed: used < quota.apiRequestsPerDay, used, limit: quota.apiRequestsPerDay }
-}
-
-export async function incrementTenantApiUsage(kv: KVNamespace, teamId: string): Promise<void> {
-  const dayStart = Math.floor(Date.now() / 86400000)
-  const key = tenantApiUsageDayKey(teamId, dayStart)
-  const used = Number((await kv.get(key)) ?? '0')
-  await kv.put(key, String(used + 1), { expirationTtl: TENANT_QUOTA_TTL_SECONDS })
-}
-
 export async function setTenantQuota(kv: KVNamespace, quota: TenantQuota): Promise<void> {
   await writeKvJson(kv, tenantQuotaKey(quota.teamId), { ...quota, updatedAt: Date.now() })
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
+import { Check, X } from 'lucide-react'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
@@ -71,15 +72,7 @@ export default function TeamInvite() {
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-100"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-12 w-12 text-teal-600" aria-hidden="true">
-                <path
-                  d="M5 13l4 4L19 7"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Check aria-hidden="true" className="h-12 w-12 text-teal-600" strokeWidth={2.5} />
             </div>
             <div aria-live="polite">
               <h1 tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
@@ -104,15 +97,7 @@ export default function TeamInvite() {
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-12 w-12 text-red-500" aria-hidden="true">
-                <path
-                  d="M6 18L18 6M6 6l12 12"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <X aria-hidden="true" className="h-12 w-12 text-red-500" strokeWidth={2.5} />
             </div>
             <div role="alert" aria-live="assertive">
               <h1 tabIndex={-1} className="text-2xl font-semibold focus:outline-none">

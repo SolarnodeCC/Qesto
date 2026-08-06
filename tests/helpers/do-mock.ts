@@ -6,7 +6,18 @@ export class MockDurableObjectStorage {
   private readonly map = new Map<string, unknown>()
   private alarm: number | null = null
 
+  // Runtime also accepts a string[] (batched get), matching the real DO storage
+  // overload used via `ctx.storage.get<T>(keys)` in toHandlerContext.getMany —
+  // kept off the declared type so existing single-key monkeypatches in tests
+  // (see do-storage-retry.test.ts) stay assignable.
   async get<T>(key: string): Promise<T | undefined> {
+    if (Array.isArray(key)) {
+      const out = new Map<string, unknown>()
+      for (const k of key as string[]) {
+        if (this.map.has(k)) out.set(k, this.map.get(k))
+      }
+      return out as unknown as T | undefined
+    }
     return this.map.get(key) as T | undefined
   }
   async put(key: string, value: unknown): Promise<void> {

@@ -68,9 +68,9 @@ export async function consentFederationLink(kv: KVNamespace, linkId: string): Pr
 
 export async function listTeamFederationLinks(kv: KVNamespace, teamId: string): Promise<FederationLink[]> {
   const index = (await readKvJson<string[]>(kv, teamFederationIndexKey(teamId))) ?? []
+  const raws = await Promise.all(index.map((id) => readKvJson<unknown>(kv, federationLinkKey(id))))
   const out: FederationLink[] = []
-  for (const id of index) {
-    const raw = await readKvJson<unknown>(kv, federationLinkKey(id))
+  for (const raw of raws) {
     const parsed = raw ? FederationLinkSchema.safeParse(raw) : null
     if (parsed?.success) out.push(parsed.data)
   }

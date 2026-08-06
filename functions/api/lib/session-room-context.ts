@@ -69,6 +69,8 @@ export interface SessionRoomContext {
 export interface DurableContextLike {
   storage: {
     get<T>(key: string): Promise<T | undefined>
+    /** Batched read — one storage round-trip for all keys instead of one per key. */
+    getMany<T>(keys: string[]): Promise<Map<string, T>>
     put<T>(key: string, value: T): Promise<void>
     delete(key: string): Promise<void>
   }
@@ -86,6 +88,9 @@ export function toHandlerContext(ctx: DurableObjectState): DurableContextLike {
     storage: {
       get<T>(key: string): Promise<T | undefined> {
         return ctx.storage.get<T>(key)
+      },
+      getMany<T>(keys: string[]): Promise<Map<string, T>> {
+        return ctx.storage.get<T>(keys)
       },
       put<T>(key: string, value: T): Promise<void> {
         return ctx.storage.put<T>(key, value)

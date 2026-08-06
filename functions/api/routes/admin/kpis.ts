@@ -15,7 +15,7 @@ export function mountKpisRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
     monthStart.setUTCHours(0, 0, 0, 0)
 
     let liveSessions = 0
-    const kv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
+    const kv = c.env.METRICS_KV
     if (kv) {
       const agg = await aggregateLiveMetrics(kv, 5)
       liveSessions = agg.active_sessions

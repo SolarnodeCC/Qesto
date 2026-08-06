@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useT } from '../i18n'
 import AIBadge from './AIBadge'
 import type { WizardQuestionKind } from '@/types/session'
@@ -70,9 +71,7 @@ export function QuestionEditor({
             aria-label="Remove this question"
             className="text-pulse-500 hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
           >
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <X aria-hidden="true" width={16} height={16} strokeWidth={2} />
           </button>
         )}
       </div>
@@ -127,9 +126,7 @@ export function QuestionEditor({
                 aria-label={`Remove option ${idx + 1}`}
                 className="text-pulse-500 hover:text-red-500 disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
               >
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
+                <X aria-hidden="true" width={14} height={14} strokeWidth={2.5} />
               </button>
             </div>
           ))}

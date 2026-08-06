@@ -27,14 +27,17 @@ export async function listVideoAssets(
   db: D1Database,
   filter: { category?: string; tag?: string } = {},
 ): Promise<VideoAssetRow[]> {
+  const columns = 'id, r2_key, category, title, tags, duration_sec, size_bytes, created_at, updated_at'
   if (filter.category) {
     const res = await db
-      .prepare(`SELECT * FROM video_assets WHERE category = ?1 ORDER BY created_at DESC`)
+      .prepare(`SELECT ${columns} FROM video_assets WHERE category = ?1 ORDER BY created_at DESC LIMIT 1000`)
       .bind(filter.category)
       .all<VideoAssetRow>()
     return res.results ?? []
   }
-  const res = await db.prepare(`SELECT * FROM video_assets ORDER BY created_at DESC`).all<VideoAssetRow>()
+  const res = await db
+    .prepare(`SELECT ${columns} FROM video_assets ORDER BY created_at DESC LIMIT 1000`)
+    .all<VideoAssetRow>()
   const rows = res.results ?? []
   if (!filter.tag) return rows
   return rows.filter(

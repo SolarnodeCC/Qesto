@@ -140,7 +140,7 @@ function rowToCsv(row: MetricsSummaryRow): string {
 export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
   app.get('/metrics/live', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
-    const kv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
+    const kv = c.env.METRICS_KV
     if (!kv) {
       const live: LiveMetrics = {
         active_sessions: 0,

@@ -26,7 +26,7 @@
  *   - role="img" + aria-label on every bar/segment (SC 1.1.1)
  *   - Each SVG arc uses <title> for screen-reader description
  */
-import { useId, useMemo } from 'react'
+import { memo, useId, useMemo } from 'react'
 import { useT } from '../i18n'
 import { useCountUp } from '../hooks/useCountUp'
 
@@ -374,7 +374,7 @@ function VBarChart({ options, max, total, winnerId }: VBarChartProps) {
 
 // ── Main adaptive component ───────────────────────────────────────────────
 
-export function AdaptiveVizResults({
+export const AdaptiveVizResults = memo(function AdaptiveVizResults({
   options,
   total,
   questionKind,
@@ -424,4 +424,4 @@ export function AdaptiveVizResults({
   }
 
   return <VBarChart options={options} max={max} total={total} winnerId={winnerId} />
-}
+})

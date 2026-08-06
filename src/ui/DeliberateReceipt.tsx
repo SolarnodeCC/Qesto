@@ -5,9 +5,10 @@
 // QR: encodes the verify URL path using react-qr-code (already in dependencies).
 // No additional deps required.
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import QRCode from 'react-qr-code'
 import type { DeliberateReceipt as Receipt, DeliberateVerifyResult } from '../hooks/useDeliberateSession'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
 
 type TFn = (key: string, vars?: Record<string, string | number>) => string
 
@@ -28,7 +29,7 @@ function truncate(s: string, len = 16): string {
 
 export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyError, onVerify, t }: Props) {
   const printRef = useRef<HTMLDivElement>(null)
-  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle')
+  const { copied: nonceCopied, copy: copyNonce } = useCopyToClipboard()
 
   const verifyUrl =
     typeof window !== 'undefined'
@@ -50,13 +51,7 @@ export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyErro
   }
 
   async function handleCopyNonce() {
-    try {
-      await navigator.clipboard.writeText(receipt.ballotNonce)
-      setCopyState('copied')
-      setTimeout(() => setCopyState('idle'), 2000)
-    } catch {
-      // Clipboard unavailable — silent fail
-    }
+    await copyNonce(receipt.ballotNonce)
   }
 
   const issuedDate = new Date(receipt.issuedAt).toLocaleString()
@@ -135,7 +130,7 @@ export function DeliberateReceipt({ receipt, verifyResult, verifying, verifyErro
           aria-label={t('receipt.copyNonceAria')}
           className="min-h-[44px] min-w-[44px] rounded-lg border border-pulse-300 px-4 py-2.5 text-sm font-medium text-pulse-700 hover:border-teal-500 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:border-pulse-600 dark:text-pulse-300 dark:hover:border-teal-500 dark:hover:text-teal-400"
         >
-          {copyState === 'copied' ? t('receipt.copied') : t('receipt.copyNonce')}
+          {nonceCopied ? t('receipt.copied') : t('receipt.copyNonce')}
         </button>
 
         <button

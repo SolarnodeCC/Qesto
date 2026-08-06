@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import QRCode from 'react-qr-code'
 import { Check, Copy, Loader2, Rocket, Share2, Zap } from 'lucide-react'
 import { useT } from '../../i18n'
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 
 type SessionMeta = {
   code: string
@@ -34,7 +35,7 @@ export default function JoinCodePanel({
   onTransitionToLive,
 }: Props) {
   const t = useT('launchpad')
-  const [codeCopied, setCodeCopied] = useState(false)
+  const { copied: codeCopied, copy: copyCode } = useCopyToClipboard()
   const [sharing, setSharing] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -51,11 +52,7 @@ export default function JoinCodePanel({
   }, [session.started_at])
 
   async function handleCopyCode() {
-    try {
-      await navigator.clipboard.writeText(session.code)
-      setCodeCopied(true)
-      setTimeout(() => setCodeCopied(false), 2000)
-    } catch { /* Clipboard API not available */ }
+    await copyCode(session.code)
   }
 
   async function handleShare() {

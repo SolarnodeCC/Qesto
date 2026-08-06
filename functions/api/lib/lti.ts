@@ -8,6 +8,8 @@
  * crypto step uses Web Crypto (`HMAC` / `SHA-1`), available on Workers.
  */
 
+import { timingSafeEqual } from './shared/crypto'
+
 export const LTI_MESSAGE_TYPE = 'basic-lti-launch-request'
 export const LTI_VERSION = 'LTI-1p0'
 
@@ -89,14 +91,6 @@ export async function signHmacSha1(baseString: string, consumerSecret: string): 
   const bytes = new Uint8Array(sig)
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
   return btoa(binary)
-}
-
-/** Constant-time string compare — avoids leaking signature bytes via timing. */
-export function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
 }
 
 export function extractLaunchContext(params: Record<string, string>): LtiLaunchContext {

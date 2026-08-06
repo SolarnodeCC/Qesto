@@ -26,7 +26,7 @@ export function applyBrandingCssVars(branding: SessionBranding | null | undefine
 const ENTRY_CACHE_KEY = 'qesto:entry-cache'
 
 /** Persists join lookup payload to localStorage; silently ignores quota errors. */
-export function tryCacheJoinSession(code: string, payload: Record<string, unknown>): void {
+export function tryCacheJoinSession<T extends object>(code: string, payload: T): void {
   try {
     const raw = localStorage.getItem(ENTRY_CACHE_KEY)
     const parsed: unknown = raw ? JSON.parse(raw) : {}
