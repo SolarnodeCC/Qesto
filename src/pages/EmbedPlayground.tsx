@@ -14,6 +14,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { useSessions } from '../hooks/useSessions'
 import { useEmbedWidgets } from '../hooks/useEmbedWidgets'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
 import type { EmbedWidget } from '@api/types'
 import type { SessionSummary } from '../types/session'
 import MainLayout from '../layouts/MainLayout'
@@ -29,17 +30,6 @@ function buildSnippet(session: string, token: string, origin: string): string {
         data-token="${token}"
         data-origin="${origin}"
         data-theme="light"></script>`
-}
-
-// ── Clipboard helper ──────────────────────────────────────────────────────────
-
-async function copyToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
 }
 
 // ── Upgrade affordance (Team gate) ────────────────────────────────────────────
@@ -85,8 +75,8 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
   const [minting, setMinting] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const [exp, setExp] = useState<number | null>(null)
-  const [tokenCopied, setTokenCopied] = useState(false)
-  const [snippetCopied, setSnippetCopied] = useState(false)
+  const { copied: tokenCopied, copy: copyToken } = useCopyToClipboard()
+  const { copied: snippetCopied, copy: copySnippet } = useCopyToClipboard()
   const [previewVisible, setPreviewVisible] = useState(false)
 
   const session = sessions.find((s) => s.id === widget.session_id)
@@ -112,21 +102,13 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
 
   async function handleCopyToken() {
     if (!token) return
-    const ok = await copyToClipboard(token)
-    if (ok) {
-      setTokenCopied(true)
-      setTimeout(() => setTokenCopied(false), 2000)
-    }
+    await copyToken(token)
   }
 
   async function handleCopySnippet() {
     if (!token || !session) return
     const snippet = buildSnippet(widget.session_code, token, widget.allowed_origins[0] ?? window.location.origin)
-    const ok = await copyToClipboard(snippet)
-    if (ok) {
-      setSnippetCopied(true)
-      setTimeout(() => setSnippetCopied(false), 2000)
-    }
+    await copySnippet(snippet)
   }
 
   const previewUrl = token && session

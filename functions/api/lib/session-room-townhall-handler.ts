@@ -61,6 +61,19 @@ export class TownhallHandler {
     return rev
   }
 
+  /** Merges upvote sets for an item + its grouped children from a pre-fetched batch. */
+  private mergeUpvotesForItem(
+    item: TownhallItem,
+    groups: Record<string, string[]>,
+    upvotersByKey: Map<string, string[]>,
+  ): number {
+    const childIds = groups[item.id] ?? []
+    if (childIds.length === 0) return item.upvotes
+    const sets: string[][] = [upvotersByKey.get(TOWNHALL_KEYS.upvoters(item.id)) ?? []]
+    for (const cid of childIds) sets.push(upvotersByKey.get(TOWNHALL_KEYS.upvoters(cid)) ?? [])
+    return mergedUpvoteCount(sets)
+  }
+
   private async projectItem(
     item: TownhallItem,
     spotlightId: string | null,
@@ -69,9 +82,9 @@ export class TownhallHandler {
     const childIds = groups[item.id] ?? []
     let mergedUpvotes = item.upvotes
     if (childIds.length > 0) {
-      const sets: string[][] = [await this.loadUpvoters(item.id)]
-      for (const cid of childIds) sets.push(await this.loadUpvoters(cid))
-      mergedUpvotes = mergedUpvoteCount(sets)
+      const keys = [TOWNHALL_KEYS.upvoters(item.id), ...childIds.map((cid) => TOWNHALL_KEYS.upvoters(cid))]
+      const upvotersByKey = await this.ctx.storage.getMany<string[]>(keys)
+      mergedUpvotes = this.mergeUpvotesForItem(item, groups, upvotersByKey)
     }
     return toBoardItem(item, { isSpotlit: spotlightId === item.id, groupedCount: childIds.length, mergedUpvotes })
   }
@@ -94,14 +107,38 @@ export class TownhallHandler {
     const groups = await this.loadGroups()
     const rev = (await this.ctx.storage.get<number>(TOWNHALL_KEYS.rev)) ?? 0
     const isPresenter = att.role === 'presenter'
-    const items: TownhallBoardItem[] = []
+
+    const itemsByKey =
+      index.length > 0
+        ? await this.ctx.storage.getMany<TownhallItem>(index.map((id) => TOWNHALL_KEYS.item(id)))
+        : new Map<string, TownhallItem>()
+    const visibleItems: TownhallItem[] = []
     for (const id of index) {
-      const item = await this.loadItem(id)
+      const item = itemsByKey.get(TOWNHALL_KEYS.item(id))
       if (!item) continue
       if (item.status === 'grouped') continue
       if (!isPresenter && !isAudienceVisible(item.status)) continue
-      items.push(await this.projectItem(item, spotlightId, groups))
+      visibleItems.push(item)
     }
+
+    const upvoterKeys = new Set<string>()
+    for (const item of visibleItems) {
+      const childIds = groups[item.id] ?? []
+      if (childIds.length === 0) continue
+      upvoterKeys.add(TOWNHALL_KEYS.upvoters(item.id))
+      for (const cid of childIds) upvoterKeys.add(TOWNHALL_KEYS.upvoters(cid))
+    }
+    const upvotersByKey =
+      upvoterKeys.size > 0
+        ? await this.ctx.storage.getMany<string[]>([...upvoterKeys])
+        : new Map<string, string[]>()
+
+    const items: TownhallBoardItem[] = visibleItems.map((item) => {
+      const childIds = groups[item.id] ?? []
+      const mergedUpvotes = this.mergeUpvotesForItem(item, groups, upvotersByKey)
+      return toBoardItem(item, { isSpotlit: spotlightId === item.id, groupedCount: childIds.length, mergedUpvotes })
+    })
+
     ws.send(serverMsg({ type: 'townhall_state', data: { moderation, items, spotlightId, rev }, timestamp: Date.now() }))
   }
 
@@ -338,17 +375,29 @@ export class TownhallHandler {
     if (index.length === 0) return
     const groups = await this.loadGroups()
     const spotlitHistory = new Set((await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? [])
-    const statements: import('@cloudflare/workers-types').D1PreparedStatement[] = []
+
+    const itemsByKey = await this.ctx.storage.getMany<TownhallItem>(index.map((id) => TOWNHALL_KEYS.item(id)))
+    const items: TownhallItem[] = []
     for (const id of index) {
-      const item = await this.loadItem(id)
-      if (!item) continue
-      let upvotes = item.upvotes
+      const item = itemsByKey.get(TOWNHALL_KEYS.item(id))
+      if (item) items.push(item)
+    }
+
+    const upvoterKeys = new Set<string>()
+    for (const item of items) {
       const childIds = groups[item.id] ?? []
-      if (childIds.length > 0) {
-        const sets: string[][] = [await this.loadUpvoters(item.id)]
-        for (const cid of childIds) sets.push(await this.loadUpvoters(cid))
-        upvotes = mergedUpvoteCount(sets)
-      }
+      if (childIds.length === 0) continue
+      upvoterKeys.add(TOWNHALL_KEYS.upvoters(item.id))
+      for (const cid of childIds) upvoterKeys.add(TOWNHALL_KEYS.upvoters(cid))
+    }
+    const upvotersByKey =
+      upvoterKeys.size > 0
+        ? await this.ctx.storage.getMany<string[]>([...upvoterKeys])
+        : new Map<string, string[]>()
+
+    const statements: import('@cloudflare/workers-types').D1PreparedStatement[] = []
+    for (const item of items) {
+      const upvotes = this.mergeUpvotesForItem(item, groups, upvotersByKey)
       const resolvedAt = item.status === 'answered' || item.status === 'dismissed' ? closedAt : null
       statements.push(
         this.env.DB.prepare(

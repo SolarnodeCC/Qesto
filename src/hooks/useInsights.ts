@@ -154,9 +154,7 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
         }
         const d = res.data
         // API returns either the cached insights object directly or { insights: null }
-        const raw = (d as any)?.themes
-          ? (d as unknown as RawInsights)
-          : (d as any)?.insights ?? null
+        const raw = d?.themes ? (d as unknown as RawInsights) : d?.insights ?? null
         if (raw && Array.isArray(raw.themes)) {
           cache.set(s.id, raw as RawInsights)
         }

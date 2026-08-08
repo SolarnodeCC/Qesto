@@ -379,9 +379,10 @@ export async function deliverTeamWebhooks(
   data: Record<string, unknown>,
 ): Promise<void> {
   if (!teamId) return
-  if (!env.INTEGRATIONS_KV) return
+  const kv = env.INTEGRATIONS_KV
+  if (!kv) return
 
-  const ids = await loadTeamWebhookIds(env.INTEGRATIONS_KV, teamId)
+  const ids = await loadTeamWebhookIds(kv, teamId)
   if (ids.length === 0) return
 
   const payload: WebhookPayload = {
@@ -390,14 +391,12 @@ export async function deliverTeamWebhooks(
     data,
   }
 
-  const tasks: Promise<void>[] = []
-  for (const id of ids) {
-    const config = await loadWebhookConfig(env.INTEGRATIONS_KV, teamId, id)
-    if (!config) continue
-    if (!config.enabled) continue
-    if (!config.events.includes(event)) continue
-    tasks.push(
-      deliverWebhook(config, payload, env.INTEGRATIONS_KV, env).catch((err) => {
+  const configs = await Promise.all(ids.map((id) => loadWebhookConfig(kv, teamId, id)))
+  await Promise.all(
+    configs.map((config, i) => {
+      const id = ids[i]
+      if (!config || !config.enabled || !config.events.includes(event)) return undefined
+      return deliverWebhook(config, payload, kv, env).catch((err) => {
         console.error(
           JSON.stringify({
             event: 'webhook.deliver.error',
@@ -406,10 +405,9 @@ export async function deliverTeamWebhooks(
             error: err instanceof Error ? err.message : String(err),
           }),
         )
-      }),
-    )
-  }
-  await Promise.all(tasks)
+      })
+    }),
+  )
 }
 
 // ─── KV admin helpers (used by routes) ───────────────────────────────────────
@@ -431,9 +429,9 @@ export async function loadTeamWebhooks(
   teamId: string,
 ): Promise<WebhookConfig[]> {
   const ids = await loadTeamWebhookIds(kv, teamId)
+  const configs = await Promise.all(ids.map((id) => loadWebhookConfig(kv, teamId, id)))
   const out: WebhookConfig[] = []
-  for (const id of ids) {
-    const cfg = await loadWebhookConfig(kv, teamId, id)
+  for (const cfg of configs) {
     if (cfg) out.push(cfg)
   }
   return out

@@ -29,9 +29,11 @@ export async function buildInsightsExport(
   window: InsightTrendWindow,
 ): Promise<InsightsExportBundle> {
   const sinceDay = cutoffDayForWindow(window)
-  const rows = await listTeamInsightsDaily(db, teamId, sinceDay)
-  const scorecardRows = await listScorecardSourceRows(db, teamId, sinceDay)
-  const recurringThemes = await clusterRecurringThemes(env, db, teamId, window)
+  const [rows, scorecardRows, recurringThemes] = await Promise.all([
+    listTeamInsightsDaily(db, teamId, sinceDay),
+    listScorecardSourceRows(db, teamId, sinceDay),
+    clusterRecurringThemes(env, db, teamId, window),
+  ])
   return {
     teamId,
     window,

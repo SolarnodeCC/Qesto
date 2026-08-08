@@ -49,7 +49,7 @@ export default function JoinPage() {
     )
     if (res.ok) {
       if (res.data.branding) applyBrandingCssVars(res.data.branding)
-      tryCacheJoinSession(c, res.data as unknown as Record<string, unknown>)
+      tryCacheJoinSession(c, res.data)
       if (res.data.status === 'live') {
         if (pollRef.current) {
           clearInterval(pollRef.current)

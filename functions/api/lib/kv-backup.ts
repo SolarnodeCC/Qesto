@@ -14,6 +14,7 @@ export interface KvBackupResult {
 }
 
 const DEFAULT_LIMIT = 500
+const READ_CONCURRENCY = 50
 
 function backupDatePrefix(): string {
   return new Date().toISOString().slice(0, 10)
@@ -33,9 +34,14 @@ export async function exportKvNamespaceToR2(
   if (list.keys.length === 0) return null
 
   const entries: Record<string, string> = {}
-  for (const { name } of list.keys) {
-    const value = await kv.get(name)
-    if (value !== null) entries[name] = value
+  const names = list.keys.map((k) => k.name)
+  for (let i = 0; i < names.length; i += READ_CONCURRENCY) {
+    const chunk = names.slice(i, i + READ_CONCURRENCY)
+    const values = await Promise.all(chunk.map((name) => kv.get(name)))
+    chunk.forEach((name, j) => {
+      const value = values[j]
+      if (value !== null) entries[name] = value
+    })
   }
 
   const batchId = opts?.cursor ?? '0'

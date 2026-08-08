@@ -162,7 +162,7 @@ export function mountAdminRoutes(parent: ParentApp) {
         )
       } catch { /* gamification tables may not exist yet */ }
 
-      const metricsKv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
+      const metricsKv = c.env.METRICS_KV
       if (metricsKv) {
         const live = await aggregateLiveMetrics(metricsKv, 5)
         engagement = {

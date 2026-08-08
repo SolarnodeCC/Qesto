@@ -17,6 +17,7 @@ import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOve
 import { captionsReducer, CAPTIONS_INITIAL, type CaptionSegment } from '../hooks/useCaptions'
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import { readPersistedCaptionLocale, type CaptionLocale } from '../components/CaptionsLocalePicker'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
 
 // Minimum stage scale before the 1920×1080 canvas lets its type shrink further —
 // below this, the container scrolls instead so text stays legible.
@@ -57,7 +58,7 @@ export default function Present() {
   )
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const { copied, copy: copyDisplayLink } = useCopyToClipboard()
 
   // ── Presenter controls (local state) ─────────────────────────────────────
   const [localPaused, setLocalPaused] = useState(false)
@@ -120,12 +121,7 @@ export default function Present() {
   function handleCopyDisplayLink() {
     if (!state.session?.code) return
     const url = `${window.location.origin}/display/${state.session.code}`
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }).catch(() => {
-      setCopied(false)
-    })
+    void copyDisplayLink(url)
   }
 
   async function handleClose() {

@@ -53,6 +53,11 @@ class MockStorageContext {
       }
       return undefined
     },
+    getMany: async <T,>(keys: string[]): Promise<Map<string, T>> => {
+      const out = new Map<string, T>()
+      if (keys.includes('meta') && this.state.meta) out.set('meta', this.state.meta as T)
+      return out
+    },
     put: async <T,>(_key: string, _value: T): Promise<void> => {},
     delete: async (_key: string): Promise<void> => {},
   }

@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { rateLimit } from '../../middleware/rate-limit'
-import { queryAuditEvents } from '../../lib/audit'
+import { queryAuditEvents, type AuditQueryFilters } from '../../lib/audit'
 import type { Env } from '../../types'
 
 const auditQueryLimit = rateLimit({ namespace: 'admin-audit', limit: 120, windowSec: 60 })
@@ -14,12 +14,17 @@ export function mountAuditRoutes(app: Hono<{ Bindings: Env; Variables: AuthVaria
     const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 100
     const offset = c.req.query('offset') ? parseInt(c.req.query('offset')!) : 0
 
-    const opts: any = { limit, offset }
-    if (c.req.query('actor_id')) opts.actor_id = c.req.query('actor_id')
-    if (c.req.query('action')) opts.action = c.req.query('action')
-    if (c.req.query('subject_type')) opts.subject_type = c.req.query('subject_type')
-    if (c.req.query('since_ts')) opts.since_ts = parseInt(c.req.query('since_ts')!)
-    if (c.req.query('until_ts')) opts.until_ts = parseInt(c.req.query('until_ts')!)
+    const opts: AuditQueryFilters & { limit: number; offset: number } = { limit, offset }
+    const actorId = c.req.query('actor_id')
+    const action = c.req.query('action')
+    const subjectType = c.req.query('subject_type')
+    const sinceTs = c.req.query('since_ts')
+    const untilTs = c.req.query('until_ts')
+    if (actorId) opts.actor_id = actorId
+    if (action) opts.action = action
+    if (subjectType) opts.subject_type = subjectType
+    if (sinceTs) opts.since_ts = parseInt(sinceTs)
+    if (untilTs) opts.until_ts = parseInt(untilTs)
 
     const result = await queryAuditEvents(c, opts)
     return c.json({ ok: true, data: result, trace_id }, 200)

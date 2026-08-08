@@ -73,19 +73,25 @@ export class IdeateHandler {
 
   async loadAllIdeas(): Promise<IdeateIdea[]> {
     const index = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.index)) ?? []
+    if (index.length === 0) return []
+    const items = await this.ctx.storage.getMany<IdeateIdea>(index.map((id) => IDEATE_KEYS.item(id)))
     const ideas: IdeateIdea[] = []
     for (const id of index) {
-      const item = await this.loadItem(id)
+      const item = items.get(IDEATE_KEYS.item(id))
       if (item) ideas.push(item)
     }
     return ideas
   }
 
   private async loadVoterVoteState(voterId: string, ideas: IdeateIdea[]): Promise<{ myUpvotes: string[]; dotsUsed: number }> {
+    const activeIdeas = ideas.filter((idea) => idea.status === 'active')
+    const upvotersByKey =
+      activeIdeas.length === 0
+        ? new Map<string, string[]>()
+        : await this.ctx.storage.getMany<string[]>(activeIdeas.map((idea) => IDEATE_KEYS.upvoters(idea.id)))
     const myUpvotes: string[] = []
-    for (const idea of ideas) {
-      if (idea.status !== 'active') continue
-      const upvoters = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.upvoters(idea.id))) ?? []
+    for (const idea of activeIdeas) {
+      const upvoters = upvotersByKey.get(IDEATE_KEYS.upvoters(idea.id)) ?? []
       if (upvoters.includes(voterId)) myUpvotes.push(idea.id)
     }
     const dotsUsed = (await this.ctx.storage.get<number>(IDEATE_KEYS.voterDots(voterId))) ?? 0

@@ -29,9 +29,12 @@ export function mountCalendarRoutes(app: App) {
   app.get('/calendar', authMiddleware, marketingOwnerMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const status = c.req.query('status')
+    const columns = 'id, platform, topic, scheduled_for, status, video_asset_id, notes, created_at, updated_at'
     const stmt = status
-      ? c.env.DB.prepare(`SELECT * FROM content_calendar WHERE status = ?1 ORDER BY scheduled_for ASC`).bind(status)
-      : c.env.DB.prepare(`SELECT * FROM content_calendar ORDER BY scheduled_for ASC`)
+      ? c.env.DB
+          .prepare(`SELECT ${columns} FROM content_calendar WHERE status = ?1 ORDER BY scheduled_for ASC LIMIT 1000`)
+          .bind(status)
+      : c.env.DB.prepare(`SELECT ${columns} FROM content_calendar ORDER BY scheduled_for ASC LIMIT 1000`)
     const { results } = await stmt.all<CalendarRow>()
     return c.json({ ok: true, data: { items: results ?? [] }, trace_id }, 200)
   })

@@ -102,13 +102,13 @@ export function mountSovereignRoutes(parent: ParentApp) {
 
     // Scope is decided here (never widened downstream): team-owned session subjects.
     const { events } = await queryAuditEvents(c, { subject_type: 'session', limit: 1000 })
-    const entries: SovereignAuditEntry[] = events.map((e: Record<string, unknown>) => ({
-      id: String(e.id),
-      ts: Number(e.ts),
-      action: String(e.action),
-      subjectType: e.subject_type == null ? null : String(e.subject_type),
-      subjectId: e.subject_id == null ? null : String(e.subject_id),
-      actorId: e.actor_id == null ? null : String(e.actor_id),
+    const entries: SovereignAuditEntry[] = events.map((e) => ({
+      id: e.id,
+      ts: e.ts,
+      action: e.action,
+      subjectType: e.subject_type,
+      subjectId: e.subject_id,
+      actorId: e.actor_id,
     }))
 
     const region = resolveRegion(team.regionId).id

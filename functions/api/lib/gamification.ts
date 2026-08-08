@@ -99,13 +99,6 @@ export function advanceBattleRoyaleRound(
   return { advancing, eliminated, scaledScores }
 }
 
-/**
- * Determine battle royale winner (last participant standing).
- */
-export function getBattleRoyaleWinner(finalParticipants: string[]): string | null {
-  return finalParticipants.length === 1 ? finalParticipants[0] : null
-}
-
 // ─── Bracket Orchestration ────────────────────────────────────────────────
 
 /**
@@ -153,13 +146,6 @@ export function advanceBracketRound(
     nextRound.push([currentRoundWinners[i], currentRoundWinners[i + 1]])
   }
   return nextRound
-}
-
-/**
- * Determine bracket champion (last winner standing).
- */
-export function getBracketWinner(finalWinner: string): string | null {
-  return finalWinner.startsWith('bye_') ? null : finalWinner
 }
 
 // ─── Badge Awards ────────────────────────────────────────────────────────

@@ -135,6 +135,11 @@ export interface TokenStatusSnapshotRow {
 }
 
 export async function getTokenStatusSnapshot(db: D1Database): Promise<TokenStatusSnapshotRow[]> {
-  const res = await db.prepare(`SELECT * FROM oauth_token_status ORDER BY platform`).all<TokenStatusSnapshotRow>()
+  const res = await db
+    .prepare(
+      `SELECT platform, connected, expires_at, last_refreshed_at, last_refresh_error, updated_at
+       FROM oauth_token_status ORDER BY platform`,
+    )
+    .all<TokenStatusSnapshotRow>()
   return res.results ?? []
 }
