@@ -14,6 +14,7 @@ Staging, production migrations, workflows, SEO infra, and KB vector sync.
 | [DNS_CNAME_SETUP.md](./DNS_CNAME_SETUP.md) | DNS CNAME configuration |
 | [WORKFLOWS_SETUP_CHECKLIST.md](./WORKFLOWS_SETUP_CHECKLIST.md) | Cloudflare Workflows setup |
 | [KB_SYNC_QUICK_START.md](./KB_SYNC_QUICK_START.md) | KB → Vectorize sync quick start |
-| [KB_SYNC_CLI_PHASE4.md](./KB_SYNC_CLI_PHASE4.md) | KB sync CLI (full spec) |
+| [DEPLOY_BOOTSTRAP.md](./DEPLOY_BOOTSTRAP.md) | One-time D1/KV binding bootstrap |
+| [RATE_LIMIT_BINDINGS_SETUP.md](./RATE_LIMIT_BINDINGS_SETUP.md) | Workers Rate Limiting API bindings (ADR-0073) |
 
 **Help assistant:** [../help-assistant/](../help-assistant/)

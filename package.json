@@ -40,6 +40,7 @@
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "smoke:platform-v7": "node scripts/smoke-platform-v7.mjs",
+    "burst:api-key-rate-limit": "node scripts/burst-api-key-rate-limit.mjs",
     "test:e2e": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "test:e2e:fullstack": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "test:e2e:spa": "playwright test --config tests/playwright.config.ts --project=spa-chrome",

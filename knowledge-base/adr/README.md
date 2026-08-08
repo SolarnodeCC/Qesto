@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADRs)
 
-48 documented decisions (+ 6 planned slots) that guide the Qesto architecture.
+72 documented decisions (+ 6 planned slots) that guide the Qesto architecture.
 
 > **To regenerate this index:** `node scripts/generate-adr-index.mjs --write`
 
@@ -58,7 +58,31 @@
 | [ADR-0045](./ADR-0045-cross-session-intelligence.md) | Cross-Session Intelligence Aggregation & Privacy Model | AI/Backend | Accepted |
 | [ADR-0046](./ADR-0046-live-facilitator-copilot.md) | Live Facilitator Copilot — In-Session Context Flow & Action Protocol | AI/Backend | Accepted |
 | ADR-0047 | Town-Hall Moderation Queue DO + Upvote Scale | Realtime | [SLOT] |
-| [ADR-0048](./ADR-0048-recurring-workspace-data-model.md) | Recurring-Workspace Data Model (RETRO / IDEATE / EVENT Persistence + History) | Data | Proposed |
+| [ADR-0048](./ADR-0048-recurring-workspace-data-model.md) | Recurring-Workspace Data Model (RETRO / IDEATE / EVENT Persistence + History) | Data | Accepted |
+| [ADR-0049](./ADR-0049-verifiable-voting-receipt-tally-integrity.md) | Verifiable Voting — Cryptographic Receipt + Merkle Tally Integrity (DELIBERATE mode) | General | Accepted |
+| [ADR-0050](./ADR-0050-embeddable-sdk-auth-widget-origin-sandboxing.md) | Embeddable SDK Auth + Widget Origin Sandboxing (EMBED public widget) | Security | Accepted |
+| [ADR-0051](./ADR-0051-live-captions-translation-pipeline.md) | Live Captions & Translation Pipeline (Workers AI) | General | Accepted |
+| [ADR-0052](./ADR-0052-fedramp-full-ato-sovereign-data-plane.md) | FedRAMP Full-ATO Boundary & Sovereign Data Plane | General | Accepted |
+| [ADR-0053](./ADR-0053-v6-platform-certification.md) | v6.0 Platform Certification & v5.x Deprecation Policy | General | Accepted |
+| [ADR-0054](./ADR-0054-cadence-9-governance.md) | v6.x Post-GA Stabilization & Cadence-9 Governance | General | Superseded |
+| [ADR-0055](./ADR-0055-reactions-ga-channel.md) | REACTIONS GA — Live Reaction Channel at Scale | General | Accepted |
+| [ADR-0056](./ADR-0056-agentic-maturity-l2-copilot.md) | Agentic Maturity L2 — Supervised Multi-Step Copilot Plans | General | Accepted |
+| [ADR-0057](./ADR-0057-pulse-analytics-data-model.md) | PULSE Analytics Product Data Model | General | Accepted |
+| [ADR-0058](./ADR-0058-vertical-packaging-tenant-config.md) | Vertical Packaging & Tenant Config Surface | General | Accepted |
+| [ADR-0059](./ADR-0059-ecosystem-egress-governance.md) | Ecosystem Depth — Extension Data Contracts & Partner Egress Governance | General | Accepted |
+| [ADR-0060](./ADR-0060-analytics-insight-intelligence.md) | Analytics Insight Intelligence — Privacy-Native AI Session Authoring Co-pilot | General | Accepted |
+| [ADR-0062](./ADR-0062-federation-trust-isolation-model.md) | CONNECT — Federation Trust Model & Cross-Tenant Isolation Proof | General | Accepted |
+| [ADR-0063](./ADR-0063-v7-platform-certification.md) | v7.0 Platform Certification & v6.x Deprecation Policy | General | Accepted |
+| [ADR-0064](./ADR-0064-demand-evidence-adversarial-validation-gates.md) | Demand-Evidence & Adversarial Validation Gates for AI-Native Roadmap Governance | General | Accepted |
+| [ADR-0065](./ADR-0065-html-shell-swr-edge-caching.md) | Short-TTL / Stale-While-Revalidate Edge Caching for the HTML Shell | General | Accepted |
+| [ADR-0066](./ADR-0066-xr-spatial-session-beta.md) | XR Spatial / Immersive Session Mode (Beta) | General | Accepted |
+| [ADR-0067](./ADR-0067-release-train-cadence.md) | Release-Train Cadence (Replacing Sprint-Based Planning) | Product | Accepted |
+| [ADR-0068](./ADR-0068-workers-ai-gateway-facade.md) | All Workers AI Inference Through the Gateway Facade (`runAI`) | General | Accepted |
+| [ADR-0069](./ADR-0069-route-service-repository-layering.md) | Route → Service → Repository Layering (No Inline D1 in Routes) | Backend | Accepted |
+| [ADR-0070](./ADR-0070-single-error-response-builder.md) | Single API Error-Response Builder (`errorResponse`) | Backend | Accepted |
+| [ADR-0071](./ADR-0071-design-system-v1.md) | Design System v1: token aliases, icon policy, component radius | Frontend | Accepted |
+| [ADR-0072](./ADR-0072-theming-mechanisms.md) | Theming mechanisms: three bounded systems | Frontend | Accepted |
+| [ADR-0073](./ADR-0073-atomic-rate-limiting-workers-api.md) | Atomic Rate Limiting via Workers Rate Limiting API | Security | Implemented |
 | [ADR-AI-Latency](./ADR-AI-Latency.md) | Workers AI Latency Budgets & Precomputation Strategy | AI/Performance | Accepted |
 | [ADR-DO-Timers](./ADR-DO-Timers.md) | Timer Semantics in Durable Objects | Realtime | Accepted |
 | [ADR-KV-Tenant-Conventions](./ADR-KV-Tenant-Conventions.md) | KV Key Scoping & Tenant-Isolation Conventions | Data | Accepted |

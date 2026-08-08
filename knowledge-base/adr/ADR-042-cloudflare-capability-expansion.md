@@ -51,6 +51,7 @@ Adopt a **3-phase, 6-week plan**. Each phase is independently shippable and gate
 - **Effort**: 2 days.
 - **Implementation**: Rate-limit rules on `/api/auth/magic-link`, `/api/sessions/:code/ws`; firewall rules for anomalous join bursts.
 - **Success metrics**: ≥ 90% credential-stuffing/join-flood traffic challenged at edge; zero false-positive lockouts in canary.
+- **Complement**: App-layer burst shields move to Workers Rate Limiting bindings per [[ADR-0073-atomic-rate-limiting-workers-api]] (L0 WAF ≠ L1 Worker binding; keep both layers).
 
 ### 1.3 — Session funnel + realtime health on Analytics Engine
 - **Impact**: Observability foundation for all Phase 2+ optimizations.

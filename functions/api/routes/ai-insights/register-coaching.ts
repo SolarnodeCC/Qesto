@@ -14,7 +14,7 @@ import { sendEmail } from '../../lib/email'
 import { writeEvent } from '../../lib/observability'
 import type { AiInsightsVars } from './types'
 import { COACHING_INSIGHTS_TTL_SECONDS } from '../../lib/constants'
-import { rateLimit } from '../../lib/rate-limit'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 
 // Audit 2026-07-14 H-2: coaching runs the 70B model + a Vectorize RAG query per
 // call — meter it like the sibling AI endpoints (insights-analyze is 10/h).
@@ -73,7 +73,12 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     const user = c.get('user')
     const traceId = c.get('trace_id')
 
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_RATE_LIMIT)
+    const rl = await atomicRateLimitDual(c.env, {
+      key: user.sub,
+      burst: 'ai_burst',
+      sustained: COACHING_RATE_LIMIT,
+      profileLabel: 'ai_coaching',
+    })
     if (!rl.allowed) {
       return errorResponse(c, 429, 'rate_limited', 'Too many coaching requests. Try again later.')
     }
@@ -228,7 +233,11 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     if (!session) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId }, 404)
     }
-    const emailRl = await rateLimit(c.env.ACTIONS_KV, user.sub, COACHING_EMAIL_RATE_LIMIT)
+    const emailRl = await atomicRateLimitDual(c.env, {
+      key: user.sub,
+      sustained: COACHING_EMAIL_RATE_LIMIT,
+      profileLabel: 'ai_coaching_email',
+    })
     if (!emailRl.allowed) {
       return errorResponse(c, 429, 'rate_limited', 'Too many coaching exports today. Try again tomorrow.')
     }

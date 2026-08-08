@@ -142,6 +142,8 @@ export type QestoEvent = {
     | 'preflight.failed'
     | 'ai.rate_limited'
     | 'rate_limit.hit'
+    /** ADR-0073: Workers RL unavailable / missing binding → KV (or deny). */
+    | 'rate_limit.backend_fallback'
     | 'error.api'
     | 'error.ai_timeout'
     | 'ws.vote_submitted'
@@ -251,10 +253,30 @@ export type QestoEvent = {
   traceId?: string | undefined
   /** blob6 — integration type, export format, model id, webhook id, cache hit/miss, etc. */
   detail?: string | undefined
+  /**
+   * ADR-0073 — rate-limit backend label (`workers_rl` | `kv` | `bypass` | `deny`).
+   * Encoded into blob6 with `profile` (see `composeRateLimitDetail`).
+   */
+  backend?: string | undefined
+  /** ADR-0073 — atomic rate-limit profile name (e.g. `api_key`). Encoded into blob6. */
+  profile?: string | undefined
   /** AI Gateway cache age (seconds) — populated for ai.cache_hit events */
   cacheAge?: number | undefined
   /** Gateway request latency (ms) — populated for ai.gateway_latency events */
   gatewayMs?: number | undefined
+}
+
+/**
+ * Compose blob6 for rate-limit events: `profile=…;backend=…;…detail`.
+ * Keeps the existing single-detail blob stable for AE SQL while carrying
+ * ADR-0073 dimensions. Never put raw API keys or IPs in `detail`.
+ */
+export function composeRateLimitDetail(event: Pick<QestoEvent, 'profile' | 'backend' | 'detail'>): string | undefined {
+  const parts: string[] = []
+  if (event.profile) parts.push(`profile=${event.profile}`)
+  if (event.backend) parts.push(`backend=${event.backend}`)
+  if (event.detail) parts.push(event.detail)
+  return parts.length > 0 ? parts.join(';') : undefined
 }
 
 /**
@@ -265,13 +287,17 @@ export type QestoEvent = {
  */
 export function writeEvent(ae: AnalyticsEngineDataset | undefined, event: QestoEvent): void {
   if (!ae) return
+  const detail =
+    event.name === 'rate_limit.hit' || event.name === 'rate_limit.backend_fallback'
+      ? composeRateLimitDetail(event)
+      : event.detail
   const blobs: string[] = [
     event.name,
     event.userId || event.sessionId || '',
     event.teamId || '',
     event.plan || '',
     event.traceId || '',
-    ...(event.detail ? [event.detail] : []),
+    ...(detail ? [detail] : []),
   ]
   const doubles: number[] = [
     event.durationMs ?? 0,

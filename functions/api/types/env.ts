@@ -72,6 +72,11 @@ export type Env = {
   SENTIMENT_ENABLED?: string
   /** SEC-RATELIMIT-01: return 503 when ACTIONS_KV rate limiter fails. */
   RATE_LIMIT_FAIL_CLOSED?: string
+  /**
+   * ADR-0073 / WS-1: prefer Workers Rate Limiting bindings via
+   * `atomicRateLimit()`. MUST stay off until WS-2 canary is staged.
+   */
+  ATOMIC_RATE_LIMIT_ENABLED?: string
   /** SEC-WS-CAP-01: max WebSocket connects per IP per minute (default 15). */
   WS_CONNECT_PER_IP_PER_MIN?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
@@ -236,4 +241,19 @@ export type Env = {
   R2_SESSIONS?: R2Bucket
   /** Marketing automation: Video Asset Library storage (no upload endpoint in v1). */
   R2_VIDEOS?: R2Bucket
+
+  // ADR-0073 — Workers Rate Limiting bindings (optional locally / pre-bootstrap).
+  // Registry + budgets: knowledge-base/operations/deployment/RATE_LIMIT_BINDINGS_SETUP.md
+  RL_API_KEY?: RateLimit
+  RL_EMBED_READ?: RateLimit
+  RL_EMBED_HANDSHAKE?: RateLimit
+  RL_JOIN?: RateLimit
+  RL_PUBLIC_EVENT?: RateLimit
+  RL_WEBHOOK?: RateLimit
+  RL_AUTH_BURST?: RateLimit
+  RL_REPORT_BURST?: RateLimit
+  RL_KB_SEARCH?: RateLimit
+  RL_ADMIN_AUDIT_Q?: RateLimit
+  /** ADR-0073 Tier B — AI insights/coaching/wizard burst (10/60). */
+  RL_AI_BURST?: RateLimit
 }

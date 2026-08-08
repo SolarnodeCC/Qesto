@@ -6,7 +6,7 @@ category: backlog
 status: active
 version: 1.1
 created: 2026-06-19
-updated: 2026-07-14
+updated: 2026-07-30
 tags:
   - backlog
   - release-train
@@ -224,9 +224,33 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | ID | Severity | Description | Remediation | Priority | Notes |
 |----|----|---|---|---|---|
 | `SEC-SAML-VERIFY-01` | LOW | SAML assertions are parsed by regex with no XML-DSig verification (currently feature-gated fail-closed) | Implement XML-DSig verification before SAML GA; currently disabled via `SAML_SIGNATURE_VERIFY_ENABLED` flag (both `SAML_SSO_ENABLED` and signature-verify default false in `wrangler.toml`) | P1 (SAML GA blocker) | Location: `functions/api/lib/saml.ts:19–29`; referenced in backlog as BACKLOG-SEC-SAML-01 / #529 |
-| `SEC-APIKEY-LIMITER-ATOMIC-01` | LOW | Per-key rate limiter (120 req/min) is a non-atomic read-then-write (TOCTOU); concurrent requests can bypass under burst | Acceptable as soft quota; if tighter enforcement needed, back with DO or CF's native rate-limiting binding | P2 | Location: `functions/api/middleware/public-api-auth.ts:52–67`; impact bounded to modest quota overage; not a security boundary |
 | `SEC-DISPLAY-FRAMING-01` | LOW | `/display/*` pages intentionally embeddable (CSP `frame-ancestors *`) but have mixed signals with `X-Frame-Options: SAMEORIGIN` | If interactive controls ever added to display pages, scope `frame-ancestors` to specific embedding origins rather than `*` | P2 (monitoring only) | Location: `public/_headers` (`/display/*` rule); currently safe (no state-changing controls on display pages) |
 | `CSRF-INFO-01` | INFO | CSRF validation is permissive when both Origin and Referer headers are absent (deliberate decision documented in code) | No action required; documented follow-up if server-to-server cookie callers are ever added | Monitoring | Location: `functions/api/middleware/csrf.ts:74–99`; residual risk (cookie-bearing non-browser client) is acceptable and documented |
+
+### Atomic rate limiting — build workstreams (ADR-0073)
+
+**Source of truth:** [`ADR0073_ATOMIC_RL_WORKSTREAMS.md`](../planning/ADR0073_ATOMIC_RL_WORKSTREAMS.md). ADR: [`ADR-0073`](../../adr/ADR-0073-atomic-rate-limiting-workers-api.md) (**Accepted** 2026-07-30). Ops: [`RATE_LIMIT_BINDINGS_SETUP.md`](../../operations/deployment/RATE_LIMIT_BINDINGS_SETUP.md). Evidence: [`ADR0073_WS0_WS1_EVIDENCE.md`](../../operations/ADR0073_WS0_WS1_EVIDENCE.md).
+
+**Do not co-land WS-3 with WS-4.** Flag stays off until WS-2 canary.
+
+#### RT-02 addendum — ADR-0073 Train A (promoted 2026-07-30)
+
+| ID | WS | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----|----:|-----|-------------|--------|-------------------|
+| `SEC-RL-ATOMIC-ADR-01` | WS-0 | 3 | P2 | architect | **Done** | ADR Accepted + runbook + workstreams; evidence linked |
+| `SEC-RL-ATOMIC-BINDINGS-01` | WS-1 | 3 | P2 | devops | **Done** | `[[ratelimits]]` 1001–1010; `ATOMIC_RATE_LIMIT_ENABLED=false`; dry-run lists all `RL_*` |
+| `SEC-RL-ATOMIC-FACADE-01` | WS-1 | 5 | P2 | backend | **Done** | `lib/atomic-rate-limit.ts` + Env/flag + Vitest; no production callers |
+| `SEC-RL-ATOMIC-OBS-01` | WS-1b | 3 | P2 | devops + analytics | **Done** | AE blob6 `profile`/`backend` + `burst:api-key-rate-limit` + runbook SQL |
+| `SEC-APIKEY-LIMITER-ATOMIC-01` | WS-2 | 5 | P2 | backend + security | **Done (code)** | Facade canary in `public-api-auth`; flag still false in wrangler; ops burst on staging |
+
+#### Train B (conditional — promote after WS-2 soak)
+
+| ID | WS | Pts | Pri | Owner | Depends | Acceptance signal |
+|----|----|----:|-----|-------|---------|-------------------|
+| `SEC-RL-ATOMIC-TIER-A-01` | WS-3 | 8 | P2 | backend | WS-2 | **Done** — Tier A on atomic facade; agenda/feed→public_event; RG-1 green |
+| `SEC-RL-ATOMIC-TIER-B-01` | WS-4 | 5 | P2 | backend + security | WS-3 | **Done** — dual-layer auth/report/AI; admin long-window sustained-only |
+| `SEC-RL-ATOMIC-CLEANUP-01` | WS-5 | 3 | P2 | backend + knowledge | WS-4 | **Done** — dual-write removed; ADR Implemented; audit [[ADR0073_WS3_WS5_AUDIT]] |
+| `SEC-RL-ATOMIC-L0-WAF-01` | WS-5 | 5 | P2 | devops | optional | **Deferred** — dashboard ops only (ADR-042 §1.2) |
 
 ---
 
@@ -235,6 +259,7 @@ From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM 
 | Item | Reason | Promote when |
 |------|--------|--------------|
 | XR GA (`FE-XR-LAUNCHER` polish, WebGL engine) | Beta only; Path B in RT-03 | RT-02 close + Path B decision table green |
+| ADR-0073 L0 WAF only | Epic code Done; flag off until staging burst | Enable flag after burst evidence; optional zone WAF |
 | CONNECT expansion | RT-03 Path A default | RT-02 complete + VALID-ADVERSARY-01 |
 | v7.1 epic net-new | Conditional RT-03 | PO path decision at RT-02 closeout |
 | Full `BACKLOG_MASTER` historical registries | Delivered / archive | Never auto-promote without PO |
@@ -260,6 +285,10 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
+| 2026-07-30 | ADR-0073 **WS-3/4/5 Done** — Tier A+B migrate + cleanup; audit [`ADR0073_WS3_WS5_AUDIT.md`](../../operations/ADR0073_WS3_WS5_AUDIT.md); ADR Implemented; flag still false |
+| 2026-07-30 | ADR-0073 WS-1b + WS-2 **Done (code)** — AE dims, burst harness, API-key canary behind flag; evidence [`ADR0073_WS1B_WS2_EVIDENCE.md`](../../operations/ADR0073_WS1B_WS2_EVIDENCE.md) |
+| 2026-07-30 | ADR-0073 **Accepted**; WS-0 + WS-1 Done (bindings + facade); Train A promoted in RT-02 addendum — [`ADR0073_WS0_WS1_EVIDENCE.md`](../../operations/ADR0073_WS0_WS1_EVIDENCE.md) |
+| 2026-07-30 | ADR-0073 atomic rate limiting organised into build workstreams ([`ADR0073_ATOMIC_RL_WORKSTREAMS.md`](../planning/ADR0073_ATOMIC_RL_WORKSTREAMS.md)); security follow-ups split into Train A/B candidate tables |
 | 2026-07-14 | **Backlog audit & reconciliation** ([`BACKLOG_AUDIT_2026-07-14.md`](../../quality/audits/BACKLOG_AUDIT_2026-07-14.md)): RT-01 closed with P0 exception (CI blocked on GitHub billing); carry-overs moved to RT-02 (`OPS-CI-RUNNER-01`, `MKTG-V70-GA-COPY-01`, `ARCH-ERROR-BUILDER-MIGRATE-01` @324, `ARCH-REPO-LAYER-01` @313); `ARCH-AI-GATEWAY-MIGRATE-01` marked Done (gateway baseline 3, verified by core-features audit); RT-02 target reset to 2026-07-31 and marked Active; criticals committed (`KB-BILLING-COPY-01`, `GDPR-RETENTION-CLAIM-01`); retroactive Done row `MKTG-TEMPLATE-PIPELINE-FIX-01` (commit `6335af3`); new Audit-triage section for all remaining open findings |
 | 2026-07-12 | Marketing template pipeline: audit published and criticals/highs/mediums fixed same-day (MKTP-001..016/018/019, commit `6335af3`) — recorded retroactively in the 07-14 reconciliation |
 | 2026-07-10 | Energizer security boundary consolidated (audit E-1/E-2, PR #715): `GET /energizers/active` host-only; DO WebSocket is the single participant-facing plane — recorded retroactively in the 07-14 reconciliation |

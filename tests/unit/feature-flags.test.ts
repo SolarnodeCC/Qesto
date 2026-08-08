@@ -60,6 +60,7 @@ describe('Feature flags (Phase 3)', () => {
         'MULTI_REGION_FAILOVER_ENABLED',
         'MULTI_REGION_WRITES_ENABLED',
         'RATE_LIMIT_FAIL_CLOSED',
+        'ATOMIC_RATE_LIMIT_ENABLED',
         'REALTIME_TOWNHALL_ENABLED',
         'REALTIME_V2_DEFAULT',
         'REALTIME_V2_ENABLED',

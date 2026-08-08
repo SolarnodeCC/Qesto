@@ -22,7 +22,10 @@ import { CRON_REGISTRY, isCronMissed, nextRunAfter } from '../../lib/ops-cron'
 import type { Env } from '../../types'
 
 // Shared limiter for infra-mutating operator actions (per admin IP).
-const destructiveLimit = rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 })
+const destructiveLimit = rateLimit({
+  sustained: { max: 10, windowSeconds: 600, prefix: 'mw-admin-destructive' },
+  profileLabel: 'admin_destructive',
+})
 
 const RUNNER_HEARTBEAT_KEY = 'ops:runner:heartbeat'
 const BACKUP_STATUS_KEY = 'ops:backup:status'

@@ -1,6 +1,6 @@
 import { requireFeature } from '../../middleware/feature-gate'
 import { recordAuditEvent } from '../../lib/audit'
-import { rateLimit } from '../../lib/rate-limit'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import {
   extractThemes,
   InsightsAIError,
@@ -40,7 +40,12 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
     const userPlan = c.get('plan')
 
     try {
-      const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
+      const rl = await atomicRateLimitDual(c.env, {
+        key: user.sub,
+        burst: 'ai_burst',
+        sustained: AI_RATE_LIMIT,
+        profileLabel: 'ai_insights',
+      })
       if (!rl.allowed) {
         return fail(c, 'rate_limited', 'Too many insights requests; try again later', 429, {
           reset_at: rl.resetAt,

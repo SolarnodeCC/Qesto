@@ -16,17 +16,9 @@ import type { Context, Next } from 'hono'
 import type { Env, EmbedWidgetTokenClaims } from '../types'
 import { verifyEmbedToken, originAllowed, normaliseOrigin } from '../lib/embed-token'
 import { fetchEmbedWidgetById } from '../repositories/embedWidgetRepository'
-import { rateLimit } from '../lib/rate-limit'
+import { atomicRateLimit } from '../lib/atomic-rate-limit'
 
 export type WidgetVars = { widget: EmbedWidgetTokenClaims }
-
-// PEN5-E1 (ADR-0050 §5) — read-plane rate budgets. Polling reads (state/results)
-// get a generous per-minute budget sized for a ~2 rps widget; the handshake
-// (which allocates a participant token) is rarer and gets a tighter budget so a
-// token cannot be turned into a participant-token mint flood. Both are keyed per
-// widget id + origin (below) so one tenant's flood never throttles another's.
-const EMBED_READ_RATE = { max: 120, windowSeconds: 60 } as const
-const EMBED_HANDSHAKE_RATE = { max: 30, windowSeconds: 60 } as const
 
 /** Bearer first, then `?wt=` query fallback (cross-origin GET without a custom header). */
 function extractToken(c: Context): string | null {
@@ -87,30 +79,25 @@ export async function widgetTokenMiddleware(
   const normOrigin = normaliseOrigin(origin)
   if (normOrigin) c.header('Access-Control-Allow-Origin', normOrigin)
 
-  // PEN5-E1 (ADR-0050 §5) — read-plane rate limit. Keyed per widget id + origin
-  // so a flood on one widget token cannot exhaust the budget of another tenant's
-  // widget (cross-tenant isolation). Runs AFTER token+origin+revocation so the
-  // key components (`wid`, origin) are trustworthy. The handshake carries a
-  // tighter budget than the aggregate read GETs. Fail-open on KV error
-  // (availability) — the checks above are the security boundary; this is an
-  // abuse/availability control, consistent with lib/rate-limit.ts.
+  // PEN5-E1 / ADR-0073 — read-plane rate limit via atomic facade (Tier A).
+  // Keyed per widget id + origin for cross-tenant isolation. Handshake uses a
+  // tighter binding (RL_EMBED_HANDSHAKE). Flag-off keeps legacy KV prefixes.
   const isHandshake = c.req.path.endsWith('/handshake')
-  const budget = isHandshake ? EMBED_HANDSHAKE_RATE : EMBED_READ_RATE
-  const rl = await rateLimit(c.env.ACTIONS_KV, `${claims.wid}:${normOrigin ?? 'noorigin'}`, {
-    prefix: isHandshake ? 'embed-hs' : 'embed-read',
-    max: budget.max,
-    windowSeconds: budget.windowSeconds,
-  })
-  c.header('X-RateLimit-Limit', String(budget.max))
+  const profile = isHandshake ? 'embed_handshake' : 'embed_read'
+  const rl = await atomicRateLimit(
+    c.env,
+    profile,
+    `${claims.wid}:${normOrigin ?? 'noorigin'}`,
+  )
+  c.header('X-RateLimit-Limit', String(rl.limit))
   c.header('X-RateLimit-Remaining', String(Math.max(0, rl.remaining)))
   c.header('X-RateLimit-Reset', String(Math.ceil(rl.resetAt / 1000)))
   if (!rl.allowed) {
-    const retryAfter = Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))
-    c.header('Retry-After', String(retryAfter))
+    c.header('Retry-After', String(rl.retryAfterSec))
     return c.json(
       {
         ok: false,
-        error: { code: 'rate_limited', message: 'Too many requests', retryAfter },
+        error: { code: 'rate_limited', message: 'Too many requests', retryAfter: rl.retryAfterSec },
         trace_id: c.get('trace_id') ?? 'unknown',
       },
       429,

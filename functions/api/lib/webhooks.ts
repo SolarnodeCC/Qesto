@@ -227,12 +227,27 @@ export async function deliverWebhook(
   config: WebhookConfig,
   payload: WebhookPayload,
   integrationsKv: KVNamespace,
-  metricsEnv?: Pick<Env, 'METRICS_AE'>,
+  metricsEnv?: Pick<
+    Env,
+    'METRICS_AE' | 'ACTIONS_KV' | 'ATOMIC_RATE_LIMIT_ENABLED' | 'RL_WEBHOOK' | 'RATE_LIMIT_FAIL_CLOSED'
+  >,
 ): Promise<void> {
   if (!config.enabled) return
   if (!config.events.includes(payload.event)) return
 
-  const allowed = await checkWebhookRateLimit(integrationsKv, config.teamId)
+  // ADR-0073: rate limit on ACTIONS_KV (not INTEGRATIONS_KV config store).
+  const rlEnv: Parameters<typeof checkWebhookRateLimit>[0] = {
+    ACTIONS_KV: metricsEnv?.ACTIONS_KV ?? integrationsKv,
+  }
+  if (metricsEnv?.ATOMIC_RATE_LIMIT_ENABLED !== undefined) {
+    rlEnv.ATOMIC_RATE_LIMIT_ENABLED = metricsEnv.ATOMIC_RATE_LIMIT_ENABLED
+  }
+  if (metricsEnv?.RL_WEBHOOK !== undefined) rlEnv.RL_WEBHOOK = metricsEnv.RL_WEBHOOK
+  if (metricsEnv?.METRICS_AE !== undefined) rlEnv.METRICS_AE = metricsEnv.METRICS_AE
+  if (metricsEnv?.RATE_LIMIT_FAIL_CLOSED !== undefined) {
+    rlEnv.RATE_LIMIT_FAIL_CLOSED = metricsEnv.RATE_LIMIT_FAIL_CLOSED
+  }
+  const allowed = await checkWebhookRateLimit(rlEnv, config.teamId)
   if (!allowed) {
     writeEvent(metricsEnv?.METRICS_AE, {
       name: 'webhook.failed',
