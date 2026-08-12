@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { SESSION_COOKIE } from '../../middleware/auth'
 import { jwtVerificationSecrets, verifyJwtWithSecrets } from '../../lib/jwt'
 import { deriveVoterIdentity } from '../../lib/voter'
+import { isSessionTokenRevoked } from '../../lib/session-token'
 import { requireLiveForWebSocket } from '../../lib/session-lifecycle'
 import { errorResponse } from '../../lib/error-handler'
 import {
@@ -102,7 +103,14 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     let presenterPermissions: Permission[] | undefined
     if (token) {
       const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
-      if (claims) {
+      // SECURITY: this route verifies the JWT itself rather than going through
+      // `authMiddleware` (it must also serve anonymous voters), so it has to
+      // repeat the revocation check that middleware performs. Without it a
+      // logged-out or explicitly revoked token still bought full presenter
+      // control of a LIVE session — launch/close/advance — for the remainder of
+      // the 14-day JWT lifetime. Signature validity alone is not authorization.
+      const revoked = claims ? await isSessionTokenRevoked(c.env, token) : false
+      if (claims && !revoked) {
         const teamPermissions = await presenterPermissionsForSession(c.env, session, claims.sub)
         const canPresentTeamSession =
           session.team_id !== null &&

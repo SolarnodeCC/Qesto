@@ -92,10 +92,25 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // DELETE /sessions/:id.
   const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
   const isLocalDevOrigin = candidate ? /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate) : false
-  const pagesIsRemote = expected ? !/^http:\/\/(localhost|127\.0\.0\.1)/.test(expected) : false
+  // SECURITY: localhost is a CSRF *attacker* origin against a deployed API, not
+  // a dev convenience. The previous condition allowed it whenever PAGES_URL was
+  // remote — true on every production deploy — so any page a victim loaded from
+  // http://localhost:<port> (a local dev server, an Electron app, a malicious
+  // package's preview server) could drive credentialed state-changing requests
+  // against production: the session cookie is SameSite=None, and a `text/plain`
+  // POST is a CORS "simple request" that never fires a preflight for the CORS
+  // layer to reject.
+  //
+  // The split-stack workflow this was meant to support (Vite on :5173 against a
+  // local `wrangler dev` API) is preserved by a rule that cannot be true in
+  // production: accept a loopback Origin only when THIS API is itself being
+  // served from loopback. A deployed API answers on qesto.cc, so the branch is
+  // unreachable there regardless of how ENV is configured — which matters,
+  // because wrangler.toml ships `ENV = "production"` and local `wrangler dev`
+  // inherits it.
+  const apiIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normaliseOrigin(c.req.url) ?? '')
   const allowLocalDev =
-    isLocalDevOrigin &&
-    (c.env.ENV === 'dev' || c.env.ENV === 'staging' || pagesIsRemote)
+    isLocalDevOrigin && (c.env.ENV === 'dev' || c.env.ENV === 'staging' || apiIsLocal)
   if (candidate && candidate !== expected && !isPreview && !allowLocalDev) {
     return c.json(
       {

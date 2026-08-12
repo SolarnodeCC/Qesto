@@ -8,12 +8,14 @@
 
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { setCookie, deleteCookie } from 'hono/cookie'
+import { setCookie, deleteCookie, getCookie } from 'hono/cookie'
 import { authMiddleware, IMPERSONATION_COOKIE, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { rateLimit } from '../../middleware/rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
+import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
+import { writeKvText } from '../../lib/kv'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
 import { errorResponse } from '../../lib/error-handler'
@@ -195,7 +197,20 @@ export function mountUserSupportRoutes(
   app.post('/impersonation/stop', authMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const impersonatorId = c.get('impersonator_id')
-    deleteCookie(c, IMPERSONATION_COOKIE, { path: '/' })
+    // Revoke server-side as well as clearing the cookie. Clearing alone left
+    // "stop impersonating" dependent on the browser: the cookie is issued
+    // Secure+SameSite=None, so a clearing cookie lacking those attributes is
+    // rejected on this cross-site response and the elevated context survived
+    // for the rest of the 15-minute TTL. Revocation makes the stop authoritative
+    // no matter what the browser does with the Set-Cookie.
+    const impersonationToken = getCookie(c, IMPERSONATION_COOKIE)
+    if (impersonationToken && c.env.ACTIONS_KV) {
+      const tokenHash = await hashSessionToken(impersonationToken)
+      await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', {
+        expirationTtl: IMPERSONATION_TTL_SECONDS,
+      })
+    }
+    deleteCookie(c, IMPERSONATION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     if (impersonatorId) {
       // Record the end of the session under the real admin actor.
       await recordAuditEvent(c, {
