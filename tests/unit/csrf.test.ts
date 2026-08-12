@@ -148,7 +148,10 @@ describe('CSRF / Origin validation', () => {
     expect(res.status).toBe(201)
   })
 
-  it('allows localhost origin when PAGES_URL is a production host (split-stack local dev)', async () => {
+  // Split-stack local dev (Vite on :5173 → `wrangler dev` API on :8787) is
+  // allowed because the API itself answers on loopback. wrangler.toml ships
+  // ENV="production", so this cannot key off ENV alone.
+  it('allows localhost origin when the API is itself served from loopback', async () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
@@ -157,7 +160,7 @@ describe('CSRF / Origin validation', () => {
     const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
-      new Request('http://local/api/sessions', {
+      new Request('http://localhost:8787/api/sessions', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -169,5 +172,33 @@ describe('CSRF / Origin validation', () => {
       env,
     )
     expect(res.status).toBe(201)
+  })
+
+  // The same request against a DEPLOYED API is CSRF: a page on the victim's
+  // localhost driving credentialed writes at production.
+  it('rejects a localhost origin when the API is deployed', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    ;(env as unknown as { PAGES_URL: string; ENV: string }).PAGES_URL = 'https://qesto.cc'
+    ;(env as unknown as { ENV: string }).ENV = 'production'
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
+
+    const res = await app.fetch(
+      new Request('https://qesto.cc/api/sessions', {
+        method: 'POST',
+        headers: {
+          // text/plain keeps this a CORS "simple request" — no preflight fires,
+          // so the CSRF middleware is the only control in the path.
+          'content-type': 'text/plain',
+          cookie: `qesto_session=${jwt}`,
+          origin: 'http://localhost:5173',
+        },
+        body: JSON.stringify({ title: 'csrf' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(403)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('forbidden_origin')
   })
 })

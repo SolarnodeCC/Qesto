@@ -1,8 +1,8 @@
-import { deleteCookie } from 'hono/cookie'
+import { deleteCookie, getCookie } from 'hono/cookie'
 import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { writeKvText } from '../../lib/kv'
-import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
+import { authMiddleware, IMPERSONATION_COOKIE, SESSION_COOKIE } from '../../middleware/auth'
 import { planMiddleware } from '../../middleware/plan'
 import { townhallEnabled } from '../../realtime'
 import { isPlatformAdmin } from '../../lib/platform-admin'
@@ -37,11 +37,29 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
   })
 
   app.post('/logout', async (c) => {
-    const token = c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? null
+    // SECURITY: the session cookie — not the Authorization header — is the
+    // primary credential (magic-link and SSO logins never populate the SPA's
+    // in-memory bearer token). Revoking only the header token made logout a
+    // no-op for those sessions: the 14-day JWT stayed valid for anyone holding
+    // a copy. Revoke every token presented on the request, and revoke the
+    // impersonation cookie too so "stop impersonating" cannot be replayed.
+    const headerToken = c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? null
+    const cookieToken = getCookie(c, SESSION_COOKIE) ?? null
+    const impersonationToken = getCookie(c, IMPERSONATION_COOKIE) ?? null
+    const tokens = [cookieToken, headerToken, impersonationToken].filter(
+      (t): t is string => typeof t === 'string' && t.length > 0,
+    )
+    const token = cookieToken ?? headerToken
     let logoutUserId: string | null = null
-    if (token && c.env.ACTIONS_KV) {
-      const tokenHash = await hashSessionToken(token)
-      await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
+    if (c.env.ACTIONS_KV) {
+      await Promise.all(
+        Array.from(new Set(tokens)).map(async (t) => {
+          const tokenHash = await hashSessionToken(t)
+          await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', {
+            expirationTtl: JWT_TTL_SECONDS,
+          })
+        }),
+      )
     }
     try {
       // Best-effort: decode sub from JWT for audit trail without full verification
@@ -61,7 +79,12 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
       subject_id: logoutUserId ?? 'anonymous',
       outcome: 'success',
     })
-    deleteCookie(c, SESSION_COOKIE, { path: '/' })
+    // The clearing cookie must carry the SAME attributes the session cookie was
+    // issued with (`setAuthSessionCookie`). A bare `Path=/; Max-Age=0` is a
+    // first-party (SameSite=Lax) cookie, which the browser rejects outright on
+    // this cross-site API response — leaving the real cookie in place.
+    deleteCookie(c, SESSION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
+    deleteCookie(c, IMPERSONATION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     return c.json({ ok: true, data: { cleared: true }, trace_id: c.get('trace_id') })
   })
 

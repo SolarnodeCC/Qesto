@@ -129,8 +129,32 @@ relates_to:
 
 ---
 
+---
+
+## Addendum — Audit 2026-08-12
+
+**Audit Report**: [`SECURITY_AUDIT_2026-08-12.md`](./SECURITY_AUDIT_2026-08-12.md)
+**Status**: 2 HIGH + 3 MEDIUM findings **FIXED** in the same PR that introduced the report. Each was demonstrated exploitable before the fix and blocked after; regression coverage in `tests/unit/security-audit-authz.test.ts`.
+
+| Finding | Severity | Status | Evidence |
+|---|---|---|---|
+| Tournament routes had no object-level authorization (cross-tenant read + write) | HIGH | ✅ FIXED | Two-legged `authorizeEnergizer()` (session access + energizer↔session binding) on all four routes; match→energizer→session walk on `PATCH /matches/:matchId`; 404-on-deny (`routes/tournaments.ts`, `repositories/energizerRepository.ts`) |
+| Logout did not invalidate the session (cookie token never revoked; clearing cookie rejected cross-site) | HIGH | ✅ FIXED | Revokes cookie + header + impersonation tokens; deletes cookies with issuing attributes (`routes/auth/session-routes.ts`) |
+| WebSocket presenter path ignored the revocation list | MEDIUM | ✅ FIXED | Shared `isSessionTokenRevoked()` applied before the presenter-role grant (`lib/session-token.ts`, `routes/sessions/public.ts`) |
+| `http://localhost:*` accepted as a CSRF Origin in production | MEDIUM | ✅ FIXED | Loopback Origin allowed only when the API itself is on loopback (`middleware/csrf.ts`) |
+| Impersonation stop was not authoritative | MEDIUM | ✅ FIXED | Server-side revocation of the impersonation token + matching cookie attributes (`routes/admin/user-support.ts`) |
+
+### Follow-up items (open)
+
+1. **SEC-RBAC-COVERAGE-01 (P2)** — every non-`platform_admin` entry in `PERMISSION_MATRIX` is documentation, not enforcement (a deliberate design so the coarse global-role matrix cannot shadow finer-grained team authorization). The tournaments finding is that design's failure mode: a matrix entry reads like coverage during review. Proposal: a CI check asserting each matrix path has a corresponding in-route object-level check.
+2. **SEC-PREVIEW-ORIGIN-01 (P3)** — the `*.qesto.pages.dev` allowance in CORS and CSRF lets any Pages preview deployment drive credentialed requests against production. Acceptable while preview builds are trusted; revisit if previews ever build untrusted PR code.
+3. **SEC-JWT-ROTATE-HELP-01 (P3)** — `routes/help/register-ask.ts` and `register-feedback.ts` call `verifyJwt(token, c.env.JWT_SECRET)` instead of `jwtVerificationSecrets()`, so previous-secret holders degrade to anonymous during a rotation. Consistency fix, low impact.
+
+---
+
 ## References
 
+- **Audit Report (2026-08-12)**: [`SECURITY_AUDIT_2026-08-12.md`](./SECURITY_AUDIT_2026-08-12.md)
 - **Audit Report**: [`SECURITY_AUDIT_2026-07-08.md`](./SECURITY_AUDIT_2026-07-08.md)
 - **Active Backlog**: [`knowledge-base/product/backlog/BACKLOG_ACTIVE.md`](../product/backlog/BACKLOG_ACTIVE.md) §Security Follow-ups (Audit 2026-07-08)
 - **PR #712**: Merged 2026-07-09 (all HIGH and MEDIUM fixes)

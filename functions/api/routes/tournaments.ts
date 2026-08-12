@@ -1,5 +1,14 @@
 /**
  * GAM-05 — bracket tournament REST (seed + list matches).
+ *
+ * SECURITY: every route here is object-scoped to a session the caller may
+ * access. `bracket_matches` rows key only on `energizer_id`, and an energizer id
+ * alone carries no tenant, so a bare `WHERE energizer_id = ?` (or
+ * `WHERE id = ?` on a match) is a cross-tenant read/write. The RBAC matrix
+ * lists these paths but `rbacMiddleware` deliberately hard-enforces only the
+ * platform-admin surface and defers everything else to the route's own check —
+ * so the check has to live here. Resolve energizer → session (or match →
+ * energizer → session) and run `requireSessionAccess` before touching a row.
  */
 import { Hono } from 'hono'
 import { z } from 'zod'
@@ -8,6 +17,12 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { seedSingleEliminationBracket } from '../lib/tournament-bracket'
 import { errorResponse } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
+import { requireSessionAccess } from './sessions/shared'
+import {
+  getEnergizerById,
+  getEnergizerIdForBracketMatch,
+  getSessionIdForEnergizer,
+} from '../repositories/energizerRepository'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -20,6 +35,30 @@ const SeedSchema = z.object({
     .max(64),
 })
 
+/**
+ * Authorize `(sessionId, energizerId)` for the caller.
+ *
+ * Both legs matter: `requireSessionAccess` proves the caller may act on the
+ * session, and `getEnergizerById` proves the energizer actually belongs to
+ * THAT session — without the second leg a caller could pair their own
+ * sessionId with someone else's energizerId and pass the first check.
+ *
+ * Returns `null` when unauthorized; callers must answer 404 (never 403) so the
+ * endpoint cannot be used to probe which energizer ids exist in other tenants.
+ */
+async function authorizeEnergizer(
+  env: Env,
+  sessionId: string,
+  energizerId: string,
+  userId: string,
+): Promise<{ sessionId: string; energizerId: string } | null> {
+  const session = await requireSessionAccess(env.DB, sessionId, userId)
+  if (!session) return null
+  const energizer = await getEnergizerById(env.DB, sessionId, energizerId)
+  if (!energizer) return null
+  return { sessionId: session.id, energizerId: energizer.id }
+}
+
 export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
@@ -27,6 +66,10 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.get('/sessions/:sessionId/bracket/:energizerId', async (c) => {
     const energizerId = c.req.param('energizerId')
+    const authorized = await authorizeEnergizer(c.env, c.req.param('sessionId'), energizerId, c.get('user').sub)
+    if (!authorized) {
+      return errorResponse(c, 404, 'not_found', 'Bracket not found')
+    }
     const { results } = await c.env.DB.prepare(
       `SELECT id, round_number, match_number, participant_a_id, participant_b_id, winner_id, score_a, score_b, state
          FROM bracket_matches WHERE energizer_id = ?1 ORDER BY round_number, match_number`,
@@ -42,6 +85,10 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
       return errorResponse(c, 400, 'validation', 'Invalid seed payload')
     }
     const { energizerId, participants } = body.data
+    const authorized = await authorizeEnergizer(c.env, c.req.param('sessionId'), energizerId, c.get('user').sub)
+    if (!authorized) {
+      return errorResponse(c, 404, 'not_found', 'Energizer not found')
+    }
     const existing = await c.env.DB.prepare(
       `SELECT COUNT(*) as n FROM bracket_matches WHERE energizer_id = ?1`,
     )
@@ -72,6 +119,10 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.get('/sessions/:sessionId/bracket/:energizerId/export', async (c) => {
     const energizerId = c.req.param('energizerId')
+    const authorized = await authorizeEnergizer(c.env, c.req.param('sessionId'), energizerId, c.get('user').sub)
+    if (!authorized) {
+      return errorResponse(c, 404, 'not_found', 'Bracket not found')
+    }
     const { results } = await c.env.DB.prepare(
       `SELECT round_number, match_number, participant_a_id, participant_b_id, winner_id, score_a, score_b, state
          FROM bracket_matches WHERE energizer_id = ?1 ORDER BY round_number, match_number`,
@@ -108,6 +159,17 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
       return errorResponse(c, 400, 'validation', 'winnerId required')
     }
     const id = c.req.param('matchId')
+    // The match id is the only object reference on this route, so walk it up to
+    // a session before writing: match → energizer → session → access check.
+    const energizerId = await getEnergizerIdForBracketMatch(c.env.DB, id)
+    const sessionId = energizerId ? await getSessionIdForEnergizer(c.env.DB, energizerId) : null
+    if (!energizerId || !sessionId) {
+      return errorResponse(c, 404, 'not_found', 'Match not found')
+    }
+    const authorized = await authorizeEnergizer(c.env, sessionId, energizerId, c.get('user').sub)
+    if (!authorized) {
+      return errorResponse(c, 404, 'not_found', 'Match not found')
+    }
     await c.env.DB.prepare(
       `UPDATE bracket_matches SET winner_id = ?1, score_a = COALESCE(?2, score_a), score_b = COALESCE(?3, score_b), state = 'completed' WHERE id = ?4`,
     )
