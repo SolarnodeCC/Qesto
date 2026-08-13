@@ -287,6 +287,48 @@ describe('persist-on-close', () => {
     expect(row?.resolved_at).not.toBeNull()
     expect(row?.author_hash).toBe('v1')
   })
+
+  it('persists grouped parent questions with child upvotes merged by voter identity', async () => {
+    const { room, state, db } = await buildRoom()
+    await initTownhall(room, 'post')
+    const presenter = connectPresenter(state)
+    const parentAuthor = connectVoter(state, 'v-parent', 'ip-parent')
+    const childAuthor = connectVoter(state, 'v-child', 'ip-child')
+    const sharedVoter = connectVoter(state, 'v-shared', 'ip-shared')
+
+    await send(room, parentAuthor, { type: 'townhall_submit', data: { body: 'Parent question?' }, timestamp: 0 })
+    const parentId = last(presenter, 'townhall_question_added')!.data.item.id
+    await send(room, childAuthor, { type: 'townhall_submit', data: { body: 'Duplicate child question?' }, timestamp: 0 })
+    const childId = last(presenter, 'townhall_question_added')!.data.item.id
+
+    await send(room, parentAuthor, { type: 'townhall_upvote', data: { itemId: parentId }, timestamp: 0 })
+    await send(room, sharedVoter, { type: 'townhall_upvote', data: { itemId: parentId }, timestamp: 0 })
+    await send(room, childAuthor, { type: 'townhall_upvote', data: { itemId: childId }, timestamp: 0 })
+    await send(room, sharedVoter, { type: 'townhall_upvote', data: { itemId: childId }, timestamp: 0 })
+
+    await send(room, presenter, {
+      type: 'townhall_moderate',
+      data: { itemId: childId, action: 'group', groupParentId: parentId },
+      timestamp: 0,
+    })
+
+    await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
+
+    const parentRow = db.townhallQuestions.get(parentId)
+    const childRow = db.townhallQuestions.get(childId)
+    expect(parentRow).toMatchObject({
+      id: parentId,
+      status: 'approved',
+      group_parent: null,
+      upvotes: 3,
+    })
+    expect(childRow).toMatchObject({
+      id: childId,
+      status: 'grouped',
+      group_parent: parentId,
+      upvotes: 2,
+    })
+  })
 })
 
 describe('spotlight', () => {
