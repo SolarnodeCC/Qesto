@@ -4,7 +4,7 @@ import { authMiddleware, type AuthVariables } from '../../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../../middleware/admin'
 import type { Env } from '../../../types'
 import { patchSprint19SchemaIfNeeded } from '../schema-patch'
-import type { Sprint19Baseline } from '../types'
+import type { JourneyEventBaseline } from '../types'
 
 type AdminApp = Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>
 
@@ -60,7 +60,7 @@ export function mountEngagementAnalyticsRoutes(app: AdminApp): void {
       const accepted = aiSuggestionRes?.accepted ?? 0
       const dismissed = aiSuggestionRes?.dismissed ?? 0
       const totalSuggestions = accepted + dismissed
-      const baseline: Sprint19Baseline = {
+      const baseline: JourneyEventBaseline = {
         generated_at: Date.now(),
         window: { start: startMs, end: endMs },
         ai_usage_rate: total > 0 ? (aiGeneratedRes?.n ?? 0) / total : null,

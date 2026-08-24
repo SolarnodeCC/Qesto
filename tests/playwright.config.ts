@@ -27,7 +27,10 @@ export default defineConfig({
   projects: [
     {
       name: 'fullstack-chrome',
-      testIgnore: /a11y\.spec\.ts/,
+      // a11y and visual-regression specs have dedicated projects. The visual
+      // snapshots are keyed to `spa-chrome` (no *-fullstack-chrome-linux.png
+      // baselines exist), so running them here fails on CI.
+      testIgnore: [/a11y\.spec\.ts/, /visual_smoke\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',

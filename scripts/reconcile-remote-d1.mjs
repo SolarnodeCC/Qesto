@@ -71,10 +71,10 @@ function banner(step) {
   console.log(`\n─── ${step} ───`)
 }
 
-// Every *.sql file wrangler treats as a migration (basename, matching the
-// name format wrangler stores in d1_migrations).
+// Every migration *.sql file, excluding verification sidecars that are not
+// tracked by wrangler's d1_migrations table.
 const migrationNames = readdirSync(MIGRATIONS_DIR)
-  .filter((f) => f.endsWith('.sql'))
+  .filter((f) => f.endsWith('.sql') && !f.endsWith('.verify.sql'))
   .sort()
 
 banner('Step 0 — current remote migration state (read-only)')
