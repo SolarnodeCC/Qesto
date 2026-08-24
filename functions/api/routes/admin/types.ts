@@ -153,7 +153,7 @@ export type AnalyticsData = {
   badge_breakdown: Array<{ kind: string; count: number }>
 }
 
-export type Sprint19Baseline = {
+export type JourneyEventBaseline = {
   generated_at: number
   window: { start: number | null; end: number }
   ai_usage_rate: number | null
