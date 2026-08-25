@@ -19,6 +19,40 @@ Until step 2 is configured by someone with admin rights on the repository, a PR
 that adds a new hard cap or drops the score can still merge; the audit will only
 report it afterwards. Step 1 removed the structural impossibility, not the gap.
 
+### Step 2 cannot be enabled as the policy stands
+
+Verified on 2026-08-25 against a clean checkout of `main`:
+
+```
+$ jankurai audit . --mode ratchet --baseline target/jankurai/accepted-baseline.json
+score=66 raw=77 caps=12 findings=86
+Error: audit decision failed in ratchet mode: status=fail score=66 minimum_score=85
+```
+
+The *ratchet* comparison itself passes — `score_delta: 0`, `new_caps: []`,
+`new_hard_findings: []`. What fails is the **absolute floor**: `minimum_score = 85`
+in `agent/audit-policy.toml` against an actual score of 66. Making this lane a
+required check today would therefore block *every* pull request, including ones
+that improve the score, because the gate is unconditional rather than
+differential.
+
+So step 2 has a prerequisite. Pick one before enabling it:
+
+1. **Split the gate (recommended).** Make the required check assert only the
+   ratchet delta — no new caps, no new hard findings, `score_delta >= 0` — and
+   keep the score-85 floor as a separate advisory lane. This gates regressions
+   from day one, which is what #612 actually asks for, without demanding the
+   repo be finished first.
+2. **Lower `minimum_score` to the current score** and raise it as remediation
+   lands, so the floor ratchets upward with the repo.
+3. **Reach 85 first**, then enable. This leaves the gap open for as long as
+   remediation takes — 12 caps are currently applied, several blocked on
+   upstream detector fixes (#691), so this is the slowest path.
+
+Whichever is chosen, note that `minimum_score = 85` is documented in the policy
+as aspirational. It is not a description of the repo's current state, and
+treating it as an enforcement threshold is what makes the gate unusable.
+
 ### Verifying step 3
 
 ```bash
