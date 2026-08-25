@@ -13,6 +13,7 @@ import type { Env } from '../../functions/api/types'
 import { KVMock } from '../helpers/kv-mock'
 import { D1Mock } from '../helpers/d1-mock'
 
+// jankurai:allow HLT-010-SECRET-SPRAWL reason="local HMAC signing key for test-only JWTs; length-padded to satisfy the 32-byte minimum, never used outside this suite" expires=2027-12-31
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 const kv = () => new KVMock() as unknown as KVNamespace
 
