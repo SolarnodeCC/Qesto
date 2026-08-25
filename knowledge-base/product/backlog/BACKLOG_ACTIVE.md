@@ -48,7 +48,7 @@ _Hub: [Documentation map](../../README.md)._
 | `VALID-ADR-0064-ACCEPT` | 3 | P0 | PO + architect | **Done** | ADR-0064 accepted 2026-06-19; EPIC-VALID eligible for train commit |
 | `OPS-DR-GAP-01` | 8 | P1 | devops + backend | **Done (code)** | [`DR_KV_EXPORT_BACKUP.md`](../../operations/DR_KV_EXPORT_BACKUP.md) + weekly Worker cron; prod first-run pending |
 | `OPS-DR-GAP-02` | 8 | P1 | devops + backend | **Done** | [`DR_SNAPSHOT_CADENCE.md`](../../operations/DR_SNAPSHOT_CADENCE.md) — 30s DO alarm → R2 |
-| `OPS-S99-CLOSEOUT-01` | 5 | P0 | devops + PO | **Done (automation)** | [`OPS_S99_CLOSEOUT_EVIDENCE.md`](../../operations/OPS_S99_CLOSEOUT_EVIDENCE.md) + `scripts/smoke-platform-v7.mjs` in CI; AE table pending operator |
+| `OPS-S99-CLOSEOUT-01` | 5 | P0 | devops + PO | **Done (automation)** | [`OPS_S99_CLOSEOUT_EVIDENCE.md`](../../operations/OPS_S99_CLOSEOUT_EVIDENCE.md) + `scripts/smoke-platform.mjs` in CI; AE table pending operator |
 | `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | **Draft → carried to RT-02** | [`MKTG_V70_GA_ANNOUNCEMENT.md`](../../marketing/MKTG_V70_GA_ANNOUNCEMENT.md) — PO sign-off before publish |
 
 ### RT-01 exit criteria (as closed, 2026-07-14)

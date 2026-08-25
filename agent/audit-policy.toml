@@ -10,7 +10,11 @@ standard_version = "0.9.0"
 auditor_version = "1.6.10"
 schema_version = "1.9.0"
 paper_edition = "2026.05-ed8"
-target_stack = "rust-ts-vite-react-postgres-bounded-python"
+# The reference profile must describe THIS repo, not a template default. Qesto is
+# Cloudflare Workers + Durable Objects + D1 (SQLite) with a TypeScript/React/Vite
+# frontend: no Rust source, no PostgreSQL, no Python runtime. Kept identical to
+# agent/standard-version.toml so policy and standard cannot disagree (issue #614).
+target_stack = "cloudflare-workers-typescript-react"
 
 [history]
 max_rows = 500
@@ -97,6 +101,13 @@ extra_excluded_paths = [
   # Published Python client SDK — a client library, not the exception-only
   # AI/data service the target stack scopes Python to. Not product runtime.
   "packages/sdk-python/",
+  # Published JavaScript client SDK — same precedent as sdk-python above: a
+  # distributable client library consumed by third parties, not Qesto product
+  # runtime (nothing in src/ or functions/ imports it). Ships hand-written
+  # index.d.ts types, so consumers still get full typing; adding a TS build step
+  # for 32 lines of published ESM would be machinery without a payoff.
+  # Closes the language-containment finding in issue #690.
+  "packages/sdk-js/",
   # E2E demo-seed fixture: contains a throwaway demo password used only to seed
   # showcase data in Playwright runs. Not a real credential.
   "tests/e2e/marketing/demo-data.ts",

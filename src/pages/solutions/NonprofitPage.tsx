@@ -190,11 +190,12 @@ export default function NonprofitPage() {
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Pricing for nonprofits</div>
           <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
-            Chorus at 40% off. Because mission-first means budget-second.
+            Discounted Chorus. Because mission-first means budget-second.
           </h2>
           <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg leading-relaxed max-w-3xl">
-            Registered 501(c)(3), UK charity, and EU nonprofit entities get Chorus pricing discounted across SSO,
-            custom retention, and bylaw-templated motions. No seat caps.
+            Registered 501(c)(3), UK charity, and EU nonprofit entities qualify for discounted Chorus pricing
+            across SSO, custom retention, and bylaw-templated motions. Send us your registration and we'll quote
+            your rate.
           </p>
           <div className="flex flex-wrap gap-3">
             <a href={NONPROFIT_APPLY_MAILTO} className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>

@@ -147,4 +147,4 @@ jobs:
           echo "✓ All API systems healthy"
 
       - name: Platform v7 smoke (OPS-S99-CLOSEOUT-01)
-        run: node scripts/smoke-platform-v7.mjs https://qesto.cc
+        run: node scripts/smoke-platform.mjs https://qesto.cc

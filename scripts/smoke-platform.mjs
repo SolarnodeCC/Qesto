@@ -5,7 +5,7 @@
  *   1. Platform info endpoints (/version, /releases, /certification)
  *   2. Session CRUD (create → read → verify structure)
  *   3. Basic session lifecycle (draft state only, no WebSocket)
- * Usage: node scripts/smoke-platform-v7.mjs [BASE_URL]
+ * Usage: node scripts/smoke-platform.mjs [BASE_URL]
  * Default: https://qesto.cc
  */
 const BASE = (process.argv[2] ?? 'https://qesto.cc').replace(/\/$/, '')
