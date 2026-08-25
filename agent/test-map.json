@@ -102,7 +102,7 @@
       "lane": "contract"
     },
     "tests/": {
-      "command": "npx playwright test --config tests/playwright.config.ts",
+      "command": "bash ops/ci/playwright.sh",
       "purpose": "end-to-end browser tests",
       "lane": "e2e"
     },

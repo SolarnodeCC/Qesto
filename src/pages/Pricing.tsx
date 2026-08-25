@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, X } from 'lucide-react'
+import { Check, X, Clock } from 'lucide-react'
 import {
   enrichPricingMatrix,
   PRICING_MATRIX_BASE,
@@ -60,6 +60,32 @@ const faqs = [
     a: 'Yes — Pulse stays free within the session and participant limits shown in the feature matrix below. Beyond that, apply for expanded access via the .edu program.',
   },
 ]
+
+/**
+ * Renders not-yet-shipped work as a visually distinct strip. Roadmap items used
+ * to sit inside the ticked feature lists, where a ✓ made them indistinguishable
+ * from what a customer actually gets today (issue #607).
+ */
+function RoadmapStrip({ items }: { items: string[] }) {
+  if (items.length === 0) return null
+  return (
+    <div className="mb-7 rounded-xl border border-dashed border-pulse-200 dark:border-[#2A3858] p-4">
+      <div className="text-[11px] font-bold tracking-widest uppercase text-pulse-500 dark:text-[#8A96B0] mb-2">
+        On the roadmap — not included today
+      </div>
+      <ul className="space-y-2 text-sm">
+        {items.map((f) => (
+          <li key={f} className="flex items-start gap-2.5 text-pulse-500 dark:text-[#8A96B0]">
+            <span className="flex-shrink-0 mt-0.5">
+              <Clock size={16} aria-hidden="true" />
+            </span>
+            {f}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 export default function Pricing() {
   const { plans } = usePlanCatalog()
@@ -193,7 +219,6 @@ export default function Pricing() {
                   starter?.features.semanticSearch
                     ? 'Semantic decision search — find past sessions by meaning, not just keywords'
                     : 'Decision search (Signal and up)',
-                  'Webhook integrations on the roadmap',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
@@ -204,6 +229,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
+              <RoadmapStrip items={['Webhook integrations']} />
               <Link
                 to="/login"
                 className={btnPrimary + ' w-full justify-center !bg-white !text-pulse-900 hover:shadow-lg'}
@@ -234,10 +260,9 @@ export default function Pricing() {
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
                   team?.features.townhallQA ? 'Townhall Q&A board (Beta — moderated, up to 5 000 participants)' : 'Townhall Q&A (Team tier)',
-                  team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO roadmap — contact sales',
-                  'Extended data retention & exports (residency on roadmap)',
+                  team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO — contact sales',
+                  'Extended data retention & exports',
                   team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
-                  'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
@@ -248,6 +273,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
+              <RoadmapStrip items={['Data residency controls', 'Customer-managed encryption keys']} />
               <a href={CHORUS_WALKTHROUGH_MAILTO} className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                 Book a walkthrough
               </a>
@@ -347,8 +373,8 @@ export default function Pricing() {
             Mission-first means budget-second.
           </h2>
           <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 leading-relaxed">
-            Registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply with a copy
-            of your registration and we'll turn it around in 48 hours.
+            Registered nonprofits and accredited educational institutions qualify for discounted Chorus pricing.
+            Apply with a copy of your registration and we'll come back to you with a quote.
           </p>
           <a
             href={NONPROFIT_APPLY_MAILTO}

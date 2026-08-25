@@ -24,9 +24,9 @@ const clusters = [
 
 const antiSlop = [
   { title: 'Minimum evidence threshold', desc: 'A theme needs 5+ linked responses to appear. Below that, it\'s an outlier — shown as a list, not a cluster.' },
-  { title: 'No inferred sentiment', desc: 'We cluster by topic, not by mood. If a host wants a valence score, they add a scale question.' },
+  { title: 'Sentiment is room-level only', desc: 'Clustering is by topic. Separately, a room can show one aggregate mood — positive, neutral or concerning — computed over 5+ open responses. It is never attributed to a person, and it is off entirely in zero-knowledge sessions.' },
   { title: 'Quotes are never paraphrased', desc: 'Exemplar lines in a cluster are verbatim. Edits by the host are visible in the audit log.' },
-  { title: 'Refusal is a feature', desc: 'Asked to "summarize tone," the model returns "no tone model deployed." Better than pretending.' },
+  { title: 'Refusal is a feature', desc: 'Below the evidence threshold the model returns "not enough responses" instead of inventing a theme. Better than pretending.' },
 ]
 
 export default function AIInsightsPage() {

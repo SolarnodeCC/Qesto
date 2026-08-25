@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import { Hono } from 'hono'
-import { mountStripeWebhookRoutes } from '../../functions/api/routes/billing'
+import { mountStripeWebhookRoutes } from '../../functions/api/routes/billing-webhooks'
 import type { Env } from '../../functions/api/types'
 
 // #585 — Stripe webhooks must update entitlements (users.plan) + customer mapping.

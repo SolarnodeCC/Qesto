@@ -20,3 +20,16 @@ source = "jankurai audit"
 command = "just score"
 read_only = false
 write_policy = "auditor_output"
+
+# contracts/openapi-v3.json is generated from the typed spec in
+# functions/api/lib/openapi-v3-spec.ts and gated against drift by
+# scripts/check-contract-drift.ts. Declaring the zone here is what closes
+# HLT-007 (a contract surface with no generated-zone entry — issue #690).
+# The "-v3" suffix names the OpenAPI specification version (a real external
+# standard), not a project version, so the HLT-040 fake-version finding on this
+# path is a false positive and the filename is deliberately kept.
+[[zone]]
+path = "contracts/openapi-v3.json"
+source = "functions/api/lib/openapi-v3-spec.ts"
+command = "npm run check:contracts -- --write"
+read_only = true

@@ -41,7 +41,7 @@ _Closes SPRINT99_EXECUTION.md exit items #18–22 where automation or documentat
 ### Automated (CI + local)
 
 ```bash
-node scripts/smoke-platform-v7.mjs https://qesto.cc   # after prod deploy
+node scripts/smoke-platform.mjs https://qesto.cc   # after prod deploy
 ```
 
 **CI wiring (2026-06-19):** `ci.yml` runs platform smoke after the production health check.
@@ -67,7 +67,7 @@ When GitHub billing is restored, confirm the `Platform v7 smoke` CI step is gree
 |------|--------|
 | 1 | Cloudflare Pages → **qesto** project → **Deployments** → select last known-good deployment → **Rollback to this deployment** |
 | 2 | Purge CDN cache (same as CI `Purge Cloudflare cache` step) |
-| 3 | `node scripts/smoke-platform-v7.mjs https://qesto.cc` |
+| 3 | `node scripts/smoke-platform.mjs https://qesto.cc` |
 | 4 | `curl -sf https://qesto.cc/api/admin/health \| jq` — D1/KV/DO = `ok` |
 | 5 | If API worker regression: redeploy previous `functions` bundle via matching Pages deployment (DO state is not rolled back) |
 

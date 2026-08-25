@@ -23,37 +23,37 @@ type WizardContext = Context<{ Bindings: Env; Variables: SessionVars }>
  * Returns null when the request is allowed.
  */
 export async function enforceWizardAiRateLimit(
-  c: WizardContext,
-  sessionId: string,
-  opts: { max: number; prefix: string; message: string },
+  c: WizardContext, 
+  sessionId: string, 
+  opts: { max: number; prefix: string; message: string }, 
 ): Promise<Response | null> {
   const user = c.get('user')
   const rl = await atomicRateLimitDual(c.env, {
-    key: user.sub,
-    burst: 'ai_burst',
-    sustained: { max: opts.max, windowSeconds: 3600, prefix: opts.prefix },
-    profileLabel: 'ai_wizard',
+    key: user.sub, 
+    burst: 'ai_burst', 
+    sustained: { max: opts.max, windowSeconds: 3600, prefix: opts.prefix }, 
+    profileLabel: 'ai_wizard', 
   })
   if (rl.allowed) return null
   writeEvent(c.env.METRICS_AE, {
-    name: 'ai.rate_limited',
-    userId: user.sub,
-    sessionId,
-    plan: c.get('plan'),
-    count: opts.max,
-    traceId: c.get('trace_id'),
+    name: 'ai.rate_limited', 
+    userId: user.sub, 
+    sessionId, 
+    plan: c.get('plan'), 
+    count: opts.max, 
+    traceId: c.get('trace_id'), 
   })
   return c.json(
     {
-      ok: false,
+      ok: false, 
       error: {
-        code: 'rate_limited',
-        message: opts.message,
-        details: { reset_at: rl.resetAt, limit: opts.max },
-      },
-      trace_id: c.get('trace_id'),
-    },
-    429,
+        code: 'rate_limited', 
+        message: opts.message, 
+        details: { reset_at: rl.resetAt, limit: opts.max }, 
+      }, 
+      trace_id: c.get('trace_id'), 
+    }, 
+    429, 
   )
 }
 
@@ -62,28 +62,28 @@ export async function enforceWizardAiRateLimit(
  * envelopes for both failure modes.
  */
 export async function loadDraftSessionForAi(
-  c: WizardContext,
-  sessionId: string,
-  action: DraftGateReason,
+  c: WizardContext, 
+  sessionId: string, 
+  action: DraftGateReason, 
 ): Promise<{ ok: true; session: Session } | { ok: false; res: Response }> {
   const loaded = requireFound(await fetchSession(c.env.DB, sessionId, c.get('user').sub))
   if (!loaded.ok) {
     return {
-      ok: false,
+      ok: false, 
       res: c.json(
-        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: c.get('trace_id') },
-        loaded.error.status,
-      ),
+        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: c.get('trace_id') }, 
+        loaded.error.status, 
+      ), 
     }
   }
   const draft = requireDraft(loaded.session, action)
   if (!draft.ok) {
     return {
-      ok: false,
+      ok: false, 
       res: c.json(
-        { ok: false, error: { code: draft.error.code, message: draft.error.message }, trace_id: c.get('trace_id') },
-        draft.error.status,
-      ),
+        { ok: false, error: { code: draft.error.code, message: draft.error.message }, trace_id: c.get('trace_id') }, 
+        draft.error.status, 
+      ), 
     }
   }
   return { ok: true, session: draft.session }
@@ -91,19 +91,19 @@ export async function loadDraftSessionForAi(
 
 /** `ai.inference` metric for a completed wizard generation. */
 export function recordWizardAiInference(
-  c: WizardContext,
-  sessionId: string,
-  questionCount: number,
-  inferenceStart: number,
+  c: WizardContext, 
+  sessionId: string, 
+  questionCount: number, 
+  inferenceStart: number, 
 ): void {
   writeEvent(c.env.METRICS_AE, {
-    name: 'ai.inference',
-    userId: c.get('user').sub,
-    sessionId,
-    plan: c.get('plan'),
-    durationMs: Date.now() - inferenceStart,
-    count: questionCount,
-    traceId: c.get('trace_id'),
+    name: 'ai.inference', 
+    userId: c.get('user').sub, 
+    sessionId, 
+    plan: c.get('plan'), 
+    durationMs: Date.now() - inferenceStart, 
+    count: questionCount, 
+    traceId: c.get('trace_id'), 
   })
 }
 
@@ -123,10 +123,10 @@ export type WizardAiErrorPayload = {
 export function wizardAiErrorPayload(err: unknown, envName: Env['ENV']): WizardAiErrorPayload | null {
   if (err instanceof WizardValidationError) {
     return {
-      status: 502,
-      code: 'ai_output_invalid',
-      message: 'AI returned an output that failed validation',
-      details: err.details,
+      status: 502, 
+      code: 'ai_output_invalid', 
+      message: 'AI returned an output that failed validation', 
+      details: err.details, 
     }
   }
   if (err instanceof WizardAIError) {

@@ -8,6 +8,24 @@ import PageSeo from '../components/PageSeo'
 import Reveal from '../components/Reveal'
 import HeroPollPreview from '../components/HeroPollPreview'
 
+const HOW_IT_WORKS = [
+  {
+    icon: QrCode,
+    title: 'Share a code',
+    body: 'Participants join from any browser with a room code or QR — no app, no account, nothing to install.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Ask, and watch it land',
+    body: 'Polls, rankings, open questions and consent votes. Results update live on the shared screen as answers arrive.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Leave with the evidence',
+    body: 'Open responses are clustered into themes, each backed by the verbatim answers behind it, ready to export.',
+  },
+]
+
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
   { icon: BarChart3, label: 'Live results every participant can see' },
@@ -155,8 +173,10 @@ export default function Home() {
                 <span className="text-sm text-pulse-500">{t('loading')}</span>
               ) : (
                 <>
+                  {/* Acquisition CTA → signup form, not the returning-user login
+                      screen the promise above does not match (issue #607). */}
                   <Link
-                    to="/login"
+                    to="/login?tab=signup"
                     className="inline-flex items-center gap-2 rounded-md bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Launch your next session
@@ -206,6 +226,37 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── How it works ──────────────────────────────────────────────────────── */}
+        <Reveal as="section" aria-labelledby="how-it-works-heading" className="py-20 px-8">
+          <div className="max-w-6xl mx-auto">
+            <h2
+              id="how-it-works-heading"
+              className="font-bold text-3xl md:text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]"
+            >
+              How a Qesto session runs
+            </h2>
+            <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 max-w-2xl leading-relaxed">
+              Three steps, start to finish. Most hosts are live inside two minutes.
+            </p>
+            <ol className="grid gap-8 md:grid-cols-3">
+              {HOW_IT_WORKS.map(({ icon: Icon, title, body }, i) => (
+                <li key={title} className="flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-[#1C2540] dark:text-teal-400">
+                      <Icon size={20} aria-hidden="true" />
+                    </span>
+                    <span className="text-xs font-bold tracking-widest uppercase text-pulse-400 dark:text-[#8A96B0]">
+                      Step {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                  <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Reveal>
 
         {/* ── Feature cards ─────────────────────────────────────────────────────── */}
         <Reveal

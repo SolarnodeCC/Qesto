@@ -70,7 +70,7 @@ bash ops/ci/contracts.sh
 `tests/integration/connect-scale-proof.test.ts` — `describe.sequential` + 90s timeouts on
 scale loops (fixes flaky failure under full parallel Vitest load).
 
-`scripts/smoke-platform-v7.mjs` — cross-platform platform smoke; wired in `ci.yml` after
+`scripts/smoke-platform.mjs` — cross-platform platform smoke; wired in `ci.yml` after
 staging and production health checks (`OPS-S99-CLOSEOUT-01`).
 
 ## RT-01 closure rule

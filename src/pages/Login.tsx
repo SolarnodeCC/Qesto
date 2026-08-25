@@ -22,7 +22,12 @@ export default function Login() {
     if (status === 'authenticated') navigate('/dashboard', { replace: true })
   }, [status, navigate])
 
-  const [tab, setTab] = useState<Tab>('magic')
+  // Acquisition CTAs link to /login?tab=signup so a new visitor lands on the
+  // signup form instead of a returning-user login screen (issue #607).
+  const requestedTab = search.get('tab')
+  const initialTab: Tab = requestedTab === 'signup' || requestedTab === 'login' ? requestedTab : 'magic'
+  const [tab, setTab] = useState<Tab>(initialTab)
+  const isSignupIntent = initialTab === 'signup'
 
   // Magic link state
   const [magicEmail, setMagicEmail] = useState('')
@@ -115,9 +120,11 @@ export default function Login() {
             tabIndex={-1}
             className="text-3xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
           >
-            {t('loginTitle')}
+            {isSignupIntent ? t('signupTitle') : t('loginTitle')}
           </h1>
-          <p className="text-sm text-pulse-600 dark:text-pulse-400">{t('loginSubtitle')}</p>
+          <p className="text-sm text-pulse-600 dark:text-pulse-400">
+            {isSignupIntent ? t('signupSubtitle') : t('loginSubtitle')}
+          </p>
         </div>
 
         {/* Callback error banners */}

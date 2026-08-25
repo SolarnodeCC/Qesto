@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url'
 const testsDir = path.dirname(fileURLToPath(import.meta.url))
 const marketingVideoDir = path.join(testsDir, 'artifacts', 'marketing-videos')
 
+// The full-stack server (scripts/e2e-serve-fullstack.sh) serves both the SPA and
+// /api on :8788, so every project shares one origin. Overridable for runs against
+// a deployed preview.
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8788'
+
 export default defineConfig({
   // Resolved relative to this config file (`tests/` → `tests/e2e/`)
   testDir: './e2e',
@@ -19,10 +24,22 @@ export default defineConfig({
     ['html', { outputFolder: 'tests/artifacts/playwright-report', open: 'never' }],
   ],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'off',
+  },
+  // Owning startup here (rather than in the workflow) is what lets the declared
+  // proof lane in agent/test-map.json — a bare `npx playwright test` — actually
+  // pass, and keeps CI and local runs on one code path (issues #692, #688).
+  webServer: {
+    command: 'bash scripts/e2e-webserver.sh',
+    url: BASE_URL,
+    // Cold start includes a Vite build + D1 migrations.
+    timeout: 300_000,
+    reuseExistingServer: true,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
   projects: [
     {
@@ -33,7 +50,6 @@ export default defineConfig({
       testIgnore: [/a11y\.spec\.ts/, /visual_smoke\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
       },
     },
     {
@@ -45,8 +61,7 @@ export default defineConfig({
       ],
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173',
+        baseURL: BASE_URL,
       },
     },
     {
@@ -54,7 +69,6 @@ export default defineConfig({
       testMatch: /a11y\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
       },
     },
     {
@@ -66,7 +80,6 @@ export default defineConfig({
       outputDir: marketingVideoDir,
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
         video: 'on',
         viewport: { width: 1280, height: 720 },
         launchOptions: { slowMo: 350 },
