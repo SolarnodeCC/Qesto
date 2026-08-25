@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const testsDir = path.dirname(fileURLToPath(import.meta.url))
 const marketingVideoDir = path.join(testsDir, 'artifacts', 'marketing-videos')
+const repoRoot = path.join(testsDir, '..')
 
 // The full-stack server (scripts/e2e-serve-fullstack.sh) serves both the SPA and
 // /api on :8788, so every project shares one origin. Overridable for runs against
@@ -34,6 +35,10 @@ export default defineConfig({
   // pass, and keeps CI and local runs on one code path (issues #692, #688).
   webServer: {
     command: 'bash scripts/e2e-webserver.sh',
+    // Playwright resolves webServer.cwd to the CONFIG FILE's directory, not the
+    // repo root — without this the command resolved to tests/scripts/… and died
+    // with exit code 127 on the first post-merge run of this lane.
+    cwd: repoRoot,
     url: BASE_URL,
     // Cold start includes a Vite build + D1 migrations.
     timeout: 300_000,
