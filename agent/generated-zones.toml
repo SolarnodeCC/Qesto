@@ -23,13 +23,18 @@ write_policy = "auditor_output"
 
 # contracts/openapi-v3.json is generated from the typed spec in
 # functions/api/lib/openapi-v3-spec.ts and gated against drift by
-# scripts/check-contract-drift.ts. Declaring the zone here is what closes
-# HLT-007 (a contract surface with no generated-zone entry — issue #690).
+# scripts/check-contract-drift.ts (wired into ops/ci/contracts.sh as
+# `npm run check:contracts`).
+#
+# It is deliberately NOT declared as a [[zone]] here. Declaring it was tried for
+# issue #690 and made the audit strictly worse: the auditor kept reporting
+# HLT-007 ("no generated zone entry") for the path regardless, and additionally
+# raised HLT-002 (generated zone integrity violation) — with and without
+# write_policy = "generator_only". Both findings are detector behaviour, not
+# repo drift: `npm run check:contracts` passes, so the artifact is in sync with
+# its source. Re-declaring the zone without an upstream fix only adds a second
+# false finding. See the triage in issue #691.
+#
 # The "-v3" suffix names the OpenAPI specification version (a real external
 # standard), not a project version, so the HLT-040 fake-version finding on this
-# path is a false positive and the filename is deliberately kept.
-[[zone]]
-path = "contracts/openapi-v3.json"
-source = "functions/api/lib/openapi-v3-spec.ts"
-command = "npm run check:contracts -- --write"
-read_only = true
+# path is also a false positive and the filename is kept.

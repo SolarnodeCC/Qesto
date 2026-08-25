@@ -179,11 +179,13 @@ export class SlackProvider implements IntegrationProvider {
   }
 
   /**
-   * Slack inbound webhooks (event subscriptions) are out of scope for v2.2.
-   * The provider only handles outbound notifications today.
+   * This provider is outbound-only: it posts notifications to Slack and does not
+   * subscribe to Slack events. Inbound webhook verification is therefore an
+   * unsupported operation rather than pending work — callers should not route
+   * Slack event deliveries here.
    */
   async verifyWebhook(_req: Request, _secret: string): Promise<WebhookEvent> {
-    throw new Error('Slack inbound webhooks not implemented in v2.2')
+    throw new Error('Slack provider is outbound-only and does not accept inbound webhooks')
   }
 
   canSyncFormat(format: 'json' | 'pdf' | 'docx'): boolean {
