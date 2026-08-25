@@ -67,3 +67,30 @@ while the repo sits below the aspirational `minimum_score = 85` floor. Dropping
 those flags before remediation reaches the floor would turn the workflow red on
 every run and block all merges, so they are re-tightened *after* the score
 clears the floor, not before — tracked in #688 and #613.
+
+
+## The jankurai lane has four failing steps hidden by `continue-on-error`
+
+Before making **`jankurai audit`** a required check, know what is currently red
+inside it. The job reports success only because five steps carry
+`continue-on-error: true`; four of them fail on every run. Verified 2026-08-25 by
+running each step against a clean `origin/main` worktree.
+
+| Step | Failure | Cause | Ours? |
+|---|---|---|---|
+| `security` | `security lane blocked by required tool evidence: gitleaks, npm` | The lane wants tool-evidence artifacts the workflow never produces. A **security** lane that cannot run is the most consequential of the four. | Pre-existing |
+| `db-migration-analyze` | `error: unexpected argument '--json' found` | Workflow invokes `jankurai migrate . --analyze --json …`, but the CLI signature is `jankurai migrate --analyze <REPO>` — it takes no `--json`. The step has never worked. | Pre-existing |
+| `ux-qa` | `Cannot find module packages/ux-qa/dist/cli.js` | `jankurai ux audit` shells out to a local CLI that is never built in CI. | Pre-existing |
+| `proofbind` | `read ./<path>: No such file or directory` | `jankurai_proofbind::classify::classify_changed_path` reads every path in the `--changed-from` diff without checking it still exists, so **any commit that deletes or renames a file** fails the step. | Upstream bug, triggered by any rename |
+
+The first three are independent of repo content and reproduce on `main`. The
+fourth is transient per-branch: once a rename merges, later diffs against the new
+`main` no longer list the deleted path, so it self-heals — but it will recur on
+every future PR that deletes a file.
+
+**Consequence for step 2 above:** making this lane required would turn every PR
+red for four reasons that have nothing to do with the PR. Fix or drop these steps
+first, or scope the required check to the ratchet delta only, as recommended
+above. Re-tightening the `continue-on-error` flags (tracked in #688 and #613) is
+not just a policy decision — three of these steps are broken and would need
+repairing before the flags can come off.
