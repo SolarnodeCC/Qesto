@@ -1,5 +1,15 @@
 name: Playwright Tests
 on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'functions/**'
+      - 'worker/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/playwright.yml'
   push:
     branches: [ main ]
     # Only run the (expensive) E2E suite when app code or the E2E harness changes;
