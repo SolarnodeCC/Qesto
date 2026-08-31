@@ -1,5 +1,12 @@
 {
   "instructor.title": "Instructor analytics",
+  "instructor.subtitle": "Score distribution and question difficulty from your assessment cohort.",
+  "instructor.loading": "Loading…",
+  "instructor.analyze_demo": "Analyze demo cohort",
+  "instructor.analyzing": "Analyzing…",
+  "instructor.export_error": "CSV export failed.",
+  "instructor.difficulty_index": "difficulty",
+  "instructor.responses": "responses",
   "instructor.scoreDistribution": "Score distribution",
   "instructor.difficulty": "Question difficulty",
   "instructor.avgScore": "Average score",
