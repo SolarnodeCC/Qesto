@@ -16,6 +16,7 @@ import {
 import { writeEvent } from '../../lib/observability'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
 import { logEvent } from '../../lib/log'
+import { getFlag } from '../../lib/flags'
 import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/producer'
 import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
 import { persistRetroHealthSnapshot } from '../../lib/workspace-trends'
@@ -228,7 +229,7 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     }
 
     // Slack notification: if integration enabled and team has Slack token
-    if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
+    if (getFlag(c.env, 'INTEGRATION_ENABLED') && c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })
       enqueuePromises.push(
         enqueuePostSessionWork(c.env, {
@@ -250,7 +251,7 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     }
 
     // Teams notification: similar to Slack
-    if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
+    if (getFlag(c.env, 'INTEGRATION_ENABLED') && c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })
       enqueuePromises.push(
         enqueuePostSessionWork(c.env, {

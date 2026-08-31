@@ -93,6 +93,7 @@ import { sanitizeError } from './lib/error-handler'
 import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
+import { summarizePlatformBindings } from './lib/platform-bindings'
 import type { Env } from './types'
 import { getFlag } from './lib/flags'
 
@@ -275,6 +276,7 @@ export function createApp() {
   app.get('/api/admin/health', async (c) => {
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
     const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
+    const bindings = summarizePlatformBindings(c.env)
     return c.json({
       ok: true,
       data: {
@@ -286,6 +288,8 @@ export function createApp() {
         failoverActive: routing.failoverActive,
         multiRegion: routing.config,
         commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
+        bindings,
+        platformReady: bindings.ok,
       },
       trace_id: c.get('trace_id')!,
     })

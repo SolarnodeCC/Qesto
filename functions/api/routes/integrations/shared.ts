@@ -18,6 +18,7 @@ import { TeamsProvider } from '../../lib/integrations/providers/teams'
 import { readKvText } from '../../lib/kv'
 import { writeEvent } from '../../lib/observability'
 import { base64UrlEncode, base64UrlDecode, timingSafeEqual, hmacSign } from '../../lib/shared/crypto'
+import { getFlag } from '../../lib/flags'
 import type { Env, PlanTier } from '../../types'
 
 // Match the Vars shape used in app.ts so these sub-routers compose cleanly.
@@ -165,7 +166,7 @@ export function getTeamsProvider(
 }
 
 export function integrationsDisabled(env: Pick<Env, 'INTEGRATION_ENABLED' | 'INTEGRATIONS_KV'>): boolean {
-  return env.INTEGRATION_ENABLED !== 'true' || !env.INTEGRATIONS_KV
+  return !getFlag({ INTEGRATION_ENABLED: env.INTEGRATION_ENABLED }, 'INTEGRATION_ENABLED') || !env.INTEGRATIONS_KV
 }
 
 export async function emitIntegrationConnected(
