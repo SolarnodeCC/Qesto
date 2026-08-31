@@ -109,8 +109,8 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | Open | Residual fabricated "5-day downgrade" claim removed everywhere: `help/billing.md` FAQ (§"What happens to my sessions if payment fails?") + 4 seed entries in `functions/api/seed/help-documents.json`; copy states the real Stripe dunning flow (as the rewritten §Failed Payments already does); `HELP_VECTORIZE` re-seeded — [`KB_COVERAGE_AUDIT_2026-06-21.md`](../../quality/audits/KB_COVERAGE_AUDIT_2026-06-21.md) CRITICAL #1 |
-| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | Open (needs PO decision) | Consent copy in all 5 locales promises a 30-day purge with no enforcing cron (verified again 2026-07-14: no purge job in `worker/`). Either (a) build the auto-redaction cron matching promised windows, or (b) reword consent copy + pricing-matrix framing. Promoted from [`BACKLOG_MASTER.md`](./BACKLOG_MASTER.md) (raised 2026-06-20) |
+| `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | **Done (2026-08-31)** | Fabricated "5-day downgrade" removed from `help/billing.md` + help seed; copy matches Stripe dunning — re-seed `HELP_VECTORIZE` on deploy |
+| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | In progress (Path B copy) | Privacy, HR, PrivacyFeature pages aligned with GdprTrustPage honesty; auto-purge cron still PO decision |
 | `MKTG-TEMPLATE-PIPELINE-FIX-01` | 8 | P0 | backend + ai-engineer | **Done (2026-07-12)** | Retroactive row for shipped work: MKTP-001..016/018/019 from [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) fixed in commit `6335af3` — real question text in generation, working email-capture "use template" flow, fail-closed anonymisation gates, draft-first publish, D1 template registry (migration 0079). Open residue: MKTP-017/020 (LOW → triage) |
 
 ### RT-02 exit criteria
@@ -131,6 +131,17 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 | `OPS-DO-BIND-VERIFY-01` | 5 | P0 | devops | In progress | `/api/admin/health` exposes `bindings`; `npm run audit:bindings` + platform smoke fail on missing `SESSION_ROOM` |
 | `OPS-BRANCH-PROTECT-01` | 3 | P0 | devops | Open | `npm run check:branch-protection` green OR documented GitHub settings proof for `main` |
 | `OPS-DEPLOY-UNIFIED-01` | 5 | P1 | devops | Open | Worker `deploy:api` in CI `main` deploy job; post-deploy binding audit |
+
+### RT-02 addendum — Platform review remediation Phase 2 + 3 (2026-08-31)
+
+**Goal:** Trust/compliance copy (Phase 2) and security hardening (Phase 3) from the 2026-08-31 review.
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `MKTG-PRICING-RECAP-01` | 2 | P1 | marketing + frontend | **Done (2026-08-31)** | Signal pricing card no longer lists AI recap as included |
+| `SEC-CSRF-PREVIEW-01` | 5 | P1 | backend + security | **Done (2026-08-31)** | `*.qesto.pages.dev` Origin blocked when `ENV=production`; staging/dev allowed; unit tests |
+| `SEC-MARKETING-HMAC-01` | 2 | P1 | backend | **Done (2026-08-31)** | Marketing webhook uses timing-safe compare; no signature prefix logs |
+| `SEC-RBAC-INVENTORY-01` | 8 | P1 | security + backend | **Done (2026-08-31)** | `check:route-authz` in CI; baseline 0 with public-route exempt list |
 
 ---
 

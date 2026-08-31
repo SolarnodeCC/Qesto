@@ -32,7 +32,7 @@ const useCases = [
     items: [
       'Cohort-visible mode (HR sees, manager sees aggregate only)',
       'Free-text themes, never raw quotes',
-      'Identity deleted 30 days after close',
+      'Retention targets apply per plan; delete via host or GDPR tools',
     ],
   },
   {
@@ -267,7 +267,7 @@ export default function HRPage() {
               {
                 icon: <Trash2 size={22} />,
                 title: 'Retention you pick',
-                desc: 'Identity rows purge on your schedule — 30 days, 90, custom. Aggregate tallies live longer for trend reporting, with no link back.',
+                desc: 'Plan targets range from 30 days (Pulse) to custom windows on Chorus. Sessions persist until deleted; automatic tier purges are not yet enforced — export or delete any time.',
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>

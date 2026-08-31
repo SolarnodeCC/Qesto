@@ -211,11 +211,9 @@ export default function Pricing() {
                   starter
                     ? `Up to ${starter.features.sessionsPerMonth} new sessions per month`
                     : 'Higher session allowance',
-                  '365-day retention, audit exports',
+                  '365-day retention target, audit exports',
                   'Identified mode + consent logs',
-                  starter?.features.insightsAI
-                    ? 'Same-day evidence-anchored recap'
-                    : 'Evidence-anchored recap (AI insights on Chorus)',
+                  ...(starter?.features.insightsAI ? ['Same-day evidence-anchored recap'] : []),
                   starter?.features.semanticSearch
                     ? 'Semantic decision search — find past sessions by meaning, not just keywords'
                     : 'Decision search (Signal and up)',

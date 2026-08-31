@@ -172,13 +172,18 @@ export default function Privacy() {
               Retention is configured per workspace. Defaults:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
-              <li><strong>Pulse plan:</strong> 30 days.</li>
-              <li><strong>Signal plan:</strong> 365 days.</li>
-              <li><strong>Chorus plan:</strong> custom, as low as 7 days or as high as 7 years.</li>
+              <li><strong>Pulse plan:</strong> 30 days (plan target).</li>
+              <li><strong>Signal plan:</strong> 365 days (plan target).</li>
+              <li><strong>Chorus plan:</strong> custom, as low as 7 days or as high as 7 years (plan target).</li>
             </ul>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
-              Identity rows purge first. Aggregate tallies can persist longer — with no link back — for trend
-              reporting.
+              These figures describe plan-level retention targets. Ordinary session data persists until you or
+              your host deletes it — automatic age-based purges for all tiers are not yet enforced. You can export
+              or delete data at any time via session controls and GDPR self-service endpoints.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              Where identity rows are removed, aggregate tallies may persist longer for trend reporting — with no
+              link back to individuals.
             </p>
 
             <h2 id="s7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
