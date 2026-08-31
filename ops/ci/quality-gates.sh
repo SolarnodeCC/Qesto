@@ -46,6 +46,9 @@ node scripts/check-kv-access.mjs
 # inversion into the route layer is resolved via interface segregation.
 node scripts/check-circular-deps.mjs
 
+report_success "Wrangler boolean flag contract (check:wrangler-flags)"
+node scripts/check-wrangler-flags.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit

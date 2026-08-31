@@ -57,6 +57,42 @@ async function checkHealth() {
   console.log(`✓ /api/admin/health`)
 }
 
+async function checkAdminBindings() {
+  const url = `${BASE}/api/admin/health`
+  const res = await fetch(url, { headers: { accept: 'application/json' } })
+  const json = await res.json()
+  if (!res.ok) {
+    console.error(`✗ /api/admin/health HTTP ${res.status}`)
+    console.error(JSON.stringify(json).slice(0, 500))
+    process.exit(1)
+  }
+  const bindings = json?.data?.bindings
+  if (!bindings?.probes) {
+    console.warn('⚠ /api/admin/health missing bindings probe (older deploy?)')
+    return
+  }
+  for (const probe of bindings.probes) {
+    const mark = probe.bound ? '✓' : probe.required ? '✗' : '○'
+    console.log(`${mark} binding ${probe.name} (required=${probe.required})`)
+  }
+  // Report-only by default: several bindings (Pages SESSION_ROOM, the insights
+  // queue) are operator steps outside this repo, and failing every deploy on
+  // them would block unrelated releases. Set SMOKE_REQUIRE_BINDINGS=1 to make
+  // a missing required binding fatal once they are provisioned.
+  const strict = process.env.SMOKE_REQUIRE_BINDINGS === '1'
+  const missing = bindings.missingRequired ?? []
+  if (missing.length || json.data?.platformReady === false) {
+    const msg = `missing required bindings: ${missing.join(', ') || '(platformReady=false)'}`
+    if (strict) {
+      console.error(`✗ ${msg}`)
+      process.exit(1)
+    }
+    console.warn(`⚠ ${msg} (set SMOKE_REQUIRE_BINDINGS=1 to fail on this)`)
+    return
+  }
+  console.log(`✓ /api/admin/health bindings`)
+}
+
 async function checkSessionDraft() {
   // Note: This test only checks unauthenticated session info endpoint (read-only).
   // Full e2e (create → questions → WebSocket) requires auth + magic-link flow.
@@ -81,6 +117,7 @@ for (const { path, expect } of platformChecks) {
 console.log()
 console.log('System Health:')
 await checkHealth()
+await checkAdminBindings()
 
 console.log()
 console.log('Session Endpoints:')

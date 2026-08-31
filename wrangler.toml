@@ -82,7 +82,7 @@ REALTIME_TOWNHALL_ENABLED = "true"
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
 # Integrations: Slack/Teams notifications (gates integration checks in routes).
-INTEGRATION_ENABLED = "1"
+INTEGRATION_ENABLED = "true"
 # Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
 CIRCUIT_BREAKER_ENABLED = "true"
 # Energizers: warm-up activities before live questions (DRAFT→ENERGIZING state machine).
