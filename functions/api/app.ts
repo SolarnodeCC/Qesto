@@ -96,6 +96,7 @@ import { alertCritical } from './lib/alerts'
 import { normaliseOrigin, resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
+import { summarizePlatformBindings } from './lib/platform-bindings'
 import type { Env } from './types'
 import { getFlag } from './lib/flags'
 import { readKvText } from './lib/kv'
@@ -361,6 +362,7 @@ export function createApp() {
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
     const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
     const checks = await probeDependencies(c.env)
+    const bindings = summarizePlatformBindings(c.env)
     // `unconfigured` is a deployment-shape fact, not a runtime fault: it is the
     // normal state under Vitest and before bootstrap, and 503-ing on it would
     // make the endpoint useless everywhere but production. Only a binding that
@@ -381,6 +383,11 @@ export function createApp() {
           multiRegion: routing.config,
           commit: resolveCommit(c.env),
           checks,
+          // Binding/flag presence report (SESSION_ROOM, INSIGHTS_QUEUE,
+          // INTEGRATION_ENABLED) for deploy smoke and operator audits. It is
+          // informational: `checks` above stays the only thing that 503s.
+          bindings,
+          platformReady: bindings.ok,
         },
         trace_id: c.get('trace_id')!,
       },
