@@ -77,11 +77,12 @@ ADR-0068/0069/0070.
 
 ---
 
-## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; target close 2026-07-31) — **ACTIVE**
+## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; **target close reset to 2026-08-31**) — **ACTIVE (overdue — ops remediation in flight)**
 
 **Goal:** Ship the user-facing half of v7 backends deferred from S93–S95. **No new trust boundaries.**
 
-**Precondition:** RT-01 closed 2026-07-14 with recorded P0 exception (CI blocked on GitHub billing — external). Original target close 2026-07-17 is not reachable with all P0 stories still Open; reset to **2026-07-31** (within the 2–3-week train rule, counted from actual RT-01 closeout).
+**Precondition:** RT-01 closed 2026-07-14 with recorded P0 exception (CI blocked on GitHub billing — external). Original target close 2026-07-17 was missed; reset to **2026-07-31** then **2026-08-31** after platform review remediation (Phase 0/1 — silent queue/flag/binding failures). P0 UI stories remain Open until FE train resumes after T0 ops land.
+
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
@@ -118,6 +119,18 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 - [ ] No new ADR required (consumes existing PULSE/COPILOT/LEARN APIs)
 - [ ] `just check` green before merge to `main`
 - [ ] Predictability ≥ 65 per [`AGENT_PREDICTABILITY_SCORECARD.md`](../../ai-context/research/AGENT_PREDICTABILITY_SCORECARD.md)
+
+### RT-02 addendum — Platform review remediation (2026-08-31, Phase 0 + Phase 1 T0)
+
+**Goal:** Close silent-failure and total-outage-class gaps from the 2026-08-31 platform review (ISS-001–ISS-003, ISS-029). Refs: Issue Register in agent review output; [`PLATFORM_BINDING_AUDIT_2026-08-31.md`](../../operations/audits/PLATFORM_BINDING_AUDIT_2026-08-31.md).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-QUEUE-BIND-01` | 8 | P0 | devops + backend | In progress | `INSIGHTS_QUEUE` producer+consumer in `wrangler.toml`; `queue.enqueue.noop` = 0 in prod AE/logs; close session enqueues work |
+| `BE-FLAG-CONTRACT-01` | 2 | P0 | backend | In progress | `INTEGRATION_ENABLED="true"` in wrangler; `integrationsDisabled()` uses `getFlag`; `check:wrangler-flags` in CI |
+| `OPS-DO-BIND-VERIFY-01` | 5 | P0 | devops | In progress | `/api/admin/health` exposes `bindings`; `npm run audit:bindings` + platform smoke fail on missing `SESSION_ROOM` |
+| `OPS-BRANCH-PROTECT-01` | 3 | P0 | devops | Open | `npm run check:branch-protection` green OR documented GitHub settings proof for `main` |
+| `OPS-DEPLOY-UNIFIED-01` | 5 | P1 | devops | Open | Worker `deploy:api` in CI `main` deploy job; post-deploy binding audit |
 
 ---
 

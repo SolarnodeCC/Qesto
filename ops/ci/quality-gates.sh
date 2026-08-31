@@ -40,6 +40,9 @@ node scripts/check-d1-access.mjs
 node scripts/check-error-response.mjs
 node scripts/check-kv-access.mjs
 
+report_success "Wrangler boolean flag contract (check:wrangler-flags)"
+node scripts/check-wrangler-flags.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit

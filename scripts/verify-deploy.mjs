@@ -125,6 +125,28 @@ try {
   process.exit(1)
 }
 
+// ── Step 1b: Platform binding probe (when health exposes bindings) ─────────
+try {
+  const healthUrl = `${origin}/api/admin/health`
+  const healthRes = await fetch(healthUrl, {
+    headers: { accept: 'application/json', ...cfAccessHeaders },
+  })
+  if (healthRes.ok) {
+    const health = await healthRes.json()
+    const bindings = health?.data?.bindings
+    if (bindings?.missingRequired?.length) {
+      console.error(`✗ Required bindings missing: ${bindings.missingRequired.join(', ')}`)
+      exitCode = exitCode || 5
+    } else if (bindings?.probes) {
+      console.log('Bindings     : OK (required probes present)')
+    }
+  } else {
+    console.warn(`⚠ Binding probe skipped (health HTTP ${healthRes.status})`)
+  }
+} catch (err) {
+  console.warn(`⚠ Binding probe skipped: ${err instanceof Error ? err.message : String(err)}`)
+}
+
 // ── Step 2: Static asset MIME type checks ─────────────────────────────────
 // Verifies that JS and CSS assets are NOT served as text/html (SPA fallback bug).
 // Asset filenames are read from the built dist/index.html so this always checks
