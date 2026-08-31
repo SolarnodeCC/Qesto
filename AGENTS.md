@@ -9,7 +9,7 @@ Read [`agent/JANKURAI_STANDARD.md`](./agent/JANKURAI_STANDARD.md) first. Proof l
 ## Stack
 
 - **Frontend**: React + TypeScript, Vite, Tailwind CSS v4
-- **Backend**: Cloudflare Pages Functions (Hono framework) in `functions/api/[[route]].ts`
+- **Backend**: Hono on Cloudflare Pages Functions in `worker/index.ts` (delegates to `functions/api/app.ts`)
 - **Worker**: Separate Cloudflare Worker in `worker/` met eigen `wrangler.toml`
 - **Database**: Cloudflare D1 (`DB` binding, database `qesto-db`)
 - **KV**: USERS_KV, SESSIONS_KV, TEAMS_KV, TEMPLATES_KV, DECISIONS_KV, AUDIT_KV, ACTIONS_KV

@@ -86,9 +86,9 @@ ADR-0068/0069/0070.
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `FE-PULSE-DASHBOARD-01` | 13 | P0 | frontend | Open | HR dashboard consumes `GET /api/teams/:id/pulse/summary` + trends; k-anon masking visible |
-| `FE-COPILOT-PANEL-01` | 13 | P0 | frontend | Open | Live session co-pilot side panel; plan approve/dismiss wired to existing API |
-| `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | Open | Instructor screen for `POST /api/learn/instructor/analytics` (backend shipped S95) |
+| `FE-PULSE-DASHBOARD-01` | 13 | P0 | frontend | **Done (2026-08-31)** | `/teams/:id/pulse` consumes summary + trends; k-anon masking visible |
+| `FE-COPILOT-PANEL-01` | 13 | P0 | frontend | **Done (2026-08-31)** | Live copilot panel + supervised plan approve/dismiss wired to API |
+| `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | **Done (2026-08-31)** | `/learn/instructor` for `POST /api/learn/instructor/analytics` + CSV export |
 | `PULSE-AI-NARRATION-01` | 8 | P1 | ai-engineer | Conditional | Workers-AI trend narration; `npm run test:eval` green (REV-10) |
 | `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | Open | New dashboard/panel strings in 5 locales; `check:i18n` green |
 
@@ -126,11 +126,11 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `OPS-QUEUE-BIND-01` | 8 | P0 | devops + backend | In progress | `INSIGHTS_QUEUE` producer+consumer in `wrangler.toml`; `queue.enqueue.noop` = 0 in prod AE/logs; close session enqueues work |
-| `BE-FLAG-CONTRACT-01` | 2 | P0 | backend | In progress | `INTEGRATION_ENABLED="true"` in wrangler; `integrationsDisabled()` uses `getFlag`; `check:wrangler-flags` in CI |
-| `OPS-DO-BIND-VERIFY-01` | 5 | P0 | devops | In progress | `/api/admin/health` exposes `bindings`; `npm run audit:bindings` + platform smoke fail on missing `SESSION_ROOM` |
+| `OPS-QUEUE-BIND-01` | 8 | P0 | devops + backend | **Done (2026-08-31)** | `INSIGHTS_QUEUE` producer+consumer in `wrangler.toml`; fail-visible enqueue; operator queue create pending |
+| `BE-FLAG-CONTRACT-01` | 2 | P0 | backend | **Done (2026-08-31)** | `INTEGRATION_ENABLED="true"` in wrangler; `integrationsDisabled()` uses `getFlag`; `check:wrangler-flags` in CI |
+| `OPS-DO-BIND-VERIFY-01` | 5 | P0 | devops | **Done (2026-08-31)** | `/api/admin/health` exposes `bindings`; `npm run audit:bindings` + platform smoke |
 | `OPS-BRANCH-PROTECT-01` | 3 | P0 | devops | Open | `npm run check:branch-protection` green OR documented GitHub settings proof for `main` |
-| `OPS-DEPLOY-UNIFIED-01` | 5 | P1 | devops | Open | Worker `deploy:api` in CI `main` deploy job; post-deploy binding audit |
+| `OPS-DEPLOY-UNIFIED-01` | 5 | P1 | devops | **Done (2026-08-31)** | Worker `deploy:api` + post-deploy `audit:bindings` in CI main deploy job |
 
 ### RT-02 addendum — Platform review remediation Phase 2 + 3 (2026-08-31)
 
@@ -142,6 +142,17 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 | `SEC-CSRF-PREVIEW-01` | 5 | P1 | backend + security | **Done (2026-08-31)** | `*.qesto.pages.dev` Origin blocked when `ENV=production`; staging/dev allowed; unit tests |
 | `SEC-MARKETING-HMAC-01` | 2 | P1 | backend | **Done (2026-08-31)** | Marketing webhook uses timing-safe compare; no signature prefix logs |
 | `SEC-RBAC-INVENTORY-01` | 8 | P1 | security + backend | **Done (2026-08-31)** | `check:route-authz` in CI; baseline 0 with public-route exempt list |
+
+### RT-02 addendum — Platform review remediation Phase 4 + 5 + 6 (2026-08-31)
+
+**Goal:** Release quality (Phase 4), P0 UI delivery (Phase 5), and ops/docs hygiene (Phase 6).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-CI-GATES-EXPAND-01` | 5 | P1 | devops | **Done (2026-08-31)** | `check:migrations` + `test:a11y` in quality-gates; Playwright on PRs |
+| `QA-WAVE1-LIFECYCLE-01` | 3 | P2 | tester | **Done (2026-08-31)** | `wave1-auth-session-lifecycle.test.ts` uses real Hono integration path |
+| `OPS-ALERTS-PAGING-01` | 5 | P0 | devops | **Done (code)** | `dispatchOperatorAlert` + 3h metrics sweep; set `OPS_ALERT_EMAIL`/`OPS_ALERT_WEBHOOK` secrets |
+| `FE-ENERGIZING-TYPES-01` | 2 | P2 | frontend | **Done (2026-08-31)** | `SessionLookupByCode` includes `energizing` status |
 
 ---
 
