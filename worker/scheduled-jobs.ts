@@ -13,6 +13,7 @@ import { runKvBackup } from '../functions/api/lib/kv-backup'
 import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
 import { runContentEngine } from '../functions/api/lib/marketing/content-engine'
 import { refreshAllTokens } from '../functions/api/lib/marketing/token-status'
+import { runMetricsAlertSweep } from '../functions/api/lib/metrics-alert-sweep'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -150,6 +151,17 @@ export const SCHEDULED_JOBS: readonly ScheduledJob[] = [
     run: async (env) => {
       if (!env.INTEGRATIONS_KV) return 'skipped — INTEGRATIONS_KV not bound'
       await refreshAllTokens(env, env.DB, env.INTEGRATIONS_KV)
+    },
+  },
+  {
+    // OPS-ALERTS-PAGING-01 — page operators on critical SLO breaches. Hourly to
+    // match the sweep's 1h metrics_summary lookback; a no-op unless
+    // OPS_ALERT_EMAIL / OPS_ALERT_WEBHOOK is configured.
+    key: 'metrics-alert-sweep',
+    cron: '0 * * * *',
+    run: async (env) => {
+      const sweep = await runMetricsAlertSweep(env)
+      return `scanned ${sweep.scanned}, critical ${sweep.critical}`
     },
   },
   // Mention Monitor (Reddit/YouTube) intentionally absent — not connected (#941).
