@@ -201,4 +201,50 @@ describe('CSRF / Origin validation', () => {
     expect(res.status).toBe(403)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('forbidden_origin')
   })
+
+  it('rejects Cloudflare Pages preview Origin against production API', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    ;(env as unknown as { PAGES_URL: string; ENV: string }).PAGES_URL = 'https://qesto.cc'
+    ;(env as unknown as { ENV: string }).ENV = 'production'
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
+
+    const res = await app.fetch(
+      new Request('https://qesto.cc/api/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `qesto_session=${jwt}`,
+          origin: 'https://abc123.qesto.pages.dev',
+        },
+        body: JSON.stringify({ title: 'preview-csrf' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(403)
+  })
+
+  it('allows Cloudflare Pages preview Origin in staging', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    ;(env as unknown as { PAGES_URL: string; ENV: string }).PAGES_URL = 'https://staging.qesto.cc'
+    ;(env as unknown as { ENV: string }).ENV = 'staging'
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
+
+    const res = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `qesto_session=${jwt}`,
+          origin: 'https://abc123.qesto.pages.dev',
+        },
+        body: JSON.stringify({ title: 'preview-ok' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(201)
+  })
 })

@@ -41,6 +41,7 @@
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "audit:bindings": "node scripts/audit-platform-bindings.mjs",
     "check:wrangler-flags": "node scripts/check-wrangler-flags.mjs",
+    "check:route-authz": "node scripts/check-route-authz.mjs",
     "check:branch-protection": "node scripts/check-github-branch-protection.mjs",
     "smoke:platform": "node scripts/smoke-platform.mjs",
     "burst:api-key-rate-limit": "node scripts/burst-api-key-rate-limit.mjs",

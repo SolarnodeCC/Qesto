@@ -43,6 +43,9 @@ node scripts/check-kv-access.mjs
 report_success "Wrangler boolean flag contract (check:wrangler-flags)"
 node scripts/check-wrangler-flags.mjs
 
+report_success "Mutating route auth marker inventory (check:route-authz)"
+node scripts/check-route-authz.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit
