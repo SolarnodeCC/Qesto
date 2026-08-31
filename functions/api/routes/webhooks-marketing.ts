@@ -3,6 +3,7 @@
 
 import { Hono } from 'hono'
 import { hmacSha256Hex } from '../lib/webhooks'
+import { timingSafeEqual } from '../lib/shared/crypto'
 import { SessionWebhookPayload } from '../lib/template-schemas'
 import type { Env, MarketingWorkflowPayload } from '../types'
 import { type AuthVariables } from '../middleware/auth'
@@ -42,11 +43,9 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
-    if (signature !== expectedSig) {
+    if (!timingSafeEqual(signature, expectedSig)) {
       logEvent({
         event: 'webhook.marketing.invalid_signature',
-        provided: signature.slice(0, 20),
-        expected: expectedSig.slice(0, 20),
       })
       return c.json({ error: 'Invalid signature' }, 401)
     }
