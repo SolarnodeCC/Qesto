@@ -90,7 +90,7 @@ ADR-0068/0069/0070.
 | `FE-COPILOT-PANEL-01` | 13 | P0 | frontend | **Done (2026-08-31)** | Live copilot panel + supervised plan approve/dismiss wired to API |
 | `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | **Done (2026-08-31)** | `/learn/instructor` for `POST /api/learn/instructor/analytics` + CSV export |
 | `PULSE-AI-NARRATION-01` | 8 | P1 | ai-engineer | Conditional | Workers-AI trend narration; `npm run test:eval` green (REV-10) |
-| `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | Open | New dashboard/panel strings in 5 locales; `check:i18n` green |
+| `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | **Done (2026-08-31)** | `pulse` namespace + copilot plan keys + learn instructor strings in 5 locales; `check:i18n` green |
 
 ### Carry-over from RT-01 (accepted at RT-01 closeout, 2026-07-14)
 
@@ -110,7 +110,7 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
 | `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | **Done (2026-08-31)** | Fabricated "5-day downgrade" removed from `help/billing.md` + help seed; copy matches Stripe dunning — re-seed `HELP_VECTORIZE` on deploy |
-| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | In progress (Path B copy) | Privacy, HR, PrivacyFeature pages aligned with GdprTrustPage honesty; auto-purge cron still PO decision |
+| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | **Done (Path B copy)** | Privacy, HR, Terms, PrivacyFeature pages aligned; auto-purge cron still PO decision |
 | `MKTG-TEMPLATE-PIPELINE-FIX-01` | 8 | P0 | backend + ai-engineer | **Done (2026-07-12)** | Retroactive row for shipped work: MKTP-001..016/018/019 from [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) fixed in commit `6335af3` — real question text in generation, working email-capture "use template" flow, fail-closed anonymisation gates, draft-first publish, D1 template registry (migration 0079). Open residue: MKTP-017/020 (LOW → triage) |
 
 ### RT-02 exit criteria
@@ -162,7 +162,6 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `OPS-ALERTS-PAGING-01` | 5 | P0 | devops | Open | Operator paging channel wired: critical alerts from `checkAlert` → Resend email or webhook; runbook acknowledges pager receipt |
 | `OPS-PHASE2-OBS-01` | 8 | P1 | devops | Open | Phase-2 infrastructure dashboards: AI-gateway cache hit %, Queues DLQ depth, DO vote-buffer depth, R2 snapshot success rates; integrated into `RELEASE_HEALTH_DASHBOARD.md` |
 | `KB-RETRIEVAL-EVAL-01` | 5 | P1 | knowledge | Open | Retrieval-quality eval for `HELP_VECTORIZE` and `KB_VECTORIZE`: golden question→chunk fixture set; recall@k scoring in `tests/eval/`; gated by REV-10 |
 | `MKTG-LIFECYCLE-EMAIL-01` | 8 | P1 | marketing | Open | Lifecycle email campaigns on Resend: onboarding sequence + monthly digest; reuse eval-gated content pipeline from LinkedIn; segmentation by plan/engagement |
