@@ -80,7 +80,7 @@ wrangler deploy   # qesto-api Worker — picks up producer + consumer from wrang
 ## Known gaps before deploy
 
 - **Pages DO binding** remains dashboard-configured until codified — see [`SESSION_ROOM_RECOVERY.md`](../SESSION_ROOM_RECOVERY.md).
-- **CI** still deploys Pages only — `OPS-DEPLOY-UNIFIED-01` tracks Worker deploy in pipeline.
+- **CI** deploys Worker (`deploy:api`) and Pages on `main`; post-deploy `audit:bindings` runs in the deploy job (`OPS-DEPLOY-UNIFIED-01`).
 
 ## Issue traceability
 
