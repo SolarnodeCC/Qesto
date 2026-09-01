@@ -188,7 +188,8 @@ export default function TemplateGallery() {
     return () => controller.abort()
   }, [industry, theme, lang, offset, retryKey])
 
-  // SEO: Collection page schema
+  // SEO: Collection page schema (no SearchAction — multi-param query-input is
+  // invalid for Google sitelinks search; audit S3).
   const collectionSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -199,14 +200,6 @@ export default function TemplateGallery() {
       '@type': 'WebSite',
       name: 'Qesto',
       url: 'https://qesto.cc',
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://qesto.cc/templates?industry={industry}&theme={theme}',
-      },
-      'query-input': 'required name=industry,theme',
     },
   }
 

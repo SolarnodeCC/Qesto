@@ -20,6 +20,8 @@ import { getTemplate } from './api/lib/templates-kv'
 
 const CANONICAL_ORIGIN = 'https://qesto.cc' // mirrors PageSeo.tsx + sitemap/robots
 
+export type SeoJsonLd = Record<string, unknown>
+
 export interface RouteSeo {
   title: string
   description: string
@@ -31,6 +33,11 @@ export interface RouteSeo {
   intro: string | string[]
   /** Emit `<meta name="robots" content="noindex">` (missing/discarded detail pages). */
   noindex?: boolean
+  /**
+   * Per-route JSON-LD injected into the server HTML (parity with PageSeo).
+   * Keeps non-JS crawlers from seeing only the shell SoftwareApplication blob.
+   */
+  jsonLd?: SeoJsonLd | SeoJsonLd[]
 }
 
 // Cross-linking nav reused in every no-JS fallback so link equity flows between
@@ -57,13 +64,67 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
     ],
   },
   '/pricing': {
-    title: 'Pricing — Qesto',
+    title: 'Live Polling Pricing — Free Pulse, Signal & Chorus | Qesto',
     description:
-      'Start free. Edge inference and consent tooling on every tier; monthly session and per-room caps match in-app enforcement—see the matrix below.',
+      'Start free with Pulse. Signal and Chorus add larger rooms, consent logs, and AI insights. Transparent session and participant limits—no surprise hard-stops.',
     canonicalPath: '/pricing',
     h1: 'Start free. Pay when a room depends on it.',
     intro:
       'Every plan includes edge inference and consent-aware flows. Session and room-size limits are published per tier and match what the product enforces—you don’t get surprise hard-stops after you’ve committed to a room.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What counts as a "session"?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "A session is one room — one join code, one set of participants, one retention window. Questions inside that room are free. Rooms don't expire until you close them or retention kicks in.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Do participants pay?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Never. Qesto charges the host only—audience sizes still respect each tier’s participant cap listed above.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can I cancel?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes, any time, from the billing page. Monthly cancels immediately with no refund on the current month. Annual cancels at renewal.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: "What if my first pulse flops?",
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "If your first session doesn't beat the response rate of your last survey, email us within 14 days of your first billing. We'll refund the full quarter.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does usage-based billing work on Chorus?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "It doesn't. Chorus is a flat annual. No per-session, per-seat, or per-response surprises.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is there a free tier for students?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes — Pulse stays free within the session and participant limits shown in the feature matrix below. Beyond that, apply for expanded access via the .edu program.',
+          },
+        },
+      ],
+    },
   },
   '/privacy': {
     title: 'Privacy Policy — Qesto',
@@ -208,6 +269,20 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
     h1: 'Ready-made session templates',
     intro:
       'Created from real Qesto sessions. Anonymised, rewritten, and ready to use in minutes.',
+    // SearchAction omitted: multi-param query-input is invalid for Google (audit S3).
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Qesto Template Gallery',
+      description:
+        'Browse ready-to-use session templates for team engagement, learning, and insights.',
+      url: 'https://qesto.cc/templates',
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'Qesto',
+        url: 'https://qesto.cc',
+      },
+    },
   },
   '/trust/gdpr': {
     title: 'GDPR & Data Trust — Qesto',
@@ -302,12 +377,52 @@ export async function resolveTemplateDetailSeo(
     }
     const title = template.title.en || gallery.title
     const purpose = template.purpose.en || gallery.description
+    const detailUrl = `https://qesto.cc${normalized}`
     return {
       title: `${title} — Qesto Template`,
       description: purpose,
       canonicalPath: normalized,
       h1: title,
       intro: purpose,
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Templates',
+              item: 'https://qesto.cc/templates',
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: title,
+              item: detailUrl,
+            },
+          ],
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          name: title,
+          description: purpose,
+          url: detailUrl,
+          keywords: `${template.industry}, ${template.theme}, ${template.topic}, template, session`,
+          about: {
+            '@type': 'Thing',
+            name: template.industry.replace(/-/g, ' '),
+          },
+          author: {
+            '@type': 'Organization',
+            name: 'Qesto',
+          },
+          datePublished: template.createdAt,
+          dateModified: template.updatedAt,
+          inLanguage: 'en',
+        },
+      ],
     }
   } catch {
     // On any store error, leave the gallery-default meta (better than 500ing the shell).
@@ -403,10 +518,25 @@ class AppendExtraHead {
       tags.push(`<meta property="og:image" content="${escapeAttr(imageUrl)}" />`)
       tags.push(`<meta name="twitter:image" content="${escapeAttr(imageUrl)}" />`)
     }
-    if (this.seo.noindex) {
-      tags.push(`<meta name="robots" content="noindex" />`)
+    // robots is rewritten in-place on the existing shell <meta name="robots"> —
+    // do not append a second tag here.
+    const jsonLdEntries = this.seo.jsonLd
+      ? Array.isArray(this.seo.jsonLd)
+        ? this.seo.jsonLd
+        : [this.seo.jsonLd]
+      : []
+    for (const entry of jsonLdEntries) {
+      // Strip raw '<' so a hostile description cannot break out of </script>.
+      const payload = JSON.stringify(entry).replace(/</g, '\\u003c')
+      tags.push(`<script type="application/ld+json" data-qesto-jsonld="true">${payload}</script>`)
     }
     element.append(tags.join('\n    '), { html: true })
+  }
+}
+
+class SetRobotsNoindex {
+  element(element: Element) {
+    element.setAttribute('content', 'noindex, nofollow')
   }
 }
 
@@ -439,9 +569,46 @@ export async function injectRouteSeo(response: Response, pathname: string, env?:
     .on('meta[property="og:title"]', new SetAttr('content', seo.title))
     .on('meta[property="og:description"]', new SetAttr('content', seo.description))
     .on('meta[property="og:url"]', new SetAttr('content', canonicalUrl))
+    .on('meta[name="robots"]', new SetAttr('content', seo.noindex ? 'noindex, nofollow' : 'index, follow, noimageai'))
     .on('head', new AppendExtraHead(seo))
     .on('div#root', new SetInnerHtml(renderFallbackHtml(seo)))
     .transform(response)
+}
+
+const NOT_FOUND_SEO: RouteSeo = {
+  title: 'Page not found — Qesto',
+  description: 'This page does not exist on Qesto.',
+  canonicalPath: '/',
+  h1: 'Page not found',
+  intro: 'The page you requested is not available. Return to the homepage to continue.',
+  noindex: true,
+}
+
+/**
+ * Serve the SPA shell as an HTML 404 (not JSON) so crawlers and browsers get a
+ * proper document. Sets noindex and a no-JS fallback body (audit C2).
+ */
+export async function injectNotFoundSeo(response: Response): Promise<Response> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('text/html')) {
+    return new Response(response.body, { status: 404, headers: response.headers })
+  }
+
+  const rewritten = new HTMLRewriter()
+    .on('title', new SetText(NOT_FOUND_SEO.title))
+    .on('meta[name="description"]', new SetAttr('content', NOT_FOUND_SEO.description))
+    .on('meta[name="robots"]', new SetRobotsNoindex())
+    .on('meta[property="og:title"]', new SetAttr('content', NOT_FOUND_SEO.title))
+    .on('meta[property="og:description"]', new SetAttr('content', NOT_FOUND_SEO.description))
+    .on('head', new AppendExtraHead(NOT_FOUND_SEO))
+    .on('div#root', new SetInnerHtml(renderFallbackHtml(NOT_FOUND_SEO)))
+    .transform(response)
+
+  // HTMLRewriter preserves the upstream 200 from Pages SPA fallback — force 404.
+  return new Response(rewritten.body, {
+    status: 404,
+    headers: rewritten.headers,
+  })
 }
 
 export { CANONICAL_ORIGIN }

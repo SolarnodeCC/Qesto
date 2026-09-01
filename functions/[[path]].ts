@@ -1,6 +1,6 @@
 import { createApp } from './api/app'
 import type { Env } from './api/types'
-import { injectRouteSeo } from './seo-meta'
+import { injectNotFoundSeo, injectRouteSeo } from './seo-meta'
 
 const app = createApp()
 
@@ -108,15 +108,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return injectRouteSeo(response, pathname, context.env)
   }
 
-  // Return 404 for invalid routes
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: { code: 'not_found', message: 'Page not found' },
-    }),
-    {
-      status: 404,
-      headers: { 'content-type': 'application/json' },
-    },
-  )
+  // Unknown paths: HTML 404 with SPA shell (noindex + fallback body), not JSON.
+  // JSON 404s look like API errors to crawlers (audit C2).
+  const response = await context.next()
+  return injectNotFoundSeo(response)
 }

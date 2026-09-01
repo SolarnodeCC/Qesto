@@ -101,12 +101,26 @@ export default function Pricing() {
   const starterAnnual = formatEuro(starter?.pricing.annual_cents ?? 2400)
   const starterMonthly = formatEuro(starter?.pricing.monthly_cents ?? 2900)
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: a,
+      },
+    })),
+  }
+
   return (
     <MainLayout>
       <PageSeo
-        title="Pricing — Qesto"
-        description="Start free. Edge inference and consent tooling on every tier; monthly session and per-room caps match in-app enforcement—see the matrix below."
+        title="Live Polling Pricing — Free Pulse, Signal & Chorus | Qesto"
+        description="Start free with Pulse. Signal and Chorus add larger rooms, consent logs, and AI insights. Transparent session and participant limits—no surprise hard-stops."
         canonicalPath="/pricing"
+        jsonLd={faqJsonLd}
       />
 
       {/* Hero */}
@@ -136,9 +150,9 @@ export default function Pricing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Pulse */}
             <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-12 flex flex-col relative" style={shadowCard}>
-              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h2 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Pulse
-              </h3>
+              </h2>
               <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-8 min-h-[40px]">
                 For one-off team pulses and workshop tests. Always free.
               </p>
@@ -188,9 +202,9 @@ export default function Pricing() {
               >
                 Recommended
               </div>
-              <h3 className="font-bold text-2xl tracking-tight mb-2" style={displayFont}>
+              <h2 className="font-bold text-2xl tracking-tight mb-2" style={displayFont}>
                 Signal
-              </h3>
+              </h2>
               <p className="text-sm text-slate-400 mb-8 min-h-[40px]">
                 For facilitators running recurring rooms every week.
               </p>
@@ -240,9 +254,9 @@ export default function Pricing() {
 
             {/* Chorus */}
             <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-12 flex flex-col relative" style={shadowCard}>
-              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h2 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Chorus
-              </h3>
+              </h2>
               <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-8 min-h-[40px]">
                 For HR, events, and compliance-heavy org-wide rollouts.
               </p>

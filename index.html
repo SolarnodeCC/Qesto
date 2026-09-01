@@ -39,8 +39,9 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://qesto.cc/" />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- AI Training Protection: Prevent images from being used to train AI models -->
-    <meta name="robots" content="noimageai" />
+    <!-- index,follow for non-JS crawlers; noimageai opts images out of AI training.
+         PageSeo re-asserts robots after mount; injectRouteSeo keeps parity at the edge. -->
+    <meta name="robots" content="index, follow, noimageai" />
     <!-- Bing Webmaster Tools verification -->
     <meta name="msvalidate.01" content="23CACFDE3A88A7D1C1C76D8D91C561D2" />
     <!-- Google Search Console verification. Add the token from GSC's "HTML tag"
@@ -49,8 +50,10 @@
     <!-- Structured data: site-wide SoftwareApplication so search engines recognise
          Qesto as a SaaS product (category, free tier). Kept static in the shell so
          non-JS crawlers see it in the server-returned HTML. Per-page JSON-LD
-         (templates/features) is injected client-side via src/components/PageSeo.tsx.
-         No aggregateRating: avoid fabricated review data. -->
+         (templates/features) is injected client-side via src/components/PageSeo.tsx
+         and mirrored at the edge via injectRouteSeo for key marketing routes.
+         No aggregateRating: avoid fabricated review data. Offer currency is EUR
+         to match live /pricing. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -63,7 +66,7 @@
         "offers": {
           "@type": "Offer",
           "price": "0",
-          "priceCurrency": "USD",
+          "priceCurrency": "EUR",
           "description": "Free to start"
         }
       }
