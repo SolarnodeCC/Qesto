@@ -34,6 +34,10 @@ export default defineConfig({
   // pass, and keeps CI and local runs on one code path (issues #692, #688).
   webServer: {
     command: 'bash scripts/e2e-webserver.sh',
+    // Playwright defaults cwd to this config's directory (`tests/`), so a
+    // repo-root-relative command would look for tests/scripts/e2e-webserver.sh
+    // and fail with exit 127. Pin cwd at the repo root.
+    cwd: path.join(testsDir, '..'),
     url: BASE_URL,
     // Cold start includes a Vite build + D1 migrations.
     timeout: 300_000,
