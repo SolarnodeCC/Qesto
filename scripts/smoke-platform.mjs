@@ -52,6 +52,35 @@ async function checkHealthz() {
   console.log(`✓ /api/healthz`)
 }
 
+async function checkAdminBindings() {
+  const url = `${BASE}/api/admin/health`
+  const res = await fetch(url, { headers: { accept: 'application/json' } })
+  const json = await res.json()
+  if (!res.ok) {
+    console.error(`✗ /api/admin/health HTTP ${res.status}`)
+    console.error(JSON.stringify(json).slice(0, 500))
+    process.exit(1)
+  }
+  const bindings = json?.data?.bindings
+  if (!bindings?.probes) {
+    console.warn('⚠ /api/admin/health missing bindings probe (older deploy?)')
+    return
+  }
+  for (const probe of bindings.probes) {
+    const mark = probe.bound ? '✓' : probe.required ? '✗' : '○'
+    console.log(`${mark} binding ${probe.name} (required=${probe.required})`)
+  }
+  if (bindings.missingRequired?.length) {
+    console.error(`✗ missing required bindings: ${bindings.missingRequired.join(', ')}`)
+    process.exit(1)
+  }
+  if (json.data?.platformReady === false) {
+    console.error('✗ platformReady=false (degraded bindings)')
+    process.exit(1)
+  }
+  console.log(`✓ /api/admin/health bindings`)
+}
+
 async function checkSessionDraft() {
   // Note: This test only checks unauthenticated session info endpoint (read-only).
   // Full e2e (create → questions → WebSocket) requires auth + magic-link flow.
@@ -75,6 +104,7 @@ for (const { path, expect } of platformChecks) {
 console.log()
 console.log('System Health:')
 await checkHealthz()
+await checkAdminBindings()
 
 console.log()
 console.log('Session Endpoints:')

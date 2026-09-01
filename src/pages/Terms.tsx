@@ -130,7 +130,8 @@ export default function Terms() {
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Exports are yours. Today Qesto provides CSV session exports where your plan includes exports. If you
-              cancel, you have 30 days to pull your available data before we purge.
+              cancel, you have 30 days to export your available data. Session data persists until you or
+              your host deletes it — automatic age-based purges are not yet enforced (see our privacy policy).
             </p>
 
             <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
@@ -172,8 +173,8 @@ export default function Terms() {
               participants, attacking the platform — terminate without warning.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
-              On termination, you have 30 days to export. After that, data is purged on the schedule in the privacy
-              policy.
+              On termination, you have 30 days to export your data. After that, your account is deactivated;
+              session data remains until you delete it or request erasure under our privacy policy.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Statement of reasons (Art. 17 DSA).</strong> When we restrict your account, remove content, or

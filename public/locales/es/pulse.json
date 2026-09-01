@@ -1,0 +1,23 @@
+{
+  "title": "Pulso del equipo",
+  "subtitle": "Participación y sentimiento a largo plazo con enmascaramiento k-anónimo para cohortes pequeñas.",
+  "loading": "Cargando datos de pulse…",
+  "plan_gated": "Los análisis Pulse requieren un plan Team o superior.",
+  "window_30d": "30 días",
+  "window_90d": "90 días",
+  "metric_sessions": "Sesiones cerradas",
+  "metric_participation": "Participación media",
+  "metric_sentiment": "Sentimiento medio",
+  "metric_masked_days": "Días enmascarados",
+  "trend_heading": "Tendencia de participación",
+  "daily_heading": "Totales diarios",
+  "col_day": "Día",
+  "col_participation": "Participación",
+  "col_sentiment": "Sentimiento",
+  "col_sessions": "Sesiones",
+  "col_status": "Privacidad",
+  "masked": "Enmascarado (cohorte pequeña)",
+  "visible": "Visible",
+  "empty": "Aún no hay datos de pulse en este período. Cierra sesiones del equipo para rellenar los totales.",
+  "team_settings_link": "Configuración del equipo"
+}

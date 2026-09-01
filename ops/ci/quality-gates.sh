@@ -40,6 +40,16 @@ node scripts/check-d1-access.mjs
 node scripts/check-error-response.mjs
 node scripts/check-kv-access.mjs
 
+report_success "Wrangler boolean flag contract (check:wrangler-flags)"
+node scripts/check-wrangler-flags.mjs
+
+report_success "Mutating route auth marker inventory (check:route-authz)"
+node scripts/check-route-authz.mjs
+
+report_success "Migration sequence integrity (check:migrations)"
+node scripts/check-migration-gaps.mjs
+node scripts/verify-migration-metadata.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit
@@ -59,6 +69,9 @@ npm run test:eval
 # and produces coverage/ for the CI artifact-upload step)
 report_success "Running unit tests with coverage"
 npm run test:coverage
+
+report_success "Accessibility unit tests (test:a11y)"
+npm run test:a11y
 
 report_success "Quality gates passed"
 exit 0

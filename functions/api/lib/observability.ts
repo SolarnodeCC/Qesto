@@ -195,6 +195,7 @@ export type QestoEvent = {
     | 'queue.message_enqueued'
     | 'queue.message_acked'
     | 'queue.message_failed'
+    | 'queue.enqueue.noop'
     | 'queue.dlq_size'
     // Phase 2.2: DO vote buffering observability (ADR-042)
     | 'do.vote_buffer_depth'

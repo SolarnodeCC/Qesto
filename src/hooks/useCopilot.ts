@@ -44,6 +44,19 @@ export type CopilotAction = {
   intent?: string
 }
 
+export type CopilotPlanStep = {
+  id: string
+  tool: string
+  status: 'pending' | 'approved' | 'dismissed'
+  output: unknown
+}
+
+export type CopilotPlan = {
+  sessionId: string
+  createdAt: number
+  steps: CopilotPlanStep[]
+}
+
 /** Live-context refresh cadence while the panel is open (ms). */
 export const COPILOT_REFRESH_MS = 15_000
 
@@ -61,6 +74,9 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
   const [suggestions, setSuggestions] = useState<CopilotAction[]>([])
   const [suggestSource, setSuggestSource] = useState<'ai' | 'heuristic' | 'none' | null>(null)
   const [suggestLoading, setSuggestLoading] = useState(false)
+  const [plan, setPlan] = useState<CopilotPlan | null>(null)
+  const [planLoading, setPlanLoading] = useState(false)
+  const [planReviewing, setPlanReviewing] = useState<string | null>(null)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
@@ -122,6 +138,40 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
     }
   }, [sessionId])
 
+  const fetchPlan = useCallback(async () => {
+    if (!sessionId) return
+    setPlanLoading(true)
+    const res = await api<{ plan: CopilotPlan | null }>(`/api/agent/copilot/sessions/${sessionId}/plan`)
+    setPlanLoading(false)
+    if (res.ok) setPlan(res.data.plan)
+    else if (res.status !== 403) setState((s) => ({ ...s, error: res.error.message }))
+  }, [sessionId])
+
+  const createPlan = useCallback(async () => {
+    if (!sessionId) return
+    setPlanLoading(true)
+    const res = await api<{ plan: CopilotPlan }>(`/api/agent/copilot/sessions/${sessionId}/plan`, { method: 'POST' })
+    setPlanLoading(false)
+    if (res.ok) setPlan(res.data.plan)
+    else if (res.status === 403) setState((s) => ({ ...s, planGated: true }))
+    else setState((s) => ({ ...s, error: res.error.message }))
+  }, [sessionId])
+
+  const reviewPlanStep = useCallback(
+    async (stepId: string, status: 'approved' | 'dismissed') => {
+      if (!sessionId) return
+      setPlanReviewing(stepId)
+      const res = await api<{ plan: CopilotPlan }>(
+        `/api/agent/copilot/sessions/${sessionId}/plan/steps/${stepId}`,
+        { method: 'PATCH', body: { status } },
+      )
+      setPlanReviewing(null)
+      if (res.ok) setPlan(res.data.plan)
+      else setState((s) => ({ ...s, error: res.error.message }))
+    },
+    [sessionId],
+  )
+
   return {
     ...state,
     refresh,
@@ -133,5 +183,11 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
     suggestSource,
     suggestLoading,
     fetchSuggestions,
+    plan,
+    planLoading,
+    planReviewing,
+    fetchPlan,
+    createPlan,
+    reviewPlanStep,
   }
 }

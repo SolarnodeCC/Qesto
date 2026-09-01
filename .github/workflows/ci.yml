@@ -105,6 +105,13 @@ jobs:
         id: sha
         run: printf 'sha=%s\n' "$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Deploy API Worker (OPS-DEPLOY-UNIFIED-01)
+        run: npm run deploy:api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy dist --project-name=qesto
         env:
@@ -148,3 +155,9 @@ jobs:
 
       - name: Platform v7 smoke (OPS-S99-CLOSEOUT-01)
         run: node scripts/smoke-platform.mjs https://qesto.cc
+
+      - name: Platform binding audit (OPS-DO-BIND-VERIFY-01)
+        run: node scripts/audit-platform-bindings.mjs https://qesto.cc
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}

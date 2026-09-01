@@ -185,7 +185,7 @@ A: Yes — registered nonprofits and accredited educational institutions get Cho
 A: Yes. EU B2B customers may use reverse charge. Invoices include tax details — download from Settings → Billing → Invoices.
 
 **Q: What happens to my sessions if payment fails?**
-A: After 5 days with a declined card, your plan downgrades to Pulse. Sessions and data are preserved; new sessions are limited to Pulse quotas.
+A: Qesto follows Stripe's standard dunning flow. Your subscription stays active (marked *past due*) while Stripe retries the charge. Update your card in Settings → Billing and the next retry succeeds. Only if every retry fails does the subscription end and your account revert to the free **Pulse** tier. Sessions and data are preserved; new sessions follow Pulse limits until you resubscribe.
 
 **Q: Can I switch from monthly to annual billing?**
 A: Yes. Settings → Billing → Change Plan → select annual. Prorated credit applies to the switch.

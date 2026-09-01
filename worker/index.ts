@@ -17,7 +17,7 @@ import { runKvBackup } from '../functions/api/lib/kv-backup'
 import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
 import { runContentEngine } from '../functions/api/lib/marketing/content-engine'
 import { runMentionMonitor } from '../functions/api/lib/marketing/mention-monitor'
-import { refreshAllTokens } from '../functions/api/lib/marketing/token-status'
+import { runMetricsAlertSweep } from '../functions/api/lib/metrics-alert-sweep'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -182,6 +182,18 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
       safeLogContext(err, {
         traceId,
         route: 'worker/mention-monitor',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
+
+    const alertTraceId = `metrics-alert-sweep-${Date.now()}`
+    try {
+      const sweep = await runMetricsAlertSweep(env)
+      console.log(`[metrics-alert-sweep] OK — scanned ${sweep.scanned}, critical ${sweep.critical}`)
+    } catch (err) {
+      safeLogContext(err, {
+        traceId: alertTraceId,
+        route: 'worker/metrics-alert-sweep',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
       })
     }

@@ -13,6 +13,7 @@
  * @see functions/api/routes/sessions/lifecycle.ts (where work is enqueued)
  */
 
+import { writeEvent } from '../observability'
 import type { Env } from '../../types'
 
 export type PostSessionWorkMessage = {
@@ -104,7 +105,25 @@ export async function enqueuePostSessionWork(
   message: PostSessionWorkMessage,
 ): Promise<void> {
   if (!env.INSIGHTS_QUEUE) {
-    console.warn('[2.1 Queues] INSIGHTS_QUEUE not bound; falling back to no-op')
+    // Fail visible: post-session work is dropped when the queue is unwired.
+    // Operators must alert on `queue.enqueue.noop` — never silent no-op.
+    console.error(
+      JSON.stringify({
+        event: 'queue.enqueue.noop',
+        severity: 'critical',
+        taskType: message.taskType,
+        sessionId: message.sessionId,
+        idempotencyKey: message.idempotencyKey,
+        message: 'INSIGHTS_QUEUE not bound; post-session work dropped',
+      }),
+    )
+    if (env.METRICS_AE) {
+      writeEvent(env.METRICS_AE, {
+        name: 'queue.enqueue.noop',
+        sessionId: message.sessionId,
+        detail: message.taskType,
+      })
+    }
     return
   }
 

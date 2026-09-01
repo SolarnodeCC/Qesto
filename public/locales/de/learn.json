@@ -1,5 +1,12 @@
 {
   "instructor.title": "Instruktor-Analystics",
+  "instructor.subtitle": "Punkteverteilung und Fragenschwierigkeit aus Ihrer Bewertungskohorte.",
+  "instructor.loading": "Laden…",
+  "instructor.analyze_demo": "Demo-Kohorte analysieren",
+  "instructor.analyzing": "Analysieren…",
+  "instructor.export_error": "CSV-Export fehlgeschlagen.",
+  "instructor.difficulty_index": "Schwierigkeit",
+  "instructor.responses": "Antworten",
   "instructor.scoreDistribution": "Punkteverteilung",
   "instructor.difficulty": "Schwierigkeitsgrad der Frage",
   "instructor.avgScore": "Durchschnittliche Punktzahl",

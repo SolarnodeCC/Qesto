@@ -92,6 +92,11 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // DELETE /sessions/:id.
   const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
   const isLocalDevOrigin = candidate ? /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate) : false
+  // Preview deploy Origins are trusted only in non-production environments.
+  // In production, any *.qesto.pages.dev page could CSRF credentialed requests
+  // against the live API (SameSite=None session cookie).
+  const allowPreview =
+    isPreview && (c.env.ENV === 'dev' || c.env.ENV === 'staging' || c.env.ENV === 'preview')
   // SECURITY: localhost is a CSRF *attacker* origin against a deployed API, not
   // a dev convenience. The previous condition allowed it whenever PAGES_URL was
   // remote — true on every production deploy — so any page a victim loaded from
@@ -111,7 +116,7 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   const apiIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normaliseOrigin(c.req.url) ?? '')
   const allowLocalDev =
     isLocalDevOrigin && (c.env.ENV === 'dev' || c.env.ENV === 'staging' || apiIsLocal)
-  if (candidate && candidate !== expected && !isPreview && !allowLocalDev) {
+  if (candidate && candidate !== expected && !allowPreview && !allowLocalDev) {
     return c.json(
       {
         ok: false,

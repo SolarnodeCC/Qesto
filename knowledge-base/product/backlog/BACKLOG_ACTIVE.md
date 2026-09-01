@@ -77,19 +77,20 @@ ADR-0068/0069/0070.
 
 ---
 
-## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; target close 2026-07-31) — **ACTIVE**
+## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; **target close reset to 2026-08-31**) — **ACTIVE (overdue — ops remediation in flight)**
 
 **Goal:** Ship the user-facing half of v7 backends deferred from S93–S95. **No new trust boundaries.**
 
-**Precondition:** RT-01 closed 2026-07-14 with recorded P0 exception (CI blocked on GitHub billing — external). Original target close 2026-07-17 is not reachable with all P0 stories still Open; reset to **2026-07-31** (within the 2–3-week train rule, counted from actual RT-01 closeout).
+**Precondition:** RT-01 closed 2026-07-14 with recorded P0 exception (CI blocked on GitHub billing — external). Original target close 2026-07-17 was missed; reset to **2026-07-31** then **2026-08-31** after platform review remediation (Phase 0/1 — silent queue/flag/binding failures). P0 UI stories remain Open until FE train resumes after T0 ops land.
+
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `FE-PULSE-DASHBOARD-01` | 13 | P0 | frontend | Open | HR dashboard consumes `GET /api/teams/:id/pulse/summary` + trends; k-anon masking visible |
-| `FE-COPILOT-PANEL-01` | 13 | P0 | frontend | Open | Live session co-pilot side panel; plan approve/dismiss wired to existing API |
-| `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | Open | Instructor screen for `POST /api/learn/instructor/analytics` (backend shipped S95) |
+| `FE-PULSE-DASHBOARD-01` | 13 | P0 | frontend | **Done (2026-08-31)** | `/teams/:id/pulse` consumes summary + trends; k-anon masking visible |
+| `FE-COPILOT-PANEL-01` | 13 | P0 | frontend | **Done (2026-08-31)** | Live copilot panel + supervised plan approve/dismiss wired to API |
+| `FE-LEARN-INSTRUCTOR-UI-01` | 13 | P0 | frontend | **Done (2026-08-31)** | `/learn/instructor` for `POST /api/learn/instructor/analytics` + CSV export |
 | `PULSE-AI-NARRATION-01` | 8 | P1 | ai-engineer | Conditional | Workers-AI trend narration; `npm run test:eval` green (REV-10) |
-| `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | Open | New dashboard/panel strings in 5 locales; `check:i18n` green |
+| `I18N-PULSE-COPILOT-01` | 3 | P1 | i18n | **Done (2026-08-31)** | `pulse` namespace + copilot plan keys + learn instructor strings in 5 locales; `check:i18n` green |
 
 ### Carry-over from RT-01 (accepted at RT-01 closeout, 2026-07-14)
 
@@ -108,8 +109,8 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | Open | Residual fabricated "5-day downgrade" claim removed everywhere: `help/billing.md` FAQ (§"What happens to my sessions if payment fails?") + 4 seed entries in `functions/api/seed/help-documents.json`; copy states the real Stripe dunning flow (as the rewritten §Failed Payments already does); `HELP_VECTORIZE` re-seeded — [`KB_COVERAGE_AUDIT_2026-06-21.md`](../../quality/audits/KB_COVERAGE_AUDIT_2026-06-21.md) CRITICAL #1 |
-| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | Open (needs PO decision) | Consent copy in all 5 locales promises a 30-day purge with no enforcing cron (verified again 2026-07-14: no purge job in `worker/`). Either (a) build the auto-redaction cron matching promised windows, or (b) reword consent copy + pricing-matrix framing. Promoted from [`BACKLOG_MASTER.md`](./BACKLOG_MASTER.md) (raised 2026-06-20) |
+| `KB-BILLING-COPY-01` | 3 | P0 | knowledge + marketing | **Done (2026-08-31)** | Fabricated "5-day downgrade" removed from `help/billing.md` + help seed; copy matches Stripe dunning — re-seed `HELP_VECTORIZE` on deploy |
+| `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | **Done (Path B copy)** | Privacy, HR, Terms, PrivacyFeature pages aligned; auto-purge cron still PO decision |
 | `MKTG-TEMPLATE-PIPELINE-FIX-01` | 8 | P0 | backend + ai-engineer | **Done (2026-07-12)** | Retroactive row for shipped work: MKTP-001..016/018/019 from [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) fixed in commit `6335af3` — real question text in generation, working email-capture "use template" flow, fail-closed anonymisation gates, draft-first publish, D1 template registry (migration 0079). Open residue: MKTP-017/020 (LOW → triage) |
 
 ### RT-02 exit criteria
@@ -119,6 +120,40 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 - [ ] `just check` green before merge to `main`
 - [ ] Predictability ≥ 65 per [`AGENT_PREDICTABILITY_SCORECARD.md`](../../ai-context/research/AGENT_PREDICTABILITY_SCORECARD.md)
 
+### RT-02 addendum — Platform review remediation (2026-08-31, Phase 0 + Phase 1 T0)
+
+**Goal:** Close silent-failure and total-outage-class gaps from the 2026-08-31 platform review (ISS-001–ISS-003, ISS-029). Refs: Issue Register in agent review output; [`PLATFORM_BINDING_AUDIT_2026-08-31.md`](../../operations/audits/PLATFORM_BINDING_AUDIT_2026-08-31.md).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-QUEUE-BIND-01` | 8 | P0 | devops + backend | **Done (2026-08-31)** | `INSIGHTS_QUEUE` producer+consumer in `wrangler.toml`; fail-visible enqueue; operator queue create pending |
+| `BE-FLAG-CONTRACT-01` | 2 | P0 | backend | **Done (2026-08-31)** | `INTEGRATION_ENABLED="true"` in wrangler; `integrationsDisabled()` uses `getFlag`; `check:wrangler-flags` in CI |
+| `OPS-DO-BIND-VERIFY-01` | 5 | P0 | devops | **Done (2026-08-31)** | `/api/admin/health` exposes `bindings`; `npm run audit:bindings` + platform smoke |
+| `OPS-BRANCH-PROTECT-01` | 3 | P0 | devops | Open | `npm run check:branch-protection` green OR documented GitHub settings proof for `main` |
+| `OPS-DEPLOY-UNIFIED-01` | 5 | P1 | devops | **Done (2026-08-31)** | Worker `deploy:api` + post-deploy `audit:bindings` in CI main deploy job |
+
+### RT-02 addendum — Platform review remediation Phase 2 + 3 (2026-08-31)
+
+**Goal:** Trust/compliance copy (Phase 2) and security hardening (Phase 3) from the 2026-08-31 review.
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `MKTG-PRICING-RECAP-01` | 2 | P1 | marketing + frontend | **Done (2026-08-31)** | Signal pricing card no longer lists AI recap as included |
+| `SEC-CSRF-PREVIEW-01` | 5 | P1 | backend + security | **Done (2026-08-31)** | `*.qesto.pages.dev` Origin blocked when `ENV=production`; staging/dev allowed; unit tests |
+| `SEC-MARKETING-HMAC-01` | 2 | P1 | backend | **Done (2026-08-31)** | Marketing webhook uses timing-safe compare; no signature prefix logs |
+| `SEC-RBAC-INVENTORY-01` | 8 | P1 | security + backend | **Done (2026-08-31)** | `check:route-authz` in CI; baseline 0 with public-route exempt list |
+
+### RT-02 addendum — Platform review remediation Phase 4 + 5 + 6 (2026-08-31)
+
+**Goal:** Release quality (Phase 4), P0 UI delivery (Phase 5), and ops/docs hygiene (Phase 6).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-CI-GATES-EXPAND-01` | 5 | P1 | devops | **Done (2026-08-31)** | `check:migrations` + `test:a11y` in quality-gates; Playwright on PRs |
+| `QA-WAVE1-LIFECYCLE-01` | 3 | P2 | tester | **Done (2026-08-31)** | `wave1-auth-session-lifecycle.test.ts` uses real Hono integration path |
+| `OPS-ALERTS-PAGING-01` | 5 | P0 | devops | **Done (code)** | `dispatchOperatorAlert` + 3h metrics sweep; set `OPS_ALERT_EMAIL`/`OPS_ALERT_WEBHOOK` secrets |
+| `FE-ENERGIZING-TYPES-01` | 2 | P2 | frontend | **Done (2026-08-31)** | `SessionLookupByCode` includes `energizing` status |
+
 ---
 
 ### RT-02 addendum — Platform audit findings (PLATFORM_AUDIT_2026-07-08)
@@ -127,7 +162,6 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `OPS-ALERTS-PAGING-01` | 5 | P0 | devops | Open | Operator paging channel wired: critical alerts from `checkAlert` → Resend email or webhook; runbook acknowledges pager receipt |
 | `OPS-PHASE2-OBS-01` | 8 | P1 | devops | Open | Phase-2 infrastructure dashboards: AI-gateway cache hit %, Queues DLQ depth, DO vote-buffer depth, R2 snapshot success rates; integrated into `RELEASE_HEALTH_DASHBOARD.md` |
 | `KB-RETRIEVAL-EVAL-01` | 5 | P1 | knowledge | Open | Retrieval-quality eval for `HELP_VECTORIZE` and `KB_VECTORIZE`: golden question→chunk fixture set; recall@k scoring in `tests/eval/`; gated by REV-10 |
 | `MKTG-LIFECYCLE-EMAIL-01` | 8 | P1 | marketing | Open | Lifecycle email campaigns on Resend: onboarding sequence + monthly digest; reuse eval-gated content pipeline from LinkedIn; segmentation by plan/engagement |

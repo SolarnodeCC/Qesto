@@ -1,5 +1,12 @@
 {
   "instructor.title": "Docentenanalytics",
+  "instructor.subtitle": "Scoreverdeling en vraagmoeilijkheid uit je beoordelingscohort.",
+  "instructor.loading": "Laden…",
+  "instructor.analyze_demo": "Democohort analyseren",
+  "instructor.analyzing": "Analyseren…",
+  "instructor.export_error": "CSV-export mislukt.",
+  "instructor.difficulty_index": "moeilijkheid",
+  "instructor.responses": "antwoorden",
   "instructor.scoreDistribution": "Scoreverdeling",
   "instructor.difficulty": "Moeilijkheidsgraad vraag",
   "instructor.avgScore": "Gemiddelde score",

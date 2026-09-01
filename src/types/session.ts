@@ -36,7 +36,7 @@ export type SessionBranding = {
 }
 
 export type SessionLookupByCode = Pick<Session, 'id' | 'title' | 'code'> & {
-  status: Extract<SessionStatus, 'draft' | 'live'>
+  status: Extract<SessionStatus, 'draft' | 'energizing' | 'live'>
   branding?: SessionBranding
 }
 

@@ -83,7 +83,14 @@
     "kind_disengagement_alert": "Let op",
     "kind_pacing": "Tempo",
     "add_to_session": "Aan sessie toevoegen",
-    "added": "Toegevoegd aan sessie"
+    "added": "Toegevoegd aan sessie",
+    "plan_title": "Begeleid plan",
+    "plan_create": "Plan genereren",
+    "plan_loading": "Opbouwen…",
+    "plan_refresh": "Plan vernieuwen",
+    "plan_empty": "Geen actief plan — genereer er een voor stapsgewijze controle.",
+    "plan_approve": "Goedkeuren",
+    "plan_dismiss": "Afwijzen"
   },
   "ctrl.toolbar": "Presentatiebediening",
   "ctrl.group.navigation": "Vraagnavigatie",

@@ -83,7 +83,14 @@
     "kind_disengagement_alert": "Heads up",
     "kind_pacing": "Pacing",
     "add_to_session": "Add to session",
-    "added": "Added to session"
+    "added": "Added to session",
+    "plan_title": "Supervised plan",
+    "plan_create": "Generate plan",
+    "plan_loading": "Building…",
+    "plan_refresh": "Refresh plan",
+    "plan_empty": "No active plan — generate one for step-by-step review.",
+    "plan_approve": "Approve",
+    "plan_dismiss": "Dismiss"
   },
   "ctrl.toolbar": "Presenter controls",
   "ctrl.group.navigation": "Question navigation",

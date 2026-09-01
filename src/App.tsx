@@ -81,6 +81,8 @@ const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
 // Template gallery
 const TemplateGallery = lazy(() => import('./pages/TemplateGallery'))
 const TemplateDetail = lazy(() => import('./pages/TemplateDetail'))
+const PulseDashboardPage = lazy(() => import('./pages/PulseDashboardPage'))
+const LearnInstructorPage = lazy(() => import('./pages/LearnInstructorPage'))
 
 function LazyRoutePending() {
   return (
@@ -227,6 +229,8 @@ export default function App() {
           element={<LazySuspense pending={<LazyRoutePending />}><EventStagePresent /></LazySuspense>}
         />
         <Route path="/teams/:id/settings" element={<LazySuspense pending={<LazyRoutePending />}><TeamSettings /></LazySuspense>} />
+        <Route path="/teams/:id/pulse" element={<LazySuspense pending={<LazyRoutePending />}><PulseDashboardPage /></LazySuspense>} />
+        <Route path="/learn/instructor" element={<LazySuspense pending={<LazyRoutePending />}><LearnInstructorPage /></LazySuspense>} />
         <Route path="/teams/invite/:token" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
         <Route path="/teams/accept" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
         {/* CONNECT (ADR-0062) — federation invite join */}

@@ -74,7 +74,8 @@ REALTIME_TOWNHALL_ENABLED = "true"
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
 # Integrations: Slack/Teams notifications (gates integration checks in routes).
-INTEGRATION_ENABLED = "1"
+# Must be the string "true" — see getFlag() in functions/api/lib/flags.ts.
+INTEGRATION_ENABLED = "true"
 # Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
 CIRCUIT_BREAKER_ENABLED = "true"
 # Energizers: warm-up activities before live questions (DRAFT→ENERGIZING state machine).
@@ -164,16 +165,22 @@ name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
 # Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps)
-# TODO (Phase 2 build): Wire Cloudflare Queues producer binding
-# - Create queue "qesto-insights" in Cloudflare account
-# - Uncomment [[queues.producers]] binding below
-# - Implement consumer handler: export queue() in worker/index.ts
-# - Update lifecycle.ts to call enqueuePostSessionWork()
-# For now, work is still done via waitUntil() (Phase 1 pattern)
-#
-# [[queues.producers]]
-# binding = "INSIGHTS_QUEUE"
-# queue = "qesto-insights"
+# Producer: Pages/Worker close path enqueues via INSIGHTS_QUEUE.send().
+# Consumer: worker/index.ts queue() → processPostSessionWork().
+# Create queues once per account:
+#   wrangler queues create qesto-insights
+#   wrangler queues create qesto-insights-dlq   # optional DLQ
+# Monitor: queue.enqueue.noop in logs/AE must stay at zero in production.
+[[queues.producers]]
+binding = "INSIGHTS_QUEUE"
+queue = "qesto-insights"
+
+[[queues.consumers]]
+queue = "qesto-insights"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "qesto-insights-dlq"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]

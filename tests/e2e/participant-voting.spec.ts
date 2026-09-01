@@ -24,7 +24,9 @@ test.describe('Participant voting flow', () => {
       await participantPage.getByRole('button', { name: /option a/i }).click()
       await expect(participantPage.getByRole('status')).toContainText(/recorded|response/i, { timeout: 10_000 })
 
-      await expect(page.getByLabel(/Option A: 100% of votes/i)).toBeVisible({ timeout: 15_000 })
+      // AdaptiveVizResults donut legend (2-option polls) exposes canvas.viz.ariaDonut:
+      // "Option A: 1 (100% of votes)" — not the legacy "Option A: 100% of votes".
+      await expect(page.getByLabel(/Option A: 1 \(100% of votes\)/i)).toBeVisible({ timeout: 15_000 })
     } finally {
       await participantContext.close()
     }

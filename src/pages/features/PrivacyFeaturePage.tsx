@@ -28,7 +28,7 @@ const doGuarantees = [
   { title: 'We store per-session', desc: 'Every session is isolated. Data lives there until deletion. No cross-session joins, ever.' },
   { title: 'We log every consent choice', desc: "Each participant's visibility pick is timestamped. Exports include the log. Auditable by a works council." },
   { title: 'We gate results by tally', desc: 'A result is hidden until the minimum vote count is met. Default 5. No single-voter exposure, anywhere.' },
-  { title: 'We purge on schedule', desc: 'Identity rows purge on the retention you pick. Aggregate tallies can live longer — without link back.' },
+  { title: 'We purge on schedule', desc: 'Plan-level retention targets apply by tier. Delete sessions or use GDPR tools any time; automatic age-based purges for ordinary session data are not yet enforced platform-wide.' },
 ]
 
 const dontGuarantees = [
