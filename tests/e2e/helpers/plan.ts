@@ -5,6 +5,14 @@ import { fileURLToPath } from 'node:url'
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..')
 const D1_DB = process.env.E2E_D1_DATABASE ?? 'qesto_3_db'
 
+function syncSleep(ms: number): void {
+  // Cross-platform busy-wait — avoids spawning powershell on Linux CI when D1 is locked.
+  const deadline = Date.now() + ms
+  while (Date.now() < deadline) {
+    // noop
+  }
+}
+
 /** Bump plan in local D1 for entitlement-gated E2E (ranking, consent, reaction). */
 export function setLocalUserPlan(email: string, plan: 'starter' | 'team'): void {
   const safeEmail = email.replace(/'/g, "''")
@@ -20,7 +28,7 @@ export function setLocalUserPlan(email: string, plan: 'starter' | 'team'): void 
       lastErr = err
       const msg = err instanceof Error ? err.message : String(err)
       if (!msg.includes('SQLITE_BUSY') && !msg.includes('database is locked')) throw err
-      execSync('powershell -Command "Start-Sleep -Milliseconds 800"', { stdio: 'ignore' })
+      syncSleep(800 * (attempt + 1))
     }
   }
   throw lastErr
