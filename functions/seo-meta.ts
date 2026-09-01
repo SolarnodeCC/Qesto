@@ -45,6 +45,8 @@ export interface RouteSeo {
 // primary nav baked into index.html.
 const INTERNAL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/pricing', label: 'Pricing & anonymity modes' },
+  { href: '/compare', label: 'Compare Qesto alternatives' },
+  { href: '/vs/mentimeter', label: 'Qesto vs Mentimeter' },
   { href: '/features/live-polling', label: 'Live polling' },
   { href: '/features/ai-insights', label: 'AI insights' },
   { href: '/use-cases/workshops', label: 'Workshops' },
@@ -53,7 +55,7 @@ const INTERNAL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
 
 export const ROUTE_SEO: Record<string, RouteSeo> = {
   '/': {
-    title: 'Qesto — Real-time Feedback & AI Insights for Teams',
+    title: 'Qesto — Live Polling, Anonymous Feedback & AI Insights',
     description:
       'Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate.',
     canonicalPath: '/',
@@ -325,6 +327,50 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
     canonicalPath: '/partner/sla',
     h1: 'Service level agreement',
     intro: 'Transparent metrics for partner API and webhook integrations.',
+  },
+  '/compare': {
+    title: 'Compare Qesto — Mentimeter, Slido, Parabol Alternatives',
+    description:
+      'See how Qesto compares to Mentimeter, Slido, and Parabol on privacy, edge latency, AI insights, and pricing.',
+    canonicalPath: '/compare',
+    h1: 'Compare Qesto',
+    intro:
+      'Honest comparison pages for teams evaluating live polling and facilitation tools. No fabricated claims — just documented product differences.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Qesto competitor comparisons',
+      description:
+        'Independent comparisons of Qesto versus Mentimeter, Slido, Parabol, and more.',
+      url: 'https://qesto.cc/compare',
+    },
+  },
+  '/vs/mentimeter': {
+    title: 'Qesto vs Mentimeter — Privacy-First Live Polling Alternative',
+    description:
+      'Compare Qesto and Mentimeter on privacy, edge latency, per-session pricing, and native AI insights. See who each tool suits best.',
+    canonicalPath: '/vs/mentimeter',
+    h1: 'Qesto vs Mentimeter',
+    intro:
+      'Mentimeter is the well-known live presentation poller with strong slide integrations. Qesto is the privacy-first, edge-native alternative — anonymity modes by default, Workers AI inside your trust boundary, and per-host session plans instead of seat sprawl.',
+  },
+  '/vs/slido': {
+    title: 'Qesto vs Slido — Anonymous Live Q&A Without Cisco Lock-in',
+    description:
+      'Compare Qesto and Slido for town halls and events: anonymity at scale, edge latency, and no Cisco ecosystem lock-in.',
+    canonicalPath: '/vs/slido',
+    h1: 'Qesto vs Slido',
+    intro:
+      'Slido is the enterprise engagement platform often shipped with Cisco Webex for large Q&A and events. Qesto targets the same job — honest room feedback — with explicit anonymity modes, edge latency, and no requirement to join a collaboration suite.',
+  },
+  '/vs/parabol': {
+    title: 'Qesto vs Parabol — Anonymous Retros with AI Theme Clustering',
+    description:
+      'Compare Qesto and Parabol for agile retros: anonymity, AI theme clustering, and action-ready exports — without fabricated feature claims.',
+    canonicalPath: '/vs/parabol',
+    h1: 'Qesto vs Parabol',
+    intro:
+      'Parabol is a strong-brand retrospective tool for agile teams. Qesto approaches the same job with session anonymity modes and native Workers AI theme clustering so honest retros stay private and leave with evidence — not just stickies.',
   },
 }
 

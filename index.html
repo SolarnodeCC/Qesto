@@ -31,7 +31,7 @@
     <link rel="canonical" href="https://qesto.cc/" />
     <!-- Open Graph / Twitter: mirror PageSeo defaults so link/social previews and
          crawlers that don't run JS still get rich metadata. -->
-    <meta property="og:title" content="Qesto — Real-time Feedback & AI Insights for Teams" />
+    <meta property="og:title" content="Qesto — Live Polling, Anonymous Feedback &amp; AI Insights" />
     <meta
       property="og:description"
       content="Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate."
@@ -47,31 +47,51 @@
     <!-- Google Search Console verification. Add the token from GSC's "HTML tag"
          verification method once the property is set up. DNS verification is
          independent and can be used as an alternative. -->
-    <!-- Structured data: site-wide SoftwareApplication so search engines recognise
-         Qesto as a SaaS product (category, free tier). Kept static in the shell so
-         non-JS crawlers see it in the server-returned HTML. Per-page JSON-LD
-         (templates/features) is injected client-side via src/components/PageSeo.tsx
-         and mirrored at the edge via injectRouteSeo for key marketing routes.
-         No aggregateRating: avoid fabricated review data. Offer currency is EUR
-         to match live /pricing. -->
+    <!-- Structured data: Organization + WebSite + SoftwareApplication in one graph
+         for E-E-A-T / sitelinks. No aggregateRating (avoid fabricated reviews). -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Qesto",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "url": "https://qesto.cc/",
-        "description": "Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate.",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "EUR",
-          "description": "Free to start"
-        }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://qesto.cc/#organization",
+            "name": "Qesto",
+            "url": "https://qesto.cc/",
+            "logo": "https://qesto.cc/icon-192.png",
+            "email": "support@qesto.cc",
+            "sameAs": [
+              "https://github.com/SolarnodeCC/Qesto"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://qesto.cc/#website",
+            "name": "Qesto",
+            "url": "https://qesto.cc/",
+            "publisher": { "@id": "https://qesto.cc/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://qesto.cc/#app",
+            "name": "Qesto",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "url": "https://qesto.cc/",
+            "description": "Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate.",
+            "publisher": { "@id": "https://qesto.cc/#organization" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR",
+              "description": "Free to start"
+            }
+          }
+        ]
       }
     </script>
-    <title>Qesto — Real-time Feedback &amp; AI Insights for Teams</title>
+    <title>Qesto — Live Polling, Anonymous Feedback &amp; AI Insights</title>
     <!-- Appearance bootstrap: apply stored theme / density / high-contrast to <html>
          before first paint to avoid a flash. Mirrors useColorScheme + useDensity +
          HighContrastToggle, which re-assert these once React mounts. Kept as an
@@ -113,6 +133,8 @@
         <nav aria-label="Primary">
           <ul style="line-height: 1.8">
             <li><a href="/pricing">Pricing &amp; anonymity modes</a></li>
+            <li><a href="/compare">Compare alternatives</a></li>
+            <li><a href="/vs/mentimeter">Qesto vs Mentimeter</a></li>
             <li><a href="/features/live-polling">Live polling</a></li>
             <li><a href="/features/ai-insights">AI insights</a></li>
             <li><a href="/use-cases/workshops">Workshops</a></li>

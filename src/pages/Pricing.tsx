@@ -426,7 +426,11 @@ export default function Pricing() {
           </h2>
           <p className="text-slate-400 mb-12">
             Pulse stays within published monthly and room limits. Upgrade when you need longer retention, consent
-            logs, or richer exports.
+            logs, or richer exports. Comparing vendors?{' '}
+            <Link to="/compare" className="text-teal-300 underline hover:text-teal-200">
+              See Qesto vs Mentimeter, Slido, and Parabol
+            </Link>
+            .
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
             Create your workspace

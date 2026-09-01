@@ -142,11 +142,30 @@ export default function MainLayout({
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
-  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms', '/legal', '/legal/report']
+  const MARKETING_PATHS = [
+    '/',
+    '/pricing',
+    '/events',
+    '/hr',
+    '/nonprofit',
+    '/consulting',
+    '/privacy',
+    '/terms',
+    '/legal',
+    '/legal/report',
+    '/compare',
+    '/templates',
+    '/marketplace',
+    '/developers',
+    '/partner/sla',
+    '/trust/gdpr',
+    '/trust/soc2',
+  ]
   const isMarketingPage =
     MARKETING_PATHS.includes(location.pathname) ||
     location.pathname.startsWith('/features/') ||
-    location.pathname.startsWith('/use-cases/')
+    location.pathname.startsWith('/use-cases/') ||
+    location.pathname.startsWith('/vs/')
 
   const t = useT('solutions')
   const solutionLinks = [
@@ -182,6 +201,7 @@ export default function MainLayout({
       heading: null,
       links: [
         { label: t('footer.pricing'), href: '/pricing' },
+        { label: t('footer.compare'), href: '/compare' },
         { label: t('footer.privacyPolicy'), href: '/privacy' },
       ],
     },
@@ -225,6 +245,12 @@ export default function MainLayout({
                     className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2"
                   >
                     {t('footer.pricing')}
+                  </Link>
+                  <Link
+                    to="/compare"
+                    className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2"
+                  >
+                    {t('footer.compare')}
                   </Link>
                   <Link
                     to="/privacy"
@@ -338,6 +364,14 @@ export default function MainLayout({
                     className="text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.pricing')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/compare"
+                    className="text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    {t('footer.compare')}
                   </Link>
                 </li>
                 <li>

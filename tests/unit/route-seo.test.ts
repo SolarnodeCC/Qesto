@@ -22,7 +22,7 @@ describe('edge route SEO metadata (Finding 1: duplicate metadata across routes)'
     expect(missing).toEqual([])
   })
 
-  it('includes Wave 0 marketing URLs that used to be missing from the sitemap', () => {
+  it('includes Wave 0/2 marketing URLs that used to be missing from the sitemap', () => {
     const paths = sitemapPaths()
     for (const required of [
       '/templates',
@@ -31,6 +31,10 @@ describe('edge route SEO metadata (Finding 1: duplicate metadata across routes)'
       '/marketplace',
       '/developers',
       '/partner/sla',
+      '/compare',
+      '/vs/mentimeter',
+      '/vs/slido',
+      '/vs/parabol',
     ]) {
       expect(paths).toContain(required)
     }

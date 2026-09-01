@@ -33,11 +33,19 @@ const validSpaRoutes = [
   '/marketplace',
   '/partner',
   '/developers',
+  '/compare',
 ]
+
+/** Published competitor comparison slugs (must match src/pages/vs/compareData.ts). */
+const VS_COMPETITOR_SLUGS = new Set(['mentimeter', 'slido', 'parabol'])
 
 function isValidSpaRoute(pathname: string): boolean {
   const parts = pathname.split('/').filter(Boolean)
   if (parts.length === 0) return true // root
+
+  if (parts[0] === 'vs') {
+    return parts.length === 2 && VS_COMPETITOR_SLUGS.has(parts[1])
+  }
 
   const firstSegment = '/' + parts[0]
   return validSpaRoutes.some((route) => {

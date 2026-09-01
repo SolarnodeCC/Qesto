@@ -102,7 +102,7 @@ export default function Home() {
   return (
     <MainLayout navSlot={navSlot}>
       <PageSeo
-        title="Qesto — Real-time Feedback & AI Insights for Teams"
+        title="Qesto — Live Polling, Anonymous Feedback & AI Insights"
         description="Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate."
         canonicalPath="/"
       />
