@@ -188,7 +188,9 @@ export default function TemplateGallery() {
     return () => controller.abort()
   }, [industry, theme, lang, offset, retryKey])
 
-  // SEO: Collection page schema
+  // SEO: Collection page schema (no SearchAction — multi-param query-input is
+  // invalid for Google sitelinks search; audit S3). Add ItemList when catalog
+  // has entries; noindex empty galleries so thin pages do not stay indexed (S1).
   const collectionSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -200,14 +202,20 @@ export default function TemplateGallery() {
       name: 'Qesto',
       url: 'https://qesto.cc',
     },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://qesto.cc/templates?industry={industry}&theme={theme}',
-      },
-      'query-input': 'required name=industry,theme',
-    },
+    ...(templates.length > 0
+      ? {
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: total || templates.length,
+            itemListElement: templates.slice(0, 20).map((tmpl, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              url: `https://qesto.cc/templates/${tmpl.id}`,
+              name: tmpl.title[lang] || tmpl.title.en,
+            })),
+          },
+        }
+      : {}),
   }
 
   const galleryOgImage = generateOgImageUrl({
@@ -215,6 +223,8 @@ export default function TemplateGallery() {
     subtitle: 'Browse ready-to-use session templates',
     color: 'teal',
   })
+
+  const galleryEmpty = !loading && !error && templates.length === 0
 
   return (
     <MainLayout>
@@ -224,6 +234,7 @@ export default function TemplateGallery() {
         canonicalPath="/templates"
         ogImage={galleryOgImage}
         jsonLd={collectionSchema}
+        noindex={galleryEmpty}
       />
 
       {/* Hero */}

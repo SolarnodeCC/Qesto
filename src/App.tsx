@@ -82,6 +82,10 @@ const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
 const TemplateGallery = lazy(() => import('./pages/TemplateGallery'))
 const TemplateDetail = lazy(() => import('./pages/TemplateDetail'))
 
+// Competitor comparison SEO pages
+const CompareHubPage = lazy(() => import('./pages/vs/VsCompetitorPage').then((m) => ({ default: m.CompareHubPage })))
+const VsCompetitorPage = lazy(() => import('./pages/vs/VsCompetitorPage'))
+
 function LazyRoutePending() {
   return (
     <div
@@ -174,6 +178,10 @@ export default function App() {
         {/* Template gallery */}
         <Route path="/templates" element={<LazySuspense pending={<LazyRoutePending />}><TemplateGallery /></LazySuspense>} />
         <Route path="/templates/:id" element={<LazySuspense pending={<LazyRoutePending />}><TemplateDetail /></LazySuspense>} />
+
+        {/* Competitor comparisons (SEO) */}
+        <Route path="/compare" element={<LazySuspense pending={<LazyRoutePending />}><CompareHubPage /></LazySuspense>} />
+        <Route path="/vs/:slug" element={<LazySuspense pending={<LazyRoutePending />}><VsCompetitorPage /></LazySuspense>} />
 
         <Route path="/dashboard" element={<LazySuspense pending={<LazyRoutePending />}><Dashboard /></LazySuspense>} />
         <Route path="/settings" element={<LazySuspense pending={<LazyRoutePending />}><AccountSettings /></LazySuspense>} />

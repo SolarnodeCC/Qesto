@@ -210,6 +210,7 @@ export default function TemplateDetail() {
     '@type': 'CreativeWork',
     name: title,
     description: purpose,
+    url: `https://qesto.cc/templates/${template.id}`,
     keywords: `${template.industry}, ${template.theme}, ${template.topic}, template, session`,
     about: {
       '@type': 'Thing',
@@ -222,10 +223,6 @@ export default function TemplateDetail() {
     datePublished: template.createdAt,
     dateModified: template.updatedAt,
     inLanguage: lang,
-    potentialAction: {
-      '@type': 'UseAction',
-      name: 'Use Template',
-    },
   }
 
   const ogImage = generateOgImageUrl({
