@@ -1,0 +1,8 @@
+{
+  "name": "claude-seo",
+  "repository": "https://github.com/AgriciDaniel/claude-seo",
+  "tag": "v2.2.5",
+  "commit": "2384fdd9429696021d143006a722c7cf1aa76d43",
+  "installPath": "vendor/claude-seo",
+  "license": "MIT"
+}

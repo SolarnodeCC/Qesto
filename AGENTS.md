@@ -78,3 +78,32 @@ wrangler pages deploy  # Deployen naar Cloudflare Pages (qesto project)
 - Only `wrangler.toml` exists (no `wrangler.jsonc`).
 - `npm run build` is just `vite build` (there is no separate `tokens:build` step in the build pipeline).
 - Free-plan users get `403 feature_not_available` on plan-gated endpoints (e.g. team insights/trends/scorecard, AI question generation) — this is expected entitlement gating, not a bug.
+
+### SEO audits (claude-seo in Cursor)
+
+Qesto vendors [claude-seo](https://github.com/AgriciDaniel/claude-seo) for parallel SEO analysis. Cursor Cloud Agents read `.claude/agents/seo-*-agent.md` and `.claude/skills/seo-audit.md`.
+
+**One-time setup:**
+```bash
+npm run seo:setup    # clones vendor/claude-seo @ pinned tag + Python/Chromium runtime
+npm run seo:doctor   # verify runtime ready
+```
+
+**Invoke in chat (maps to claude-seo commands):**
+```
+/seo audit https://qesto.cc
+/seo technical https://qesto.cc/pricing
+/seo competitor-pages https://qesto.cc
+/seo schema https://qesto.cc/templates
+/seo geo https://qesto.cc
+```
+
+**Cursor subagents:** `qesto-seo-audit` (orchestrator), `qesto-seo-technical`, `qesto-seo-content`, `qesto-seo-schema`, `qesto-seo-sitemap`, `qesto-seo-geo`, `qesto-seo-competitor-pages`, `qesto-seo-reviewer` (Qesto governance). Full routing: `.claude/skills/seo-audit.md`.
+
+**Run bundled Python tools directly:**
+```bash
+npm run seo:run -- run render_page.py https://qesto.cc --mode auto --json
+npm run seo:run -- run sitemap_discovery.py https://qesto.cc --json
+```
+
+**Gotcha:** Live fetch of qesto.cc may hit Cloudflare challenge from datacenter IPs. Audits fall back to `scripts/seo-cli.sh run render_page.py` (Playwright) and Qesto codebase paths (`functions/seo-meta.ts`, `public/sitemap.xml`). Pin: `vendor/claude-seo.lock.json`.

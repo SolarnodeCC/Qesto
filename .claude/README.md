@@ -8,8 +8,8 @@ agents and skills, with every convention enforced in CI so it cannot silently dr
 
 | Path | What | Count |
 |---|---|---|
-| `agents/*.md` | Role sub-agents (thin dispatchers). Frontmatter: `name`, `description`, `model`, `version`, `owner`. Each references `COMMON_RULES.md`. | 17 |
-| `skills/*.md` | Role knowledge packs (the depth behind each agent). | 26 |
+| `agents/*.md` | Role sub-agents (thin dispatchers). Frontmatter: `name`, `description`, `model`, `version`, `owner`. Each references `COMMON_RULES.md`. | 24 |
+| `skills/*.md` | Role knowledge packs (the depth behind each agent). | 27 |
 | `skills/COMMON_RULES.md` | **Single source of truth** for global invariants + the prompt-injection defense baseline. Agents inherit it by reference — never by copy. | 1 |
 | `skills/HANDOFFS.md` | Cross-role **edge ownership** graph (producer → artifact → consumer → owner). | 1 |
 | `skills/OWNERS.md` | Ownership matrix: every agent/skill → a DRI role. | 1 |
