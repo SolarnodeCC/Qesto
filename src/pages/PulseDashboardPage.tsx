@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, useParams } from 'react-router-dom'
-import { Activity, EyeOff, HeartPulse, Users } from 'lucide-react'
+import { Link, Navigate, useParams } from 'react-router-dom'
+import { Activity, EyeOff, HeartPulse, Settings, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api } from '../api/client'
@@ -108,6 +108,13 @@ export default function PulseDashboardPage() {
               {t('title')}
             </h1>
             <p className="mt-1 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('subtitle')}</p>
+            <Link
+              to={`/teams/${teamId}/settings`}
+              className="mt-2 inline-flex items-center gap-1.5 text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+            >
+              <Settings className="h-4 w-4" aria-hidden="true" />
+              {t('team_settings_link')}
+            </Link>
           </div>
           <div className="flex gap-2">
             {(['30d', '90d'] as const).map((w) => (

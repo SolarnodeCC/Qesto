@@ -83,7 +83,14 @@
     "kind_disengagement_alert": "Attention",
     "kind_pacing": "Rythme",
     "add_to_session": "Ajouter à la session",
-    "added": "Ajoutée à la session"
+    "added": "Ajoutée à la session",
+    "plan_title": "Plan supervisé",
+    "plan_create": "Générer un plan",
+    "plan_loading": "Création…",
+    "plan_refresh": "Actualiser le plan",
+    "plan_empty": "Aucun plan actif — générez-en un pour une revue étape par étape.",
+    "plan_approve": "Approuver",
+    "plan_dismiss": "Rejeter"
   },
   "ctrl.toolbar": "Commandes du présentateur",
   "ctrl.group.navigation": "Navigation des questions",
