@@ -1,8 +1,8 @@
 # HANDOFFS — Qesto Agent & Skill Edge Ownership Map
-# VERSION: v1.3.0
+# VERSION: v1.4.0
 # OWNER: Architect
 
-_Last reviewed_: 2026-06-20
+_Last reviewed_: 2026-09-01
 
 > _"A company is a graph of algorithms. Bottlenecks happen where edges break and nobody owns them."_
 > The nodes (agents) are well-defined. This file makes the **edges** (handoffs between
@@ -66,8 +66,9 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E30 | ai-engineer | Participant-facing AI output / PII / prompt-injection surface | security (cso) | AI output reaches users | CSO |
 | E31 | e2e-tester | WCAG violation found in E2E audit (file:line + axe rule) → backlog P1 | frontend / product-owner | A11y audit run on new page/flow | QA Lead |
 | E32 | e2e-tester | k6 threshold breach in staging (p95 > SLA or error rate > 5%) | devops / architect | Load test run post-deploy | QA Lead |
-| E33 | seo-reviewer | SEO audit findings needing copy/content/intent fixes (severity-classified) | marketing | SEO/landing/`/vs/` page audited before publish | Growth Lead |
-| E34 | seo-reviewer | SEO findings needing technical fixes (markup/meta/H1/canonical/SSR/render, robots/sitemap → devops) | frontend | Crawl/index or on-page technical issue found | Frontend Lead |
+| E33 | seo-reviewer / seo-audit | SEO audit findings needing copy/content/intent fixes (severity-classified) | marketing | SEO/landing/`/vs/` page audited before publish | Growth Lead |
+| E34 | seo-reviewer / seo-audit | SEO findings needing technical fixes (markup/meta/H1/canonical/SSR/render) | frontend | Crawl/index or on-page technical issue found | Frontend Lead |
+| E35 | seo-reviewer / seo-audit | SEO infra (GSC verification, IndexNow secrets, robots/sitemap deploy, Cloudflare bot rules) | devops | Audit flags crawl/index infra or sitemap/IndexNow gaps | DevOps |
 
 ## 3) Edge contract rules (so edges don't break)
 

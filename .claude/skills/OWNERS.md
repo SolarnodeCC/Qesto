@@ -1,6 +1,6 @@
 # Prompt Asset Ownership Matrix
 
-_Last reviewed_: 2026-06-26. Edge ownership (handoffs between these roles) lives in
+_Last reviewed_: 2026-09-01. Edge ownership (handoffs between these roles) lives in
 [`HANDOFFS.md`](./HANDOFFS.md). This matrix is enforced by
 `scripts/check-claude-config.mjs` (CI) — every agent/skill file must be listed here,
 and every entry must map to a real file.
@@ -21,7 +21,14 @@ and every entry must map to a real file.
 - marketing-agent.md — Growth Lead
 - po-agent.md — Product Owner
 - sales-agent.md — Sales Lead
+- seo-audit-agent.md — Growth Lead
+- seo-competitor-pages-agent.md — Growth Lead
+- seo-content-agent.md — Growth Lead
+- seo-geo-agent.md — Growth Lead
 - seo-reviewer-agent.md — Growth Lead
+- seo-schema-agent.md — Growth Lead
+- seo-sitemap-agent.md — Growth Lead
+- seo-technical-agent.md — Growth Lead
 - tester-agent.md — QA Lead
 
 ## Skills
@@ -48,5 +55,6 @@ and every entry must map to a real file.
 - release-notes.md — Product Owner / Growth Lead
 - review.md — QA Lead
 - sales.md — Sales Lead
+- seo-audit.md — Growth Lead
 - seo-reviewer.md — Growth Lead
 - tester.md — QA Lead

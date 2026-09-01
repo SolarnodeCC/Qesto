@@ -114,7 +114,11 @@ Een bevinding zonder geschatte impact × bereik is incompleet — classificeer a
 2. **Findings**: elk in het vaste outputformaat hierboven (severity, locatie, probleem, SEO-impact, onderbouwing, fix).
 3. **Samenvatting**: aantal bevindingen per severity.
 4. **Top 3 prioriteiten** + **Wat wél goed werkt**.
-5. **Handoffs**: `Handoff → marketing: <copy/content-fixes>` (E33) en/of `Handoff → frontend: <technische fixes>` (E34), elk met de betrokken bevindings-ID's.
+5. **Handoffs**: `Handoff → marketing: <copy/content-fixes>` (E33), `Handoff → frontend: <technische fixes>` (E34), en/of `Handoff → devops: <GSC/IndexNow/robots/sitemap>` (E35), elk met de betrokken bevindings-ID's.
+
+## Relationship to claude-seo (Cursor)
+
+Voor **full-site audits** of `/seo …` commando's: laad `.claude/skills/seo-audit.md` en dispatch **`qesto-seo-audit`**. Gebruik **deze skill alleen** voor Qesto governance gates (pre-publish, `/vs/` copy review, robots/sitemap wijzigingen).
 
 ## Docs to Update
 
@@ -122,7 +126,7 @@ Een bevinding zonder geschatte impact × bereik is incompleet — classificeer a
 |---|---|
 | Copy/content/SEO-pagina-fix nodig | Hand off → `marketing.md` (`src/pages/`, `docs/CONTENT_ROADMAP.md`) — E33 |
 | Technische markup/meta/route/SSR-fix nodig | Hand off → `frontend-dev.md` (`src/`) — E34 |
-| robots.txt / sitemap / edge-header / redirect-config | Hand off → DevOps/Architect (`wrangler.toml`, infra) |
+| robots.txt / sitemap / edge-header / redirect-config / GSC / IndexNow | Hand off → DevOps (E35) |
 | Nieuwe SEO-bevinding als backlog-item | `knowledge-base/product/backlog/BACKLOG_MASTER.md §3` (MKTG/SEO) met WSJF |
 | SEO-bevinding opgelost en geverifieerd | Backlog-status → ✅ closed |
 | Nieuw herhalend SEO-faalpatroon ontdekt | Deze skill (checklist/severity-tabel) + changelog-entry |
