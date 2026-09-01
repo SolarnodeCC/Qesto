@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, Navigate } from 'react-router-dom'
+import { Link, useParams, Navigate } from 'react-router-dom'
+import { Activity } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api } from '../api/client'
@@ -25,6 +26,7 @@ export default function TeamSettings() {
   const auth = useAuth()
   const t = useT('sessions')
   const tTeam = useT('team')
+  const tPulse = useT('pulse')
 
   const [team, setTeam] = useState<Team | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -341,6 +343,13 @@ export default function TeamSettings() {
               <> &middot; you are a <RoleBadge role={currentMember.role} /></>
             ) : null}
           </p>
+          <Link
+            to={`/teams/${id}/pulse`}
+            className="mt-3 inline-flex items-center gap-1.5 text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+          >
+            <Activity className="h-4 w-4" aria-hidden="true" />
+            {tPulse('title')}
+          </Link>
         </div>
 
         <GeneralSection

@@ -83,7 +83,14 @@
     "kind_disengagement_alert": "Achtung",
     "kind_pacing": "Tempo",
     "add_to_session": "Zur Sitzung hinzufügen",
-    "added": "Zur Sitzung hinzugefügt"
+    "added": "Zur Sitzung hinzugefügt",
+    "plan_title": "Überwachter Plan",
+    "plan_create": "Plan erstellen",
+    "plan_loading": "Wird erstellt…",
+    "plan_refresh": "Plan aktualisieren",
+    "plan_empty": "Kein aktiver Plan — erstellen Sie einen zur schrittweisen Prüfung.",
+    "plan_approve": "Genehmigen",
+    "plan_dismiss": "Verwerfen"
   },
   "ctrl.toolbar": "Moderatorsteuerung",
   "ctrl.group.navigation": "Fragennavigation",

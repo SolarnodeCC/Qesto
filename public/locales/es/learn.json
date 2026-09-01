@@ -1,5 +1,12 @@
 {
   "instructor.title": "Análisis del instructor",
+  "instructor.subtitle": "Distribución de puntuaciones y dificultad de preguntas de tu cohorte de evaluación.",
+  "instructor.loading": "Cargando…",
+  "instructor.analyze_demo": "Analizar cohorte demo",
+  "instructor.analyzing": "Analizando…",
+  "instructor.export_error": "Error al exportar CSV.",
+  "instructor.difficulty_index": "dificultad",
+  "instructor.responses": "respuestas",
   "instructor.scoreDistribution": "Distribución de puntuaciones",
   "instructor.difficulty": "Dificultad de la pregunta",
   "instructor.avgScore": "Puntuación promedio",

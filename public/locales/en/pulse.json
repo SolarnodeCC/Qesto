@@ -18,5 +18,6 @@
   "col_status": "Privacy",
   "masked": "Masked (small cohort)",
   "visible": "Visible",
-  "empty": "No pulse data in this window yet. Close team sessions to populate rollups."
+  "empty": "No pulse data in this window yet. Close team sessions to populate rollups.",
+  "team_settings_link": "Team settings"
 }
