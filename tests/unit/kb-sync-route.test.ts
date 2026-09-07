@@ -199,6 +199,39 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     expect(json.data.vectors_upserted).toBe(1)
   })
 
+  it('keeps D1 consistent with Vectorize when a later batch fails (audit #14)', async () => {
+    const db = new RecordingD1()
+    const vec = new RecordingVectorize()
+    // Fail the second Vectorize batch. The first must still have both its
+    // vectors AND its D1 rows; the second must have neither.
+    let calls = 0
+    const realUpsert = vec.upsert.bind(vec)
+    vec.upsert = async (batch: Array<{ id: string; values: number[]; metadata: unknown }>) => {
+      calls++
+      if (calls === 2) throw new Error('vectorize rejected batch 2')
+      return realUpsert(batch)
+    }
+    const env = makeEnv(db, vec)
+
+    // 150 records => two batches of 100 + 50.
+    const body = Array.from({ length: 150 }, (_, i) => record(`DOC-${i}`, 0, 1))
+    const res = await postSync(env, body)
+
+    // A partial sync must not report success.
+    expect(res.status).toBe(500)
+    const json = (await res.json()) as {
+      error: { code: string }
+      data: Record<string, number>
+    }
+    expect(json.error.code).toBe('sync_partial')
+    expect(json.data.batches_failed).toBe(1)
+
+    // Exactly the first batch landed, in BOTH stores.
+    expect(vec.upserted).toHaveLength(100)
+    expect(json.data.vectors_upserted).toBe(100)
+    expect(db.matching('INSERT INTO kb_chunks')).toHaveLength(100)
+  })
+
   it('rejects a wrong admin key with 401', async () => {
     const env = makeEnv(new RecordingD1(), new RecordingVectorize())
     const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': 'wrong' })
