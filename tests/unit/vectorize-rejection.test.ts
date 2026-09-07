@@ -41,6 +41,9 @@ describe('Vectorize — rejection & degradation paths', () => {
           sessionId: 'sess-1',
           sessionTitle: 'Retro',
           openResponses: ['Issue 1', 'Issue 2'],
+          // A teamId is required for the query to be issued at all (audit #3);
+          // without one the helper returns early and never reaches Vectorize.
+          teamId: 'team-1',
         }),
       ).rejects.toThrow('vectorize service unavailable')
     })
@@ -61,6 +64,9 @@ describe('Vectorize — rejection & degradation paths', () => {
         sessionId: 'sess-1',
         sessionTitle: 'Retro',
         openResponses: ['Issue 1'],
+        // Without a teamId the query is never issued, so this would assert
+        // nothing about the empty-matches path it is named for (audit #3).
+        teamId: 'team-1',
       })
 
       expect(result.similarSessionTitles).toEqual([])
@@ -74,9 +80,9 @@ describe('Vectorize — rejection & degradation paths', () => {
         DECISIONS_VECTORIZE: {
           query: vi.fn().mockResolvedValueOnce({
             matches: [
-              { id: 'sess-2', score: 0.99, metadata: { title: 'Exact match' } },
-              { id: 'sess-3', score: 0.5, metadata: { title: 'Weak match' } }, // Below threshold (0.75)
-              { id: 'sess-4', score: 0.85, metadata: { title: 'Good match' } },
+              { id: 'sess-2', score: 0.99, metadata: { title: 'Exact match', team_id: 'team-1' } },
+              { id: 'sess-3', score: 0.5, metadata: { title: 'Weak match', team_id: 'team-1' } }, // Below threshold (0.75)
+              { id: 'sess-4', score: 0.85, metadata: { title: 'Good match', team_id: 'team-1' } },
             ],
           }),
         },
@@ -86,6 +92,7 @@ describe('Vectorize — rejection & degradation paths', () => {
         sessionId: 'sess-1',
         sessionTitle: 'Retro',
         openResponses: ['Issue 1'],
+        teamId: 'team-1',
       })
 
       // Should only include scores above threshold (0.75)
@@ -126,7 +133,7 @@ describe('Vectorize — rejection & degradation paths', () => {
       const matches = Array.from({ length: DECISIONS_SIMILARITY_TOP_K }, (_, i) => ({
         id: `sess-${i + 1}`, // Different sessions to avoid current session filter
         score: 0.9 - i * 0.02, // All above threshold (0.75)
-        metadata: { title: `Session ${i + 1}` },
+        metadata: { title: `Session ${i + 1}`, team_id: 'team-1' },
       }))
 
       const env = {
@@ -146,6 +153,7 @@ describe('Vectorize — rejection & degradation paths', () => {
         sessionId: 'sess-test',
         sessionTitle: 'Retro',
         openResponses: ['Issue 1'],
+        teamId: 'team-1',
       })
 
       // Should contain all TOP_K results (all above threshold)
