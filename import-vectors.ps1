@@ -16,9 +16,15 @@ Write-Host ""
 # Read the vector file
 $vectorData = Get-Content '.kb-vectors-pending.json' -Raw
 
-# Set up headers
+# Set up headers. The admin key comes from the environment — never hardcode it
+# here (CLAUDE.md hard rule 2). Set it first:  $env:KB_ADMIN_KEY = "..."
+if (-not $env:KB_ADMIN_KEY) {
+    Write-Host "KB_ADMIN_KEY is not set. Run: `$env:KB_ADMIN_KEY = '<key>'" -ForegroundColor Red
+    exit 1
+}
+
 $headers = @{
-    "x-admin-key" = "qesto-kb-admin-phase1"
+    "x-admin-key" = $env:KB_ADMIN_KEY
     "Content-Type" = "application/json"
 }
 

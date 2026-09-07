@@ -4,7 +4,8 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import type { KbSyncRecord } from '../../functions/api/types/knowledge-base'
 
-const ADMIN_KEY = 'kb-admin-key-at-least-16-chars'
+// Must satisfy KB_ADMIN_KEY_MIN_LENGTH (32) — the route fails closed on a weak key.
+const ADMIN_KEY = 'kb-admin-key-at-least-32-chars-long'
 
 /** Records every prepare/bind/run/batch so the test can assert what D1 saw. */
 class RecordingD1 {
@@ -156,6 +157,61 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     const env = makeEnv(new RecordingD1(), new RecordingVectorize())
     const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': 'wrong' })
     expect(res.status).toBe(401)
+  })
+
+  it('rejects a missing admin-key header with 401', async () => {
+    const env = makeEnv(new RecordingD1(), new RecordingVectorize())
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([record('ADR-040', 0, 1)]),
+      }),
+      env,
+    )
+    expect(res.status).toBe(401)
+  })
+
+  it('fails closed with 503 when KB_ADMIN_KEY is unset', async () => {
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: undefined } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)])
+    expect(res.status).toBe(503)
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('fails closed with 503 on the previously published key, even though it is presented correctly', async () => {
+    const leaked = 'qesto-kb-admin-phase1'
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: leaked } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': leaked })
+    expect(res.status).toBe(503)
+    const json = (await res.json()) as { error: { code: string } }
+    expect(json.error.code).toBe('kb_admin_key_weak')
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('fails closed with 503 on a too-short key', async () => {
+    const short = 'short-key-123'
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: short } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': short })
+    expect(res.status).toBe(503)
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('guards kb-sync-delete with the same key policy', async () => {
+    const leaked = 'qesto-kb-admin-phase1'
+    const env = { ...makeEnv(new RecordingD1(), new RecordingVectorize()), KB_ADMIN_KEY: leaked } as unknown as Env
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': leaked },
+        body: JSON.stringify({ vector_ids: ['ADR-040#0'] }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(503)
   })
 
   it('still upserts vectors for legacy vector-only records (no D1 writes)', async () => {

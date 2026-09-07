@@ -154,7 +154,7 @@ export CLOUDFLARE_ACCOUNT_ID="..."
 export CLOUDFLARE_D1_DATABASE_ID="..."
 export CF_ACCESS_CLIENT_ID="..."
 export CF_ACCESS_CLIENT_SECRET="..."
-export KB_ADMIN_KEY="qesto-kb-admin-phase1"
+export KB_ADMIN_KEY="<from: GitHub secret KB_ADMIN_KEY>"
 
 # Check status
 npm run kb:sync -- status
@@ -192,7 +192,7 @@ gh secret set CLOUDFLARE_ACCOUNT_ID -b "..."
 gh secret set CLOUDFLARE_D1_DATABASE_ID -b "..."
 gh secret set CF_ACCESS_CLIENT_ID -b "..."
 gh secret set CF_ACCESS_CLIENT_SECRET -b "..."
-gh secret set KB_ADMIN_KEY -b "qesto-kb-admin-phase1"
+gh secret set KB_ADMIN_KEY -b "$(openssl rand -base64 32)"
 ```
 
 ### Scheduled Syncs (Optional)
@@ -405,7 +405,7 @@ export CLOUDFLARE_ACCOUNT_ID="..."
 export CLOUDFLARE_D1_DATABASE_ID="..."
 export CF_ACCESS_CLIENT_ID="..."
 export CF_ACCESS_CLIENT_SECRET="..."
-export KB_ADMIN_KEY="qesto-kb-admin-phase1"
+export KB_ADMIN_KEY="<from: GitHub secret KB_ADMIN_KEY>"
 npm run kb:sync
 ```
 

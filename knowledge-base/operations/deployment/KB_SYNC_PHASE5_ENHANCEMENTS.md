@@ -497,7 +497,7 @@ gh secret set CLOUDFLARE_ACCOUNT_ID -b "..."
 gh secret set CLOUDFLARE_D1_DATABASE_ID -b "..."
 gh secret set CF_ACCESS_CLIENT_ID -b "..."
 gh secret set CF_ACCESS_CLIENT_SECRET -b "..."
-gh secret set KB_ADMIN_KEY -b "qesto-kb-admin-phase1"
+gh secret set KB_ADMIN_KEY -b "$(openssl rand -base64 32)"
 gh secret set SLACK_WEBHOOK_URL -b "https://hooks.slack.com/..."  # optional
 ```
 
