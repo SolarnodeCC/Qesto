@@ -22,7 +22,13 @@ import type {
 export interface KbVectorMatch {
   /** Vector id; equals `chunk_id`. */
   id: string
-  /** Cosine similarity from Vectorize (already in 0..1 for our index). */
+  /**
+   * Raw cosine similarity from Vectorize, in [-1, 1] — 1 identical, 0
+   * orthogonal, -1 most dissimilar. NOT pre-normalised to [0, 1]; the previous
+   * comment here claimed otherwise and contradicted kbSearchService, which
+   * rescales before weighting. Consumers must floor on the raw value
+   * (KB_MIN_SIMILARITY) and rescale explicitly.
+   */
   score: number
   metadata: KbVectorMetadata
 }
