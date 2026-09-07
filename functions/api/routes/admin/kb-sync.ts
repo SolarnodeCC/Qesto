@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { safeLogContext } from '../../lib/log'
 import { readKvJson, writeKvJson } from '../../lib/kv'
+import { writeEvent } from '../../lib/observability'
 import type { Env } from '../../types'
 import { timingSafeEqual } from '../../lib/shared/crypto'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
@@ -258,6 +259,7 @@ export function checkKbAdminKey(provided: string | undefined, expected: string |
 export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
   app.post('/kb-sync', async (c) => {
     const traceId = (c.get('trace_id') as string) || 'unknown'
+    const startedAt = Date.now()
     const keyCheck = checkKbAdminKey(c.req.header('x-admin-key'), c.env.KB_ADMIN_KEY)
     if (!keyCheck.ok) {
       return c.json(
@@ -383,9 +385,23 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
           vectors_upserted: totalUpserted,
           documents_upserted: documentsUpserted,
           chunks_upserted: chunksUpserted,
+          vectors_pruned: vectorsPruned,
           batches_failed: batchesFailed,
+          duration_ms: Date.now() - startedAt,
         })
       }
+
+      // The KV key above holds only the LAST run and is overwritten every time,
+      // so a degrading pipeline leaves no trace. Emit a datapoint per run so
+      // chunk/upsert/error/duration trends are queryable (audit #19).
+      writeEvent(c.env.METRICS_AE, {
+        name: 'kb_sync.run',
+        traceId,
+        count: totalUpserted,
+        value: batchesFailed,
+        durationMs: Date.now() - startedAt,
+        detail: `upserted=${totalUpserted} docs=${documentsUpserted} chunks=${chunksUpserted} pruned=${vectorsPruned} failed_batches=${batchesFailed}`,
+      })
 
       // A partial sync must not report success — CI treats a 200 as "the index
       // is up to date". The counts describe exactly what landed.
@@ -445,6 +461,7 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
 
   app.post('/kb-sync-delete', async (c) => {
     const traceId = (c.get('trace_id') as string) || 'unknown'
+    const startedAt = Date.now()
     const keyCheck = checkKbAdminKey(c.req.header('x-admin-key'), c.env.KB_ADMIN_KEY)
     if (!keyCheck.ok) {
       return c.json(
@@ -525,6 +542,14 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       if (c.env.DB) {
         chunksDeleted = await deleteD1Rows(c.env.DB, vectorIds)
       }
+
+      writeEvent(c.env.METRICS_AE, {
+        name: 'kb_sync.delete',
+        traceId,
+        count: totalDeleted,
+        durationMs: Date.now() - startedAt,
+        detail: `deleted=${totalDeleted} chunks=${chunksDeleted}`,
+      })
 
       // Record sync timestamp for monitoring
       if (c.env.ACTIONS_KV && totalDeleted > 0) {
