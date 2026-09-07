@@ -5,8 +5,9 @@
  * the per-file copies of the same envelope check.
  */
 import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
+import { BGE_M3_EMBED_DIM } from './embedding-model'
 
-export const BGE_M3_EMBED_DIM = 1024
+export { BGE_M3_EMBED_DIM }
 
 /**
  * Validate a Workers AI batch-embedding response and return the first vector.

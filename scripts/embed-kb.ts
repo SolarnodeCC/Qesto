@@ -15,6 +15,7 @@ import path from 'path'
 import crypto from 'crypto'
 import { z } from 'zod'
 import type { KbSyncDocumentFields, KbSyncRecord } from '../functions/api/types/knowledge-base'
+import { BGE_M3_MODEL, BGE_M3_EMBED_DIM, workersAiRunUrl } from '../functions/api/lib/embedding-model'
 
 // Local imports (must build/transpile mdChunker first or inline here)
 // For now, we'll inline the essentials to avoid require() complexity in ts-node
@@ -357,7 +358,10 @@ function formatEmbeddingInput(chunk: Chunk, meta: FrontmatterMeta): string {
 }
 
 async function embedViaAPI(text: string): Promise<number[]> {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/baai/bge-m3`
+  // Routed through AI Gateway when CLOUDFLARE_AI_GATEWAY_ID is set, so the bulk
+  // embed shows up in the same cost/caching view as the edge inference calls
+  // (audit #20). Falls back to the direct endpoint otherwise.
+  const url = workersAiRunUrl(accountId, BGE_M3_MODEL, process.env.CLOUDFLARE_AI_GATEWAY_ID)
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -378,8 +382,10 @@ async function embedViaAPI(text: string): Promise<number[]> {
     .object({ result: z.object({ data: z.array(z.array(z.number())).optional() }).optional() })
     .safeParse(await response.json())
   const vector = parsed.success ? parsed.data.result?.data?.[0] : undefined
-  if (!vector || vector.length !== 1024) {
-    throw new Error('Invalid embedding response')
+  if (!vector || vector.length !== BGE_M3_EMBED_DIM) {
+    throw new Error(
+      `Invalid embedding response: expected ${BGE_M3_EMBED_DIM} dims, got ${vector?.length ?? 'none'}`,
+    )
   }
 
   return vector
