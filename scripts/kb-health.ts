@@ -18,6 +18,13 @@
  * (KB index empty while files exist, or KB index dimension != expected).
  *
  * Usage:  npm run kb:health
+ *         npm run kb:health -- --require-remote   # CI: no credentials = failure
+ *
+ * `--require-remote` exists because the remote block is the ONLY check that
+ * looks at live dimensions, and it silently no-ops without credentials. Every
+ * "success" this gate reported in CI up to 2026-09 was a local-only pass with
+ * the remote block skipped, which is how a 768/1024 mismatch could sit
+ * unnoticed (audit #2).
  */
 import * as fs from 'fs'
 import * as path from 'path'
@@ -230,8 +237,20 @@ async function main() {
   // ── Remote ───────────────────────────────────────────────────────────────
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
   const token = process.env.CLOUDFLARE_API_TOKEN
+  const requireRemote = process.argv.includes('--require-remote')
   if (!accountId || !token) {
-    console.log('Remote: skipped (set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to check live indexes).')
+    const missing = [
+      !accountId ? 'CLOUDFLARE_ACCOUNT_ID' : null,
+      !token ? 'CLOUDFLARE_API_TOKEN' : null,
+    ].filter(Boolean).join(' + ')
+    if (requireRemote) {
+      console.log(`  ✗ Remote check REQUIRED but ${missing} is not set — live dimensions were not verified.`)
+      console.log('    This gate is the only thing that catches an index built for the wrong')
+      console.log('    embedding model. Passing without it is a false green.')
+      console.log('\nVerdict: PROBLEMS FOUND (remote verification unavailable).')
+      process.exit(1)
+    }
+    console.log(`Remote: skipped (set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to check live indexes; missing ${missing}).`)
     console.log(`\nVerdict: ${hardFailure ? 'PROBLEMS FOUND (see ✗ above)' : 'local-only check passed'}.`)
     process.exit(hardFailure ? 1 : 0)
   }

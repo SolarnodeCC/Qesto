@@ -13,7 +13,7 @@ on:
 
 permissions:
   contents: read
-  issues: read
+  issues: write # open/update the failure issue below
   actions: read # read prior run artifacts to restore the sync manifest
 
 concurrency:
@@ -33,7 +33,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     permissions:
       contents: read
-      issues: read
+      issues: write # open/update the failure issue below
       actions: read # read prior run artifacts to restore the sync manifest
     steps:
       - name: Checkout code
@@ -86,7 +86,7 @@ jobs:
           # Vectorize upserts are eventually consistent — let them settle
           # before asserting the index is populated and dimensionally correct.
           sleep 30
-          npm run kb:health
+          npm run kb:health -- --require-remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -99,17 +99,46 @@ jobs:
           path: .kb-sync-manifest.json
           retention-days: 30
 
-      - name: Comment on PR (if failure)
-        if: failure() && github.event_name == 'pull_request'
+      # Both previous alert paths were dead: the PR-comment step gates on
+      # `github.event_name == 'pull_request'` while this workflow runs on
+      # push/schedule, and the Slack step gates on a SLACK_WEBHOOK_URL secret
+      # that is not set. A failure therefore reached nobody (audit #1/#2).
+      # A GitHub issue needs no external secret. Reuses one open issue per lane
+      # so repeated failures update instead of spamming.
+      - name: Open or update a failure issue
+        if: failure()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '❌ KB sync/health gate failed — the live KB vector index may be empty, stale, or dimensionally mismatched. Check [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+            const title = 'KB sync lane is failing'
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const body = [
+              `The **${context.workflow}** lane failed on \`${context.sha}\`.`,
+              '',
+              `- Run: ${runUrl}`,
+              `- Branch: \`${context.ref}\``,
+              '',
+              'The KB vector index may be unsynced, empty, stale, or dimensionally',
+              'mismatched with the embedding model. A common cause is a missing or',
+              'expired `CLOUDFLARE_API_TOKEN` repository secret — the lane needs it to',
+              'reach the live indexes and fails within seconds without it.',
+            ].join('\n')
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'vectorize-health', per_page: 20,
             })
+            const match = existing.data.find((i) => i.title === title)
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, body,
+              })
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['vectorize-health'],
+              })
+            }
 
       - name: Notify Slack (on failure)
         if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}

@@ -28,4 +28,4 @@ for var in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
 done
 
 npm ci --silent
-npm run kb:health
+npm run kb:health -- --require-remote

@@ -51,7 +51,7 @@ jobs:
         run: |
           # Vectorize upserts are eventually consistent — let them settle first.
           sleep 30
-          npm run kb:health
+          npm run kb:health -- --require-remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
