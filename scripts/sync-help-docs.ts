@@ -120,27 +120,53 @@ async function embedWithCF(text: string): Promise<number[]> {
   return embeddings
 }
 
-async function upsertVector(vector: { id: string; values: number[]; metadata: Record<string, unknown> }): Promise<void> {
+type VectorRecord = { id: string; values: number[]; metadata: Record<string, unknown> }
+
+/**
+ * Vectors per upsert request. Cloudflare allows 5000 over the HTTP API; 200
+ * keeps each request comfortably small (a 1024-dim float32 vector serialises to
+ * ~20KB of JSON) while replacing what used to be one HTTP round-trip per chunk
+ * (audit #16).
+ */
+const UPSERT_BATCH_SIZE = 200
+
+/**
+ * Upsert a batch of vectors via the Vectorize **v2** HTTP API.
+ *
+ * v2 takes newline-delimited JSON at
+ * `/vectorize/v2/indexes/{name}/upsert` with `Content-Type:
+ * application/x-ndjson`. The previous code posted a JSON object to the v1 path
+ * `/vectorize/indexes/{name}/upsert`, which does not serve a v2 index (audit #15).
+ */
+async function upsertVectors(vectors: VectorRecord[]): Promise<void> {
+  if (vectors.length === 0) return
   const { apiToken, accountId } = cfEnv()
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/indexes/${INDEX_NAME}/upsert`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vectors: [vector] }),
-  })
-  if (!res.ok) throw new Error(`Vectorize upsert failed: ${res.status} ${await res.text()}`)
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${INDEX_NAME}/upsert`
+  for (let i = 0; i < vectors.length; i += UPSERT_BATCH_SIZE) {
+    const batch = vectors.slice(i, i + UPSERT_BATCH_SIZE)
+    const ndjson = batch.map((v) => JSON.stringify(v)).join('\n')
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/x-ndjson' },
+      body: ndjson,
+    })
+    if (!res.ok) throw new Error(`Vectorize upsert failed: ${res.status} ${await res.text()}`)
+  }
 }
 
 async function deleteVectors(ids: string[]): Promise<void> {
   if (ids.length === 0) return
   const { apiToken, accountId } = cfEnv()
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/indexes/${INDEX_NAME}/delete-by-ids`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids }),
-  })
-  if (!res.ok) throw new Error(`Vectorize delete failed: ${res.status} ${await res.text()}`)
+  // v2 spells this `delete_by_ids` (underscores); the v1 path was `delete-by-ids`.
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${INDEX_NAME}/delete_by_ids`
+  for (let i = 0; i < ids.length; i += UPSERT_BATCH_SIZE) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: ids.slice(i, i + UPSERT_BATCH_SIZE) }),
+    })
+    if (!res.ok) throw new Error(`Vectorize delete failed: ${res.status} ${await res.text()}`)
+  }
 }
 
 async function d1Query(sql: string, params: unknown[]): Promise<void> {
@@ -156,14 +182,18 @@ async function d1Query(sql: string, params: unknown[]): Promise<void> {
   if (!res.ok) throw new Error(`D1 query failed: ${res.status} ${await res.text()}`)
 }
 
-async function upsertChunk(c: HelpChunk): Promise<void> {
+/** Embed a chunk and return its vector record (no network write). */
+async function buildChunkVector(c: HelpChunk): Promise<VectorRecord> {
   const embedding = await embedWithCF(`${c.title}\n${c.excerpt}\n\n${c.content}`)
-  const now = Math.floor(Date.now() / 1000)
-  await upsertVector({
+  return {
     id: `help-${c.id}`,
     values: embedding,
     metadata: { document_id: c.id, title: c.title, topic: c.topic, scope: c.scope },
-  })
+  }
+}
+
+async function writeChunkRow(c: HelpChunk): Promise<void> {
+  const now = Math.floor(Date.now() / 1000)
   await d1Query(
     `INSERT OR REPLACE INTO help_documents (id, title, content, topic, scope, excerpt, embedding_id, created_at, updated_at, published_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -200,15 +230,31 @@ async function main() {
   let synced = 0
   let failed = 0
 
+  // Phase 1: embed every changed chunk (one AI call each — unavoidable).
+  const pending: Array<{ chunk: HelpChunk; vector: VectorRecord }> = []
   for (const c of toUpsert) {
     try {
-      await upsertChunk(c)
-      manifest.chunks[c.id] = { hash: chunkHash(c), syncedAt: Date.now() }
-      synced++
-      console.log(`  ✅ help-${c.id}`)
+      pending.push({ chunk: c, vector: await buildChunkVector(c) })
     } catch (err) {
       failed++
-      console.error(`  ❌ help-${c.id}: ${err instanceof Error ? err.message : String(err)}`)
+      console.error(`  ❌ embed help-${c.id}: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  // Phase 2: one batched upsert for everything that embedded successfully,
+  // instead of one HTTP round-trip per chunk (audit #16).
+  if (pending.length > 0) {
+    try {
+      await upsertVectors(pending.map((p) => p.vector))
+      for (const { chunk } of pending) {
+        await writeChunkRow(chunk)
+        manifest.chunks[chunk.id] = { hash: chunkHash(chunk), syncedAt: Date.now() }
+        synced++
+        console.log(`  ✅ help-${chunk.id}`)
+      }
+    } catch (err) {
+      failed += pending.length
+      console.error(`  ❌ upsert batch failed: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
