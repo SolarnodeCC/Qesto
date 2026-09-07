@@ -21,7 +21,7 @@ User Question (POST /api/help/ask)
          ↓
    Rate Limit Check (10 req/min per user)
          ↓
-   Embed Question (bge-m3, 768-dim, 10s timeout)
+   Embed Question (bge-m3, 1024-dim, 10s timeout)
          ↓
    Vector Search (Vectorize, top-3, score ≥0.70)
          ↓
@@ -42,7 +42,7 @@ User Question (POST /api/help/ask)
 
 | Component | Binding | Specs |
 |-----------|---------|-------|
-| Vector DB | `HELP_VECTORIZE` | Cloudflare Vectorize, `qesto-help` index, 768d (cosine) |
+| Vector DB | `HELP_VECTORIZE` | Cloudflare Vectorize, `qesto-help` index, 1024d (cosine) |
 | SQL DB | `DB` | Cloudflare D1 (SQLite), `qesto_2_db` |
 | AI | `AI` | Cloudflare Workers AI (@cf/baai/bge-m3, @cf/mistral/mistral-7b) |
 | Auth KV | `ACTIONS_KV` | Rate limiting store (10 req/min per user) |
