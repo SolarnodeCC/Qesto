@@ -10,6 +10,8 @@ const ADMIN_KEY = 'kb-admin-key-at-least-32-chars-long'
 /** Records every prepare/bind/run/batch so the test can assert what D1 saw. */
 class RecordingD1 {
   readonly statements: Array<{ sql: string; args: unknown[] }> = []
+  /** Rows returned by `.all()`, keyed by an SQL fragment the caller matches. */
+  readonly selectRows = new Map<string, unknown[]>()
 
   prepare(sql: string) {
     const self = this
@@ -22,6 +24,13 @@ class RecordingD1 {
       async run() {
         self.statements.push(entry)
         return { meta: { changes: 1 } }
+      },
+      async all() {
+        self.statements.push(entry)
+        for (const [fragment, rows] of self.selectRows) {
+          if (entry.sql.includes(fragment)) return { results: rows }
+        }
+        return { results: [] }
       },
       __entry: entry,
     }
@@ -48,8 +57,10 @@ class RecordingVectorize {
     this.upserted.push(...batch)
     return { mutationId: 'm', count: batch.length }
   }
-  async deleteByIds() {
-    return { mutationId: 'm', count: 0 }
+  readonly deleted: string[] = []
+  async deleteByIds(ids: string[]) {
+    this.deleted.push(...ids)
+    return { mutationId: 'm', count: ids.length }
   }
 }
 
@@ -151,6 +162,41 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     const doc = db.matching('INSERT INTO kb_documents')[0]
     expect(doc.sql).toContain('ON CONFLICT(doc_id) DO UPDATE')
     expect(doc.sql).not.toMatch(/created_at = excluded\.created_at/)
+  })
+
+  it('deletes the vectors of chunks a shrinking doc left behind (audit #11)', async () => {
+    const db = new RecordingD1()
+    // The doc used to have 4 chunks; this sync declares chunk_count = 2, so
+    // ADR-040#2 and ADR-040#3 are pruned from D1 — and must go from Vectorize.
+    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [
+      { chunk_id: 'ADR-040#2' },
+      { chunk_id: 'ADR-040#3' },
+    ])
+    const vec = new RecordingVectorize()
+    const env = makeEnv(db, vec)
+
+    const res = await postSync(env, [record('ADR-040', 0, 2), record('ADR-040', 1, 2)])
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { data: Record<string, number> }
+
+    expect(vec.deleted).toEqual(['ADR-040#2', 'ADR-040#3'])
+    expect(json.data.vectors_pruned).toBe(2)
+  })
+
+  it('does not fail the sync when the vector prune errors', async () => {
+    const db = new RecordingD1()
+    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [{ chunk_id: 'ADR-040#2' }])
+    const vec = new RecordingVectorize()
+    vec.deleteByIds = async () => {
+      throw new Error('vectorize unavailable')
+    }
+    const env = makeEnv(db, vec)
+
+    const res = await postSync(env, [record('ADR-040', 0, 2)])
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { data: Record<string, number> }
+    expect(json.data.vectors_pruned).toBe(0)
+    expect(json.data.vectors_upserted).toBe(1)
   })
 
   it('rejects a wrong admin key with 401', async () => {

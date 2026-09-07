@@ -30,7 +30,11 @@ function isValidRecord(v: unknown): v is ValidRecord {
  * Write the D1 side of the sync (kb_documents + kb_chunks) for records that
  * carry the document/chunk fields. Idempotent: documents and chunks upsert by
  * primary key, and stale chunks (from a doc that shrank) are pruned using the
- * authoritative `chunk_count`. Returns the number of doc/chunk rows written.
+ * authoritative `chunk_count`.
+ *
+ * Returns the doc/chunk row counts AND the chunk_ids pruned from D1, so the
+ * caller can delete the matching vectors. chunk_id == vector id, and Vectorize
+ * has no equivalent of the `chunk_index >= chunk_count` prune (audit #11).
  *
  * Why both stores: `kb_search` hydrates chunk text / file_path / title from D1
  * (kbVectorRepository.hydrateChunks). A vector with no D1 row is skipped during
@@ -39,7 +43,7 @@ function isValidRecord(v: unknown): v is ValidRecord {
 async function writeD1Rows(
   db: D1Database,
   records: ValidRecord[],
-): Promise<{ documentsUpserted: number; chunksUpserted: number }> {
+): Promise<{ documentsUpserted: number; chunksUpserted: number; prunedVectorIds: string[] }> {
   // De-dupe documents by doc_id (the fields repeat across a doc's chunks).
   const docsById = new Map<string, { docId: string; doc: KbSyncDocumentFields }>()
   const chunkStatements: D1PreparedStatement[] = []
@@ -68,6 +72,7 @@ async function writeD1Rows(
       vector_id = excluded.vector_id, embedded_at = excluded.embedded_at`
 
   const PRUNE_SQL = `DELETE FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2`
+  const STALE_SQL = `SELECT chunk_id FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2`
 
   for (const r of records) {
     const docId = typeof r.metadata.doc_id === 'string' ? r.metadata.doc_id : undefined
@@ -94,7 +99,7 @@ async function writeD1Rows(
     )
   }
 
-  if (docsById.size === 0) return { documentsUpserted: 0, chunksUpserted: 0 }
+  if (docsById.size === 0) return { documentsUpserted: 0, chunksUpserted: 0, prunedVectorIds: [] }
 
   const docStatements: D1PreparedStatement[] = []
   const pruneStatements: D1PreparedStatement[] = []
@@ -128,9 +133,25 @@ async function writeD1Rows(
   // Documents first (chunks FK-reference kb_documents), then chunks, then prune.
   await db.batch(docStatements)
   await db.batch(chunkStatements)
+
+  // Identify the chunks the prune is about to remove, BEFORE removing them —
+  // afterwards there is no record of which vector ids became orphans.
+  const prunedVectorIds: string[] = []
+  for (const { docId, doc } of docsById.values()) {
+    const { results } = await db
+      .prepare(STALE_SQL)
+      .bind(docId, doc.chunk_count)
+      .all<{ chunk_id: string }>()
+    for (const row of results ?? []) prunedVectorIds.push(row.chunk_id)
+  }
+
   await db.batch(pruneStatements)
 
-  return { documentsUpserted: docStatements.length, chunksUpserted: chunkStatements.length }
+  return {
+    documentsUpserted: docStatements.length,
+    chunksUpserted: chunkStatements.length,
+    prunedVectorIds,
+  }
 }
 
 /**
@@ -309,10 +330,32 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       // skipped by writeD1Rows, preserving backward compatibility.
       let documentsUpserted = 0
       let chunksUpserted = 0
+      let vectorsPruned = 0
       if (c.env.DB) {
         const d1 = await writeD1Rows(c.env.DB, validVectors)
         documentsUpserted = d1.documentsUpserted
         chunksUpserted = d1.chunksUpserted
+
+        // A doc that shrank (10 chunks -> 4) leaves DOC#4..DOC#9 in Vectorize
+        // forever. Those orphans still match queries, occupy topK slots, and
+        // then vanish during hydration because D1 no longer has the row — so
+        // they silently displace real results (audit #11). Best-effort: a
+        // failed prune must not fail an otherwise successful sync; the next
+        // sync recomputes the same ids from D1.
+        if (d1.prunedVectorIds.length > 0) {
+          try {
+            for (let i = 0; i < d1.prunedVectorIds.length; i += batchSize) {
+              await c.env.KB_VECTORIZE.deleteByIds(d1.prunedVectorIds.slice(i, i + batchSize))
+            }
+            vectorsPruned = d1.prunedVectorIds.length
+          } catch (pruneErr) {
+            safeLogContext(pruneErr, {
+              traceId,
+              route: '[admin] kb-sync/prune-vectors',
+              errorClass: pruneErr instanceof Error ? pruneErr.name : 'UnknownError',
+            })
+          }
+        }
       }
 
       // Record sync timestamp for monitoring
@@ -331,6 +374,7 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
           data: {
             message: 'KB sync complete',
             vectors_upserted: totalUpserted,
+            vectors_pruned: vectorsPruned,
             documents_upserted: documentsUpserted,
             chunks_upserted: chunksUpserted,
             batches: Math.ceil(totalUpserted / batchSize),
