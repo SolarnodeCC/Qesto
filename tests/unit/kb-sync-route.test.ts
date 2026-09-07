@@ -64,10 +64,19 @@ class RecordingVectorize {
   }
 }
 
-function makeEnv(db: RecordingD1, vec: RecordingVectorize): Env {
+/** Captures Analytics Engine datapoints so telemetry can be asserted. */
+class RecordingAE {
+  readonly points: Array<{ blobs: string[]; doubles: number[] }> = []
+  writeDataPoint(p: { blobs: string[]; doubles: number[] }) {
+    this.points.push(p)
+  }
+}
+
+function makeEnv(db: RecordingD1, vec: RecordingVectorize, ae?: RecordingAE): Env {
   return {
     ENV: 'dev',
     KB_ADMIN_KEY: ADMIN_KEY,
+    METRICS_AE: ae as unknown as AnalyticsEngineDataset,
     DB: db as unknown as D1Database,
     KB_VECTORIZE: vec as unknown as VectorizeIndex,
   } as unknown as Env
@@ -230,6 +239,34 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     expect(vec.upserted).toHaveLength(100)
     expect(json.data.vectors_upserted).toBe(100)
     expect(db.matching('INSERT INTO kb_chunks')).toHaveLength(100)
+  })
+
+  it('emits one Analytics Engine datapoint per sync run (audit #19)', async () => {
+    const ae = new RecordingAE()
+    const env = makeEnv(new RecordingD1(), new RecordingVectorize(), ae)
+
+    await postSync(env, [record('ADR-040', 0, 2), record('ADR-040', 1, 2)])
+
+    const run = ae.points.find((p) => p.blobs[0] === 'kb_sync.run')
+    expect(run).toBeDefined()
+    // count = vectors upserted, value = failed batches.
+    expect(run?.doubles[1]).toBe(2)
+    expect(run?.doubles[2]).toBe(0)
+    expect(run?.blobs.join(' ')).toContain('chunks=2')
+  })
+
+  it('records the failed-batch count in telemetry on a partial sync (audit #19)', async () => {
+    const ae = new RecordingAE()
+    const vec = new RecordingVectorize()
+    vec.upsert = async () => {
+      throw new Error('vectorize down')
+    }
+    const env = makeEnv(new RecordingD1(), vec, ae)
+
+    await postSync(env, [record('ADR-040', 0, 1)])
+
+    const run = ae.points.find((p) => p.blobs[0] === 'kb_sync.run')
+    expect(run?.doubles[2]).toBe(1)
   })
 
   it('rejects a wrong admin key with 401', async () => {
