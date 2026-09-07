@@ -54,3 +54,40 @@ export async function hardDeleteSession(
   const changes = last?.meta?.changes ?? 0
   return { deleted: changes > 0 }
 }
+
+/**
+ * Remove every decision vector belonging to a team's sessions.
+ *
+ * Called when a team is deleted (audit #12). These embeddings exist only to
+ * power team-scoped cross-session intelligence — the feature being torn down —
+ * and would otherwise survive in a cross-tenant index tagged with a team_id
+ * that resolves to nothing. The sessions and their D1 rows are deliberately
+ * left intact; only the derived embeddings go, and an insights run regenerates
+ * them.
+ *
+ * Lives here rather than in the route because D1 access belongs outside
+ * functions/api/routes (ADR-0069, enforced by scripts/check-d1-access.mjs).
+ *
+ * Best-effort: returns the number of vectors deleted, and 0 on any failure —
+ * a purge problem must never block the team deletion itself.
+ */
+export async function deleteTeamSessionVectors(
+  db: D1Database,
+  vectorize: VectorizeIndex | undefined,
+  teamId: string,
+): Promise<number> {
+  if (!vectorize) return 0
+  try {
+    const { results } = await db
+      .prepare(`SELECT id FROM sessions WHERE team_id = ?1`)
+      .bind(teamId)
+      .all<{ id: string }>()
+    const ids = (results ?? []).map((r) => r.id)
+    for (let i = 0; i < ids.length; i += 100) {
+      await vectorize.deleteByIds(ids.slice(i, i + 100))
+    }
+    return ids.length
+  } catch {
+    return 0
+  }
+}
