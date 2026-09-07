@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { hardDeleteSession } from '../../functions/api/lib/session-delete'
+import {
+  deleteTeamSessionVectors,
+  hardDeleteSession,
+} from '../../functions/api/lib/session-delete'
 
 /** Minimal D1 stub: records batched SQL and reports one change on the last one. */
 function makeDb(changes = 1) {
@@ -63,5 +66,52 @@ describe('hardDeleteSession — decision-vector cascade (audit #12)', () => {
     const { vec } = makeVectorize()
     const res = await hardDeleteSession(db, 'sess-1', 'other-user', vec)
     expect(res.deleted).toBe(false)
+  })
+})
+
+describe('deleteTeamSessionVectors — team cascade (audit #12)', () => {
+  function dbWithSessions(ids: string[]) {
+    return {
+      prepare() {
+        return {
+          bind: () => ({ all: async () => ({ results: ids.map((id) => ({ id })) }) }),
+        }
+      },
+    } as unknown as D1Database
+  }
+
+  it('deletes every vector belonging to the team\'s sessions', async () => {
+    const { vec, deleted } = makeVectorize()
+    const n = await deleteTeamSessionVectors(dbWithSessions(['s1', 's2', 's3']), vec, 'team-1')
+    expect(n).toBe(3)
+    expect(deleted).toEqual([['s1', 's2', 's3']])
+  })
+
+  it('batches at 100 ids per delete call', async () => {
+    const ids = Array.from({ length: 250 }, (_, i) => `s${i}`)
+    const { vec, deleted } = makeVectorize()
+    const n = await deleteTeamSessionVectors(dbWithSessions(ids), vec, 'team-1')
+    expect(n).toBe(250)
+    expect(deleted.map((b) => b.length)).toEqual([100, 100, 50])
+  })
+
+  it('is a no-op without a Vectorize binding', async () => {
+    expect(await deleteTeamSessionVectors(dbWithSessions(['s1']), undefined, 'team-1')).toBe(0)
+  })
+
+  it('returns 0 rather than throwing when the purge fails', async () => {
+    const failing = {
+      async deleteByIds() {
+        throw new Error('vectorize unavailable')
+      },
+    } as unknown as VectorizeIndex
+    // A purge problem must never block the team deletion that follows it.
+    expect(await deleteTeamSessionVectors(dbWithSessions(['s1']), failing, 'team-1')).toBe(0)
+  })
+
+  it('returns 0 when the team has no sessions', async () => {
+    const { vec, deleted } = makeVectorize()
+    expect(await deleteTeamSessionVectors(dbWithSessions([]), vec, 'team-1')).toBe(0)
+    expect(deleted).toEqual([])
   })
 })
