@@ -82,7 +82,8 @@
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",
     "check:audit": "npm audit --audit-level=high --json > target/security/npm-audit.json || true && node scripts/check-audit-allowlist.mjs target/security/npm-audit.json",
-    "check:circular": "node scripts/check-circular-deps.mjs"
+    "check:circular": "node scripts/check-circular-deps.mjs",
+    "vectorize:metadata": "npx tsx scripts/vectorize-metadata-indexes.ts"
   },
   "dependencies": {
     "hono": "^4.13.18",
