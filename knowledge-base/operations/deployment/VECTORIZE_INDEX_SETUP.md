@@ -32,7 +32,7 @@ curl -X POST https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/vectoriz
 **Parameters:**
 - `{ACCOUNT_ID}`: Your Cloudflare account ID (from wrangler.toml: `5546763229b35df670e33d9316d7f2e0`)
 - `{API_TOKEN}`: Your Cloudflare API token (from dashboard)
-- `dimensions`: 768 (matches bge-m3 embedding model)
+- `dimensions`: 1024 (matches the `@cf/baai/bge-m3` embedding model)
 - `metric`: cosine (similarity metric for vector search)
 
 **Expected Response:**
@@ -85,7 +85,7 @@ node scripts/seed-help-docs.mjs
 
 This will:
 1. Read 15 help documents from `functions/api/seed/help-documents.json`
-2. Embed each with bge-m3 (768d vectors)
+2. Embed each with bge-m3 (1024d vectors)
 3. Insert documents into D1 `help_documents` table
 4. Upsert vectors into `qesto-help` Vectorize index
 
@@ -126,5 +126,5 @@ curl -X POST https://qesto.cc/api/help/ask \
 ## References
 
 - [Cloudflare Vectorize API Docs](https://developers.cloudflare.com/vectorize/get-started/)
-- [bge-m3 Model Specs](https://huggingface.co/BAAI/bge-m3) (768 dimensions)
+- [bge-m3 Model Specs](https://huggingface.co/BAAI/bge-m3) (1024 dimensions)
 - [Seed Script](../functions/api/lib/seed-help.ts)

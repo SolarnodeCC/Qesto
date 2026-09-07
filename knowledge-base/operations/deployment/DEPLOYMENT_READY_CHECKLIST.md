@@ -137,7 +137,7 @@ node scripts/seed-help-docs.mjs
 
 **This script:**
 - Reads 15 help documents from `functions/api/seed/help-documents.json`
-- Embeds each with bge-m3 (768-dimensional vectors)
+- Embeds each with bge-m3 (1024-dimensional vectors)
 - Inserts documents into D1 `help_documents` table
 - Upserts vectors into `qesto-help` Vectorize index
 

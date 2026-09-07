@@ -114,7 +114,7 @@ Qesto is a real-time interactive session platform (Mentimeter-style) built on Cl
 | **Database** | D1 (SQLite) | — | `DB` | Persistent data |
 | **Cache** | Workers KV | — | `*_KV` (7) | Session state, tokens |
 | **Realtime** | Durable Objects | — | `SessionRoom` | Live WebSocket |
-| **Vector** | Vectorize | 768-d | `DECISIONS_VECTORIZE` | Semantic search |
+| **Vector** | Vectorize | 1024-d (bge-m3, cosine) | `DECISIONS_VECTORIZE` | Semantic search |
 | **AI** | Workers AI | — | Gateway | LLM (Llama 3.3) |
 | **Analytics** | Analytics Engine | — | `EVENTS` | KPI tracking |
 | **Storage** | R2 Bucket | — | `LOGS_BUCKET` | Audit logs |
