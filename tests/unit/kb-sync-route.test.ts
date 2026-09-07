@@ -4,11 +4,14 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import type { KbSyncRecord } from '../../functions/api/types/knowledge-base'
 
-const ADMIN_KEY = 'kb-admin-key-at-least-16-chars'
+// Must satisfy KB_ADMIN_KEY_MIN_LENGTH (32) — the route fails closed on a weak key.
+const ADMIN_KEY = 'kb-admin-key-at-least-32-chars-long'
 
 /** Records every prepare/bind/run/batch so the test can assert what D1 saw. */
 class RecordingD1 {
   readonly statements: Array<{ sql: string; args: unknown[] }> = []
+  /** Rows returned by `.all()`, keyed by an SQL fragment the caller matches. */
+  readonly selectRows = new Map<string, unknown[]>()
 
   prepare(sql: string) {
     const self = this
@@ -21,6 +24,13 @@ class RecordingD1 {
       async run() {
         self.statements.push(entry)
         return { meta: { changes: 1 } }
+      },
+      async all() {
+        self.statements.push(entry)
+        for (const [fragment, rows] of self.selectRows) {
+          if (entry.sql.includes(fragment)) return { results: rows }
+        }
+        return { results: [] }
       },
       __entry: entry,
     }
@@ -47,15 +57,26 @@ class RecordingVectorize {
     this.upserted.push(...batch)
     return { mutationId: 'm', count: batch.length }
   }
-  async deleteByIds() {
-    return { mutationId: 'm', count: 0 }
+  readonly deleted: string[] = []
+  async deleteByIds(ids: string[]) {
+    this.deleted.push(...ids)
+    return { mutationId: 'm', count: ids.length }
   }
 }
 
-function makeEnv(db: RecordingD1, vec: RecordingVectorize): Env {
+/** Captures Analytics Engine datapoints so telemetry can be asserted. */
+class RecordingAE {
+  readonly points: Array<{ blobs: string[]; doubles: number[] }> = []
+  writeDataPoint(p: { blobs: string[]; doubles: number[] }) {
+    this.points.push(p)
+  }
+}
+
+function makeEnv(db: RecordingD1, vec: RecordingVectorize, ae?: RecordingAE): Env {
   return {
     ENV: 'dev',
     KB_ADMIN_KEY: ADMIN_KEY,
+    METRICS_AE: ae as unknown as AnalyticsEngineDataset,
     DB: db as unknown as D1Database,
     KB_VECTORIZE: vec as unknown as VectorizeIndex,
   } as unknown as Env
@@ -152,10 +173,161 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     expect(doc.sql).not.toMatch(/created_at = excluded\.created_at/)
   })
 
+  it('deletes the vectors of chunks a shrinking doc left behind (audit #11)', async () => {
+    const db = new RecordingD1()
+    // The doc used to have 4 chunks; this sync declares chunk_count = 2, so
+    // ADR-040#2 and ADR-040#3 are pruned from D1 — and must go from Vectorize.
+    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [
+      { chunk_id: 'ADR-040#2' },
+      { chunk_id: 'ADR-040#3' },
+    ])
+    const vec = new RecordingVectorize()
+    const env = makeEnv(db, vec)
+
+    const res = await postSync(env, [record('ADR-040', 0, 2), record('ADR-040', 1, 2)])
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { data: Record<string, number> }
+
+    expect(vec.deleted).toEqual(['ADR-040#2', 'ADR-040#3'])
+    expect(json.data.vectors_pruned).toBe(2)
+  })
+
+  it('does not fail the sync when the vector prune errors', async () => {
+    const db = new RecordingD1()
+    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [{ chunk_id: 'ADR-040#2' }])
+    const vec = new RecordingVectorize()
+    vec.deleteByIds = async () => {
+      throw new Error('vectorize unavailable')
+    }
+    const env = makeEnv(db, vec)
+
+    const res = await postSync(env, [record('ADR-040', 0, 2)])
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { data: Record<string, number> }
+    expect(json.data.vectors_pruned).toBe(0)
+    expect(json.data.vectors_upserted).toBe(1)
+  })
+
+  it('keeps D1 consistent with Vectorize when a later batch fails (audit #14)', async () => {
+    const db = new RecordingD1()
+    const vec = new RecordingVectorize()
+    // Fail the second Vectorize batch. The first must still have both its
+    // vectors AND its D1 rows; the second must have neither.
+    let calls = 0
+    const realUpsert = vec.upsert.bind(vec)
+    vec.upsert = async (batch: Array<{ id: string; values: number[]; metadata: unknown }>) => {
+      calls++
+      if (calls === 2) throw new Error('vectorize rejected batch 2')
+      return realUpsert(batch)
+    }
+    const env = makeEnv(db, vec)
+
+    // 150 records => two batches of 100 + 50.
+    const body = Array.from({ length: 150 }, (_, i) => record(`DOC-${i}`, 0, 1))
+    const res = await postSync(env, body)
+
+    // A partial sync must not report success.
+    expect(res.status).toBe(500)
+    const json = (await res.json()) as {
+      error: { code: string }
+      data: Record<string, number>
+    }
+    expect(json.error.code).toBe('sync_partial')
+    expect(json.data.batches_failed).toBe(1)
+
+    // Exactly the first batch landed, in BOTH stores.
+    expect(vec.upserted).toHaveLength(100)
+    expect(json.data.vectors_upserted).toBe(100)
+    expect(db.matching('INSERT INTO kb_chunks')).toHaveLength(100)
+  })
+
+  it('emits one Analytics Engine datapoint per sync run (audit #19)', async () => {
+    const ae = new RecordingAE()
+    const env = makeEnv(new RecordingD1(), new RecordingVectorize(), ae)
+
+    await postSync(env, [record('ADR-040', 0, 2), record('ADR-040', 1, 2)])
+
+    const run = ae.points.find((p) => p.blobs[0] === 'kb_sync.run')
+    expect(run).toBeDefined()
+    // count = vectors upserted, value = failed batches.
+    expect(run?.doubles[1]).toBe(2)
+    expect(run?.doubles[2]).toBe(0)
+    expect(run?.blobs.join(' ')).toContain('chunks=2')
+  })
+
+  it('records the failed-batch count in telemetry on a partial sync (audit #19)', async () => {
+    const ae = new RecordingAE()
+    const vec = new RecordingVectorize()
+    vec.upsert = async () => {
+      throw new Error('vectorize down')
+    }
+    const env = makeEnv(new RecordingD1(), vec, ae)
+
+    await postSync(env, [record('ADR-040', 0, 1)])
+
+    const run = ae.points.find((p) => p.blobs[0] === 'kb_sync.run')
+    expect(run?.doubles[2]).toBe(1)
+  })
+
   it('rejects a wrong admin key with 401', async () => {
     const env = makeEnv(new RecordingD1(), new RecordingVectorize())
     const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': 'wrong' })
     expect(res.status).toBe(401)
+  })
+
+  it('rejects a missing admin-key header with 401', async () => {
+    const env = makeEnv(new RecordingD1(), new RecordingVectorize())
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([record('ADR-040', 0, 1)]),
+      }),
+      env,
+    )
+    expect(res.status).toBe(401)
+  })
+
+  it('fails closed with 503 when KB_ADMIN_KEY is unset', async () => {
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: undefined } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)])
+    expect(res.status).toBe(503)
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('fails closed with 503 on the previously published key, even though it is presented correctly', async () => {
+    const leaked = 'qesto-kb-admin-phase1'
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: leaked } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': leaked })
+    expect(res.status).toBe(503)
+    const json = (await res.json()) as { error: { code: string } }
+    expect(json.error.code).toBe('kb_admin_key_weak')
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('fails closed with 503 on a too-short key', async () => {
+    const short = 'short-key-123'
+    const vec = new RecordingVectorize()
+    const env = { ...makeEnv(new RecordingD1(), vec), KB_ADMIN_KEY: short } as unknown as Env
+    const res = await postSync(env, [record('ADR-040', 0, 1)], { 'x-admin-key': short })
+    expect(res.status).toBe(503)
+    expect(vec.upserted).toHaveLength(0)
+  })
+
+  it('guards kb-sync-delete with the same key policy', async () => {
+    const leaked = 'qesto-kb-admin-phase1'
+    const env = { ...makeEnv(new RecordingD1(), new RecordingVectorize()), KB_ADMIN_KEY: leaked } as unknown as Env
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': leaked },
+        body: JSON.stringify({ vector_ids: ['ADR-040#0'] }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(503)
   })
 
   it('still upserts vectors for legacy vector-only records (no D1 writes)', async () => {

@@ -21,10 +21,23 @@ export type SimilarSession = { title: string; score: number }
 /**
  * Embed title + snippet of open answers; query Vectorize for similar past sessions.
  *
- * Tenant safety (REV-27): `similarSessionTitles` only ever feeds the AI prompt.
- * The user-visible `similarSessions` list is populated ONLY when `teamId` is
- * provided, in which case the query is metadata-filtered to that team — titles
- * from other tenants can never surface in a response payload.
+ * Tenant safety (REV-27, tightened by audit #3): `qesto-decisions` holds one
+ * vector per closed session across ALL tenants. The similarity query therefore
+ * runs ONLY when a `teamId` scopes it. Without one the query is skipped
+ * entirely — previously it ran unfiltered and the resulting foreign session
+ * titles were fed to the insights prompt as "Similar past sessions for
+ * additional context". Prompt input is still disclosure: nothing stops the
+ * model from echoing a title into a generated theme.
+ *
+ * Two layers enforce the scope, because a Vectorize metadata filter only works
+ * when a metadata index exists on the property (and such indexes are not
+ * retroactive — see audit #13):
+ *   1. `filter: { team_id }` on the query — cheap, server-side.
+ *   2. A post-query check that every match actually carries that `team_id` —
+ *      authoritative, and correct even if the index is missing.
+ *
+ * The embedding is still produced when `teamId` is absent: callers reuse it for
+ * `upsertInsightsSessionVector`, which is a write and carries no leak.
  */
 export async function embedAndFindSimilarSessionTitles(
   env: InsightsVectorizeBindings,
@@ -42,11 +55,18 @@ export async function embedAndFindSimilarSessionTitles(
     return { similarSessionTitles: [], similarSessions: [] }
   }
 
+  // No tenant scope ⇒ no cross-tenant read. The vector is still returned so the
+  // caller can reuse it for the upsert.
+  const teamId = params.teamId
+  if (!teamId) {
+    return { vector, similarSessionTitles: [], similarSessions: [] }
+  }
+
   const matches = (
     await queryVectors(
       env.DECISIONS_VECTORIZE,
       vector,
-      { topK: DECISIONS_SIMILARITY_TOP_K, ...(params.teamId ? { filter: { team_id: params.teamId } } : {}) },
+      { topK: DECISIONS_SIMILARITY_TOP_K, filter: { team_id: teamId } },
       DECISIONS_VECTORIZE_TIMEOUT_MS,
       'Decision similarity query',
     )
@@ -56,10 +76,10 @@ export async function embedAndFindSimilarSessionTitles(
   for (const match of matches) {
     const meta = match.metadata as Record<string, string> | undefined
     if (!meta?.title) continue
+    // Defence in depth: never trust the server-side filter alone.
+    if (meta.team_id !== teamId) continue
     similarSessionTitles.push(meta.title)
-    if (params.teamId) {
-      similarSessions.push({ title: meta.title, score: match.score ?? 0 })
-    }
+    similarSessions.push({ title: meta.title, score: match.score ?? 0 })
   }
   return { vector, similarSessionTitles, similarSessions }
 }

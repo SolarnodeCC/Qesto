@@ -617,7 +617,7 @@ Response:
 
 ```
 Index: qesto-decisions
-Dimensions: 768-d (Mistral embedding model)
+Dimensions: 1024-d (`@cf/baai/bge-m3`)
 Metric: cosine similarity
 Binding: DECISIONS_VECTORIZE
 ```
@@ -625,10 +625,10 @@ Binding: DECISIONS_VECTORIZE
 ### Embed Decision
 
 ```typescript
-// Pseudocode — use official Workers AI embedding model → number[768] per Vectorize index
+// Pseudocode — use official Workers AI embedding model → number[1024] per Vectorize index
 async function embedDecision(decision: Decision, env: Env) {
   const text = `${decision.selectedOption} ${decision.motivation ?? ''}`
-  const vector: number[] = await runEmbeddingModel(env.AI, text) // 768 dims
+  const vector: number[] = await runEmbeddingModel(env.AI, text) // 1024 dims
   await env.DECISIONS_VECTORIZE.insert([{
     id: decision.id,
     values: vector,
@@ -690,7 +690,7 @@ APP_URL = "https://qesto.com"
 2. “OAuth bug” → **Authentication Flows** + [[SPEC_BACKEND.md]] §1 verbs.  
 3. “AI quota” → **Rate Limiting** + [[SPEC_CORE.md#critical-constraints-hard-rules]].  
 
-**Checklist:** No Node `crypto` snippets as prod code • OAuth **POST** init • embedding model matches **768** dims • Slack path matches parameterized integrations table.
+**Checklist:** No Node `crypto` snippets as prod code • OAuth **POST** init • embedding model matches **1024** dims • Slack path matches parameterized integrations table.
 
 ---
 

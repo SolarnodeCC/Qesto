@@ -126,7 +126,7 @@ _Last verified: 2026-04-06 (UTC)_
 ## 7. Knowledge-base semantic search (ADR-040 Phase 2)
 
 Mounted under `/api/knowledge-base` in `functions/api/routes/knowledge-base.ts`.
-Backed by the `KB_VECTORIZE` index (768-d, cosine, `@cf/baai/bge-m3`) +
+Backed by the `KB_VECTORIZE` index (1024-d, cosine, `@cf/baai/bge-m3`) +
 `kb_documents` / `kb_chunks` in D1.
 
 ### POST /api/knowledge-base/search

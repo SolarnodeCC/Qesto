@@ -3,7 +3,8 @@
 // Pipeline (ADR-040 §2.5):
 //   1. validate(query) — reject empty / oversize early
 //   2. embed(query)   — Workers AI bge-m3 (3s timeout, degrade to []`)
-//   3. queryVector()  — Vectorize.query with topK = limit * 3 + filters
+//   3. queryVector()  — Vectorize.query with topK = min(limit * 3, 50) + filters
+//   3b. floor()       — drop matches under KB_MIN_SIMILARITY (raw cosine)
 //   4. dedupByDoc()   — keep highest-scoring chunk per doc_id
 //   5. hydrate()      — batch JOIN kb_chunks/kb_documents
 //   6. rerank()       — 0.7 cosine + 0.15 tag-overlap + 0.15 domain-match
@@ -32,6 +33,28 @@ export const KB_EMBED_TIMEOUT_MS = 3_000
 export const KB_DEFAULT_LIMIT = 5
 export const KB_MAX_LIMIT = 20
 export const KB_DEDUPE_MULTIPLIER = 3
+/**
+ * Cloudflare caps topK at 50 when the query returns values or full metadata,
+ * and kbVectorRepository always asks for `returnMetadata: 'all'`. Without this
+ * clamp, `limit * KB_DEDUPE_MULTIPLIER` exceeds the cap from limit 17 upwards
+ * (KB_MAX_LIMIT 20 → 60) and Vectorize rejects the query — which this service
+ * swallows into `return []`, so the caller silently gets no results at all.
+ * https://developers.cloudflare.com/vectorize/platform/limits/
+ */
+export const KB_VECTORIZE_MAX_TOPK = 50
+/**
+ * Minimum RAW cosine similarity a match must clear to be returned at all.
+ *
+ * Vectorize returns cosine in [-1, 1] (1 identical, 0 orthogonal, -1 opposite).
+ * Everything below this floor is unrelated text. Without it, an orthogonal
+ * chunk still surfaced: the [0,1] rescale below maps cosine 0 to 0.5, which the
+ * re-rank turns into 0.35 and getRagContext prints as "confidence: 35%" next to
+ * a citation. The sibling pipelines already floor their matches
+ * (HELP_SIMILARITY_MIN_SCORE 0.70, DECISIONS_SIMILARITY_MIN_SCORE 0.75); KB
+ * search is a broader retrieval surface with a re-rank behind it, so the floor
+ * is deliberately permissive — it removes noise, it does not tune relevance.
+ */
+export const KB_MIN_SIMILARITY = 0.3
 export const KB_DEFAULT_STATUS: KbStatus = 'accepted'
 export const KB_CHUNK_PREVIEW_CHARS = 240
 
@@ -189,14 +212,15 @@ export class KbSearchService {
       throw new KbSearchError('embedding_failed', (err as Error).message ?? 'embedding failed', err)
     }
 
-    // 2. Vector search. We over-fetch (limit * 3) to leave headroom for
+    // 2. Vector search. We over-fetch (limit * 3, capped at the Vectorize
+    //    metadata topK ceiling) to leave headroom for
     //    dedup-by-doc collapse. Vectorize failures are logged and treated
     //    as zero-result so the route can return an empty list (ADR-040
     //    requirement: search degrades gracefully).
     let matches: KbVectorMatch[]
     try {
       matches = await this.repo.queryVector(vector, {
-        topK: limit * KB_DEDUPE_MULTIPLIER,
+        topK: Math.min(limit * KB_DEDUPE_MULTIPLIER, KB_VECTORIZE_MAX_TOPK),
         filter,
       })
     } catch (err) {
@@ -205,8 +229,14 @@ export class KbSearchService {
     }
     if (matches.length === 0) return []
 
+    // 2b. Drop weak matches before anything else can present them as a source.
+    //     The score here is the RAW Vectorize cosine, matching how
+    //     help-vectorize and insights-vectorize apply their own floors.
+    const relevant = matches.filter((m) => m.score >= KB_MIN_SIMILARITY)
+    if (relevant.length === 0) return []
+
     // 3. Dedupe by doc_id, preserving best score per doc.
-    const dedup = dedupByDoc(matches)
+    const dedup = dedupByDoc(relevant)
     if (dedup.length === 0) return []
 
     // 4. Batch hydrate from D1.
@@ -218,7 +248,8 @@ export class KbSearchService {
       const chunk: KbHydratedChunk | undefined = hydrated.get(match.id)
       if (!chunk) continue // eventually-consistent gap; skip
 
-      // Cosine from Vectorize on a bge-m3 cosine index is already in [-1, 1].
+      // Cosine from Vectorize on a cosine index is in [-1, 1] — "-1 (most
+      // dissimilar) to 1 (identical), 0 denotes an orthogonal vector".
       // Clamp + rescale to [0, 1] to make weighting predictable.
       const cosine = Math.max(0, Math.min(1, (match.score + 1) / 2))
       const tagOverlap = tagOverlapRatio(req.tags, chunk.tags)

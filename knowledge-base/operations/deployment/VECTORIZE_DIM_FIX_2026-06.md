@@ -12,6 +12,29 @@ relates_to: [KB_SYNC_PHASE5_ENHANCEMENTS, AGENT_SYSTEM_OVERVIEW]
 
 # Vectorize dimension fix — qesto-help & qesto-decisions (768 → 1024)
 
+> **⚠ STATUS 2026-09-07 — the operator runbook below is NOT VERIFIED as executed.**
+>
+> The code changes landed. The verification step (`npm run kb:health` with live
+> credentials) has never succeeded in CI: the `CLOUDFLARE_API_TOKEN` repository
+> secret is empty, so both `vectorize-health` and `kb-sync-on-merge` fail within
+> seconds, and the "successful" health runs before that were green only because
+> the remote block was skipped for the same reason.
+>
+> **Nobody has read the live dimensions of `qesto-help` or `qesto-decisions`.**
+> If steps 1-2 were never run, both indexes are still 768-dim, every embedding
+> is rejected by the dimension guard, and the help assistant plus
+> decision-similarity return zero results with no error — exactly the
+> fail-closed behaviour described under "Problem" below.
+>
+> Resolve by restoring the secret and running:
+> ```bash
+> npx wrangler vectorize get qesto-help
+> npx wrangler vectorize get qesto-decisions
+> npm run kb:health -- --require-remote
+> ```
+> Then update this note with the observed values. Until then, treat the
+> dimension of these two indexes as UNKNOWN rather than fixed.
+
 ## Problem
 `qesto-help` and `qesto-decisions` were created as **768-dim** indexes, and their
 code declared `HELP_EMBED_DIM = 768` / `DECISIONS_EMBED_DIM = 768`. But both embed

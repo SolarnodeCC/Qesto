@@ -19,7 +19,10 @@ import {
   KB_DEFAULT_LIMIT,
   KB_EMBED_DIM,
   KB_EMBED_MODEL,
+  KB_MAX_LIMIT,
+  KB_MIN_SIMILARITY,
   KB_RERANK_WEIGHTS,
+  KB_VECTORIZE_MAX_TOPK,
   KbSearchError,
   KbSearchService,
   __internal,
@@ -374,6 +377,59 @@ describe('KbSearchService.search', () => {
     await service.search({ query: 'q', limit: 5 })
     const callOpts = queryMock.mock.calls[0][1] as { topK?: number }
     expect(callOpts.topK).toBe(15)
+  })
+
+  it('drops matches below the similarity floor before they can be cited (audit #10)', async () => {
+    const repo = makeRepo(
+      [
+        fakeMatch('good#0', 0.82, { doc_id: 'good' }),
+        // Orthogonal: rescales to 0.5, re-ranks to 0.35, and used to be
+        // rendered as "confidence: 35%" next to a real citation.
+        fakeMatch('noise#0', 0.0, { doc_id: 'noise' }),
+        fakeMatch('opposite#0', -0.4, { doc_id: 'opposite' }),
+      ],
+      {
+        'good#0': hydrated('good#0'),
+        'noise#0': hydrated('noise#0'),
+        'opposite#0': hydrated('opposite#0'),
+      },
+    )
+    const service = new KbSearchService(repo, makeAi())
+
+    const hits = await service.search({ query: 'q', limit: 5 })
+
+    expect(hits.map((h) => h.doc_id)).toEqual(['good'])
+  })
+
+  it('returns an empty result when every match is under the floor (audit #10)', async () => {
+    const repo = makeRepo([fakeMatch('noise#0', 0.1, { doc_id: 'noise' })])
+    const hydrateSpy = vi.spyOn(repo, 'hydrateChunks')
+    const service = new KbSearchService(repo, makeAi())
+
+    const hits = await service.search({ query: 'q', limit: 5 })
+
+    expect(hits).toEqual([])
+    // Nothing cleared the floor, so D1 is never touched.
+    expect(hydrateSpy).not.toHaveBeenCalled()
+  })
+
+  it('keeps the floor permissive enough not to gut recall (audit #10)', () => {
+    expect(KB_MIN_SIMILARITY).toBeGreaterThan(0)
+    expect(KB_MIN_SIMILARITY).toBeLessThan(0.7)
+  })
+
+  it('clamps topK to the Vectorize metadata ceiling at high limits (audit #7)', async () => {
+    const repo = makeRepo([])
+    const queryMock = repo['vectorize'].query as unknown as ReturnType<typeof vi.fn>
+    const service = new KbSearchService(repo, makeAi())
+
+    // limit 20 * 3 = 60, above the documented cap of 50 for a query that asks
+    // for metadata. Sending 60 makes Vectorize reject the query outright, and
+    // the service turns that into an empty result set.
+    await service.search({ query: 'q', limit: KB_MAX_LIMIT })
+    const callOpts = queryMock.mock.calls[0][1] as { topK?: number }
+    expect(callOpts.topK).toBe(KB_VECTORIZE_MAX_TOPK)
+    expect(callOpts.topK).toBeLessThanOrEqual(50)
   })
 })
 

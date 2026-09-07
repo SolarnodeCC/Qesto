@@ -22,7 +22,10 @@ describe('qesto-help is help-docs-only (one-directional KB ⊇ help)', () => {
 
   it('the help sync is the writer for the qesto-help index', () => {
     expect(helpSync).toMatch(/INDEX_NAME\s*=\s*['"]qesto-help['"]/)
-    expect(helpSync).toMatch(/vectorize\/indexes\/\$\{INDEX_NAME\}/)
+    // v2 API path (audit #15) — the v1 `/vectorize/indexes/` form does not
+    // serve a v2 index.
+    expect(helpSync).toMatch(/vectorize\/v2\/indexes\/\$\{INDEX_NAME\}/)
+    expect(helpSync).not.toMatch(/vectorize\/indexes\/\$\{INDEX_NAME\}/)
   })
 
   it('the KB index writer (embed-kb) never writes to qesto-help', () => {

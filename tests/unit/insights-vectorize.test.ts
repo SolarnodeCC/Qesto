@@ -10,8 +10,9 @@ import {
 const vector = Array.from({ length: DECISIONS_EMBED_DIM }, (_, i) => i / DECISIONS_EMBED_DIM)
 
 describe('insights-vectorize', () => {
-  it('embeds response context and returns similar session titles', async () => {
+  it('embeds but never queries when no teamId scopes the request (audit #3)', async () => {
     const calls: string[] = []
+    let queried = false
     const env = {
       AI: {
         run: async (model: string) => {
@@ -20,15 +21,10 @@ describe('insights-vectorize', () => {
         },
       },
       DECISIONS_VECTORIZE: {
-        query: async (values: number[], opts: { topK: number; returnMetadata: string }) => {
-          expect(values).toBe(vector)
-          expect(opts.topK).toBe(DECISIONS_SIMILARITY_TOP_K)
+        query: async () => {
+          queried = true
           return {
-            matches: [
-              { id: 'current-session', score: 0.99, metadata: { title: 'Current' } },
-              { id: 'similar-session', score: 0.91, metadata: { title: 'Similar retro' } },
-              { id: 'weak-session', score: 0.2, metadata: { title: 'Weak match' } },
-            ],
+            matches: [{ id: 'other-tenant-session', score: 0.91, metadata: { title: 'Acme pricing retro' } }],
           }
         },
       },
@@ -40,11 +36,41 @@ describe('insights-vectorize', () => {
       openResponses: ['CI is slow', 'Standups help'],
     })
 
+    // qesto-decisions is cross-tenant: an unscoped query would put another
+    // team's session titles into the insights prompt.
+    expect(queried).toBe(false)
+    expect(result.similarSessionTitles).toEqual([])
+    expect(result.similarSessions).toEqual([])
+    // The embedding is still produced — the caller reuses it for the upsert.
     expect(calls).toEqual([DECISIONS_EMBED_MODEL])
     expect(result.vector).toBe(vector)
-    expect(result.similarSessionTitles).toEqual(['Similar retro'])
-    // No teamId ⇒ nothing surfaces to users (prompt-only titles).
-    expect(result.similarSessions).toEqual([])
+  })
+
+  it('drops matches whose team_id does not match, even if Vectorize returned them (audit #3)', async () => {
+    const env = {
+      AI: { run: async () => ({ data: [vector] }) },
+      DECISIONS_VECTORIZE: {
+        // Simulates a missing metadata index: the filter is accepted but not
+        // honoured, so foreign rows come back anyway.
+        query: async () => ({
+          matches: [
+            { id: 'ours', score: 0.91, metadata: { title: 'Our retro', team_id: 'team-1' } },
+            { id: 'theirs', score: 0.95, metadata: { title: 'Acme pricing retro', team_id: 'team-2' } },
+            { id: 'untagged', score: 0.93, metadata: { title: 'Legacy session' } },
+          ],
+        }),
+      },
+    } as unknown as Parameters<typeof embedAndFindSimilarSessionTitles>[0]
+
+    const result = await embedAndFindSimilarSessionTitles(env, {
+      sessionId: 'current-session',
+      sessionTitle: 'Retro',
+      openResponses: ['CI is slow'],
+      teamId: 'team-1',
+    })
+
+    expect(result.similarSessionTitles).toEqual(['Our retro'])
+    expect(result.similarSessions).toEqual([{ title: 'Our retro', score: 0.91 }])
   })
 
   it('team-filters the query and surfaces scored matches when teamId is set (REV-27)', async () => {
@@ -73,6 +99,7 @@ describe('insights-vectorize', () => {
     // Tenant safety: the Vectorize query MUST carry the team filter whenever
     // results can become user-visible.
     expect(queryOpts?.filter).toEqual({ team_id: 'team-1' })
+    expect(queryOpts?.topK).toBe(DECISIONS_SIMILARITY_TOP_K)
     expect(result.similarSessions).toEqual([{ title: 'Similar retro', score: 0.91 }])
   })
 

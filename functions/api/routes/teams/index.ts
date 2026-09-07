@@ -33,6 +33,7 @@ import { writeEvent } from '../../lib/observability'
 import { denyFeature, featureAllowed } from '../../lib/entitlements'
 import { patchAuthzSchemaIfNeeded } from '../../lib/authz'
 import { recordAuditEvent } from '../../lib/audit'
+import { deleteTeamSessionVectors } from '../../lib/session-delete'
 import { readKvText, writeKvText, deleteKv } from '../../lib/kv'
 import { validateBody } from '../../lib/request-validation'
 import { validateKvJson, TeamInviteTokenSchema } from '../../lib/protocol-schemas'
@@ -269,6 +270,10 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         403,
       )
     }
+    // Purge the team's decision vectors before the team document goes away
+    // (audit #12). Best-effort by contract — never blocks the delete.
+    const vectorsPurged = await deleteTeamSessionVectors(c.env.DB, c.env.DECISIONS_VECTORIZE, team.id)
+
     await deleteKv(c.env.TEAMS_KV, teamDocumentKey(team.id))
     for (const m of team.members) {
       await removeUserTeam(c.env.TEAMS_KV, m.userId, team.id)
@@ -277,7 +282,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       action: 'team.delete',
       subject_type: 'team',
       subject_id: team.id,
-      before_snapshot: { name: team.name, ownerId: team.ownerId },
+      before_snapshot: { name: team.name, ownerId: team.ownerId, vectorsPurged },
     })
     return c.json({ ok: true, data: { deleted: true }, trace_id: c.get('trace_id') })
   })
