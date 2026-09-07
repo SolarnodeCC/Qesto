@@ -53,7 +53,7 @@ export CLOUDFLARE_ACCOUNT_ID="..."
 export CLOUDFLARE_D1_DATABASE_ID="..."
 export CF_ACCESS_CLIENT_ID="..."
 export CF_ACCESS_CLIENT_SECRET="..."
-export KB_ADMIN_KEY="<KB_ADMIN_KEY>"
+export KB_ADMIN_KEY="<from: wrangler pages secret / GitHub secret KB_ADMIN_KEY>"
 ```
 
 ### Basic Usage
@@ -175,7 +175,7 @@ export CLOUDFLARE_ACCOUNT_ID="5546763229b35df670e33d9316d7f2e0"
 export CLOUDFLARE_D1_DATABASE_ID="d391bdd5-a03d-41bc-bc45-6b5f3bac1b1b"
 export CF_ACCESS_CLIENT_ID="<CF_ACCESS_CLIENT_ID>"
 export CF_ACCESS_CLIENT_SECRET="<CF_ACCESS_CLIENT_SECRET>"
-export KB_ADMIN_KEY="<KB_ADMIN_KEY>"
+export KB_ADMIN_KEY="<from: wrangler pages secret / GitHub secret KB_ADMIN_KEY>"
 
 npm run kb:sync
 ```
@@ -386,7 +386,7 @@ wrangler vectorize list
 
 # 3. Query the index (use admin-only endpoint)
 curl 'https://qesto-api.oostelaar.workers.dev/api/admin/kb-search?q=test' \
-  -H "x-admin-key: <KB_ADMIN_KEY>"
+  -H "x-admin-key: $KB_ADMIN_KEY"
 ```
 
 ### Manifest Out of Sync
