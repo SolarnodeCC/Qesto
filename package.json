@@ -67,7 +67,8 @@
     "check:no-any": "node scripts/check-no-any.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
-    "cap:android": "npx cap open android"
+    "cap:android": "npx cap open android",
+    "vectorize:metadata": "npx tsx scripts/vectorize-metadata-indexes.ts"
   },
   "dependencies": {
     "@capacitor/app": "^7.0.1",
