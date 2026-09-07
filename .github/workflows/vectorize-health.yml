@@ -15,6 +15,8 @@ on:
 
 permissions:
   contents: read
+  actions: read   # read prior run artifacts to restore the sync manifest
+  issues: write   # open/update the failure issue below
 
 concurrency:
   group: vectorize-health
@@ -36,8 +38,67 @@ jobs:
 
       # Delegated to ops/ci/ so the lane is reproducible locally and cannot
       # drift from the workflow (issue #688, HLT-042-CI-LOCAL-PARITY).
+      # Without the manifest this lane reports "Files tracked in manifest : 0"
+      # and skips its own corpus-completeness gate — which is exactly what the
+      # historical "successful" runs did (audit #2). Restore it from the last
+      # successful kb-sync run, the same way kb-sync-on-merge does.
+      - name: Restore sync manifest from the last KB sync
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh run list --workflow kb-sync-on-merge.yml --branch main \
+            --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+          if [ -n "$run_id" ]; then
+            gh run download "$run_id" -n kb-sync-manifest --dir . \
+              || echo "No manifest artifact on run $run_id — corpus gate will be skipped."
+          else
+            echo "No previous successful kb-sync run — corpus gate will be skipped."
+          fi
+
       - name: Vectorize health (live dimensions + counts)
         run: bash ops/ci/vectorize-health.sh
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Both previous alert paths were dead: the PR-comment step gates on
+      # `github.event_name == 'pull_request'` while this workflow runs on
+      # push/schedule, and the Slack step gates on a SLACK_WEBHOOK_URL secret
+      # that is not set. A failure therefore reached nobody (audit #1/#2).
+      # A GitHub issue needs no external secret. Reuses one open issue per lane
+      # so repeated failures update instead of spamming.
+      - name: Open or update a failure issue
+        if: failure()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const title = 'Vectorize health lane is failing'
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const body = [
+              `The **${context.workflow}** lane failed on \`${context.sha}\`.`,
+              '',
+              `- Run: ${runUrl}`,
+              `- Branch: \`${context.ref}\``,
+              '',
+              'The KB vector index may be unsynced, empty, stale, or dimensionally',
+              'mismatched with the embedding model. A common cause is a missing or',
+              'expired `CLOUDFLARE_API_TOKEN` repository secret — the lane needs it to',
+              'reach the live indexes and fails within seconds without it.',
+            ].join('\n')
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'vectorize-health', per_page: 20,
+            })
+            const match = existing.data.find((i) => i.title === title)
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, body,
+              })
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['vectorize-health'],
+              })
+            }
