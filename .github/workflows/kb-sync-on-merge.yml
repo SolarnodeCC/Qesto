@@ -18,7 +18,13 @@ permissions:
 
 concurrency:
   group: kb-sync-${{ github.ref }}
-  cancel-in-progress: true
+  # NOT cancel-in-progress (audit #18): a sync writes Vectorize and D1 in
+  # batches, and the manifest artifact is only uploaded at the end. Cancelling
+  # a run mid-flight leaves the index partially written with no record of what
+  # landed, and the next run restores the manifest from the last *successful*
+  # run — so the interrupted work is invisible to it. Queueing costs a few
+  # minutes; cancelling costs index integrity.
+  cancel-in-progress: false
 
 jobs:
   kb-sync:
