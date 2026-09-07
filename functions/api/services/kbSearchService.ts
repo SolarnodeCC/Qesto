@@ -3,7 +3,7 @@
 // Pipeline (ADR-040 §2.5):
 //   1. validate(query) — reject empty / oversize early
 //   2. embed(query)   — Workers AI bge-m3 (3s timeout, degrade to []`)
-//   3. queryVector()  — Vectorize.query with topK = limit * 3 + filters
+//   3. queryVector()  — Vectorize.query with topK = min(limit * 3, 50) + filters
 //   4. dedupByDoc()   — keep highest-scoring chunk per doc_id
 //   5. hydrate()      — batch JOIN kb_chunks/kb_documents
 //   6. rerank()       — 0.7 cosine + 0.15 tag-overlap + 0.15 domain-match
@@ -32,6 +32,15 @@ export const KB_EMBED_TIMEOUT_MS = 3_000
 export const KB_DEFAULT_LIMIT = 5
 export const KB_MAX_LIMIT = 20
 export const KB_DEDUPE_MULTIPLIER = 3
+/**
+ * Cloudflare caps topK at 50 when the query returns values or full metadata,
+ * and kbVectorRepository always asks for `returnMetadata: 'all'`. Without this
+ * clamp, `limit * KB_DEDUPE_MULTIPLIER` exceeds the cap from limit 17 upwards
+ * (KB_MAX_LIMIT 20 → 60) and Vectorize rejects the query — which this service
+ * swallows into `return []`, so the caller silently gets no results at all.
+ * https://developers.cloudflare.com/vectorize/platform/limits/
+ */
+export const KB_VECTORIZE_MAX_TOPK = 50
 export const KB_DEFAULT_STATUS: KbStatus = 'accepted'
 export const KB_CHUNK_PREVIEW_CHARS = 240
 
@@ -189,14 +198,15 @@ export class KbSearchService {
       throw new KbSearchError('embedding_failed', (err as Error).message ?? 'embedding failed', err)
     }
 
-    // 2. Vector search. We over-fetch (limit * 3) to leave headroom for
+    // 2. Vector search. We over-fetch (limit * 3, capped at the Vectorize
+    //    metadata topK ceiling) to leave headroom for
     //    dedup-by-doc collapse. Vectorize failures are logged and treated
     //    as zero-result so the route can return an empty list (ADR-040
     //    requirement: search degrades gracefully).
     let matches: KbVectorMatch[]
     try {
       matches = await this.repo.queryVector(vector, {
-        topK: limit * KB_DEDUPE_MULTIPLIER,
+        topK: Math.min(limit * KB_DEDUPE_MULTIPLIER, KB_VECTORIZE_MAX_TOPK),
         filter,
       })
     } catch (err) {

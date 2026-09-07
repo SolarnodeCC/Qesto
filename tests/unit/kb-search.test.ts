@@ -19,7 +19,9 @@ import {
   KB_DEFAULT_LIMIT,
   KB_EMBED_DIM,
   KB_EMBED_MODEL,
+  KB_MAX_LIMIT,
   KB_RERANK_WEIGHTS,
+  KB_VECTORIZE_MAX_TOPK,
   KbSearchError,
   KbSearchService,
   __internal,
@@ -374,6 +376,20 @@ describe('KbSearchService.search', () => {
     await service.search({ query: 'q', limit: 5 })
     const callOpts = queryMock.mock.calls[0][1] as { topK?: number }
     expect(callOpts.topK).toBe(15)
+  })
+
+  it('clamps topK to the Vectorize metadata ceiling at high limits (audit #7)', async () => {
+    const repo = makeRepo([])
+    const queryMock = repo['vectorize'].query as unknown as ReturnType<typeof vi.fn>
+    const service = new KbSearchService(repo, makeAi())
+
+    // limit 20 * 3 = 60, above the documented cap of 50 for a query that asks
+    // for metadata. Sending 60 makes Vectorize reject the query outright, and
+    // the service turns that into an empty result set.
+    await service.search({ query: 'q', limit: KB_MAX_LIMIT })
+    const callOpts = queryMock.mock.calls[0][1] as { topK?: number }
+    expect(callOpts.topK).toBe(KB_VECTORIZE_MAX_TOPK)
+    expect(callOpts.topK).toBeLessThanOrEqual(50)
   })
 })
 
