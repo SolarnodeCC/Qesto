@@ -27,13 +27,15 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import { fileURLToPath } from 'url'
 import { z } from 'zod'
+import { BGE_M3_MODEL, BGE_M3_EMBED_DIM, workersAiRunUrl } from '../functions/api/lib/embedding-model'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const MANIFEST_FILE = '.help-sync-manifest.json'
 const SEED_FILE = path.join(__dirname, '../functions/api/seed/help-documents.json')
 const INDEX_NAME = 'qesto-help'
-const EMBED_DIM = 1024 // bge-m3 — must match the qesto-help index (see VECTORIZE_DIM_FIX_2026-06)
+// Single source of truth — must match the qesto-help index (see VECTORIZE_DIM_FIX_2026-06).
+const EMBED_DIM = BGE_M3_EMBED_DIM
 
 interface HelpChunk {
   id: string
@@ -95,7 +97,8 @@ function cfEnv() {
 
 async function embedWithCF(text: string): Promise<number[]> {
   const { apiToken, accountId } = cfEnv()
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/baai/bge-m3`
+  // Routed through AI Gateway when configured (audit #20).
+  const url = workersAiRunUrl(accountId, BGE_M3_MODEL, process.env.CLOUDFLARE_AI_GATEWAY_ID)
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
