@@ -311,50 +311,68 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
     try {
       const batchSize = 100
       let totalUpserted = 0
-
-      // Vectorize only accepts {id, values, metadata}; strip the D1-only fields
-      // (document/chunk) that travel in the same record.
-      for (let i = 0; i < validVectors.length; i += batchSize) {
-        const batch = validVectors.slice(i, i + batchSize)
-        const vectorBatch = batch.map((r) => ({
-          id: r.id,
-          values: r.values,
-          metadata: r.metadata,
-        }))
-        await c.env.KB_VECTORIZE.upsert(vectorBatch as VectorizeVector[])
-        totalUpserted += batch.length
-      }
-
-      // Persist the D1 side (kb_documents + kb_chunks) so search can hydrate.
-      // Records without document/chunk fields (legacy vector-only payloads) are
-      // skipped by writeD1Rows, preserving backward compatibility.
       let documentsUpserted = 0
       let chunksUpserted = 0
       let vectorsPruned = 0
-      if (c.env.DB) {
-        const d1 = await writeD1Rows(c.env.DB, validVectors)
-        documentsUpserted = d1.documentsUpserted
-        chunksUpserted = d1.chunksUpserted
+      const prunedVectorIds: string[] = []
+      let batchesFailed = 0
+      let firstError: unknown
 
-        // A doc that shrank (10 chunks -> 4) leaves DOC#4..DOC#9 in Vectorize
-        // forever. Those orphans still match queries, occupy topK slots, and
-        // then vanish during hydration because D1 no longer has the row — so
-        // they silently displace real results (audit #11). Best-effort: a
-        // failed prune must not fail an otherwise successful sync; the next
-        // sync recomputes the same ids from D1.
-        if (d1.prunedVectorIds.length > 0) {
-          try {
-            for (let i = 0; i < d1.prunedVectorIds.length; i += batchSize) {
-              await c.env.KB_VECTORIZE.deleteByIds(d1.prunedVectorIds.slice(i, i + batchSize))
-            }
-            vectorsPruned = d1.prunedVectorIds.length
-          } catch (pruneErr) {
-            safeLogContext(pruneErr, {
-              traceId,
-              route: '[admin] kb-sync/prune-vectors',
-              errorClass: pruneErr instanceof Error ? pruneErr.name : 'UnknownError',
-            })
+      // Each batch writes BOTH stores before the next one starts (audit #14).
+      // Previously every Vectorize batch was upserted first and D1 was written
+      // once at the end, so a failure in batch 3 of 10 left batches 1-2 in the
+      // index with no D1 rows at all — vectors that match queries, occupy topK
+      // slots, and then vanish during hydration.
+      //
+      // Vectorize only accepts {id, values, metadata}; strip the D1-only fields
+      // (document/chunk) that travel in the same record. Records without those
+      // fields (legacy vector-only payloads) are skipped by writeD1Rows,
+      // preserving backward compatibility.
+      for (let i = 0; i < validVectors.length; i += batchSize) {
+        const batch = validVectors.slice(i, i + batchSize)
+        try {
+          await c.env.KB_VECTORIZE.upsert(
+            batch.map((r) => ({ id: r.id, values: r.values, metadata: r.metadata })) as VectorizeVector[],
+          )
+          totalUpserted += batch.length
+
+          if (c.env.DB) {
+            const d1 = await writeD1Rows(c.env.DB, batch)
+            documentsUpserted += d1.documentsUpserted
+            chunksUpserted += d1.chunksUpserted
+            prunedVectorIds.push(...d1.prunedVectorIds)
           }
+        } catch (batchErr) {
+          // Keep going: one bad batch should not discard the batches that
+          // already landed consistently, and the response reports the count.
+          batchesFailed++
+          if (firstError === undefined) firstError = batchErr
+          safeLogContext(batchErr, {
+            traceId,
+            route: '[admin] kb-sync/upsert-batch',
+            errorClass: batchErr instanceof Error ? batchErr.name : 'UnknownError',
+          })
+        }
+      }
+
+      // A doc that shrank (10 chunks -> 4) leaves DOC#4..DOC#9 in Vectorize
+      // forever. Those orphans still match queries, occupy topK slots, and then
+      // vanish during hydration because D1 no longer has the row — so they
+      // silently displace real results (audit #11). Best-effort: a failed prune
+      // must not fail an otherwise successful sync; the next sync recomputes
+      // the same ids from D1.
+      if (prunedVectorIds.length > 0) {
+        try {
+          for (let i = 0; i < prunedVectorIds.length; i += batchSize) {
+            await c.env.KB_VECTORIZE.deleteByIds(prunedVectorIds.slice(i, i + batchSize))
+          }
+          vectorsPruned = prunedVectorIds.length
+        } catch (pruneErr) {
+          safeLogContext(pruneErr, {
+            traceId,
+            route: '[admin] kb-sync/prune-vectors',
+            errorClass: pruneErr instanceof Error ? pruneErr.name : 'UnknownError',
+          })
         }
       }
 
@@ -365,7 +383,33 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
           vectors_upserted: totalUpserted,
           documents_upserted: documentsUpserted,
           chunks_upserted: chunksUpserted,
+          batches_failed: batchesFailed,
         })
+      }
+
+      // A partial sync must not report success — CI treats a 200 as "the index
+      // is up to date". The counts describe exactly what landed.
+      if (batchesFailed > 0) {
+        return c.json(
+          {
+            ok: false,
+            error: {
+              code: 'sync_partial',
+              message: `KB sync partially failed: ${batchesFailed} batch(es) errored — ${
+                firstError instanceof Error ? firstError.message : 'unknown error'
+              }`,
+            },
+            data: {
+              vectors_upserted: totalUpserted,
+              vectors_pruned: vectorsPruned,
+              documents_upserted: documentsUpserted,
+              chunks_upserted: chunksUpserted,
+              batches_failed: batchesFailed,
+            },
+            trace_id: traceId,
+          },
+          500,
+        )
       }
 
       return c.json(
