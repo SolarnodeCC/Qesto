@@ -9,6 +9,7 @@ on:
       - 'functions/**'
       - 'worker/**'
       - 'tests/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/playwright.yml'
