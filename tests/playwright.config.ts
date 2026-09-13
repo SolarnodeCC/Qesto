@@ -22,7 +22,12 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'tests/artifacts/playwright-report', open: 'never' }],
+    // Same config-relative trap as webServer.cwd below: a relative
+    // outputFolder resolves against `tests/`, so this wrote to
+    // tests/tests/artifacts/playwright-report while the workflow uploaded
+    // tests/artifacts/playwright-report — the report artifact was always
+    // empty. Absolute path removes the ambiguity.
+    ['html', { outputFolder: path.join(repoRoot, 'tests', 'artifacts', 'playwright-report'), open: 'never' }],
   ],
   use: {
     baseURL: BASE_URL,
