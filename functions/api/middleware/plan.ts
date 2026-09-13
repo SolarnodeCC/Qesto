@@ -6,11 +6,19 @@ import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS as QUOTAS_MAP } from '../types'
 import type { AuthVariables } from './auth'
 import { logEvent } from '../lib/log'
+import { effectivePlan, freeAccessActive } from '../lib/free-access'
 
 
 export type PlanVariables = {
   plan: PlanTier
   planQuotas: (typeof QUOTAS_MAP)[PlanTier]
+  /**
+   * ADR-0074: the tier actually stored on the user, set only when the
+   * free-access promo upgraded this request. Billing and analytics surfaces
+   * that must report what someone really holds read this; everything that
+   * gates a feature reads `plan`.
+   */
+  plan_stored?: PlanTier
 }
 
 const PLAN_LOOKUP_TIMEOUT_MS = 1500
@@ -91,6 +99,15 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
     plan = 'free'
   }
 
+  // ADR-0074: temporary all-users free access. Applied AFTER the DB read so the
+  // stored tier stays authoritative the moment the flag or the window lapses,
+  // and only ever upgrades — a paying starter customer is never downgraded.
+  const stored = plan
+  plan = effectivePlan(c.env, plan)
+  if (plan !== stored) {
+    c.set('plan_stored', stored)
+  }
+
   // Set plan and quotas on context for downstream routes
   c.set('plan', plan)
   c.set('planQuotas', QUOTAS_MAP[plan])
@@ -98,4 +115,4 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   await next()
 }
 
-export const __internal = { lookupUserPlan, PLAN_LOOKUP_TIMEOUT_MS }
+export const __internal = { lookupUserPlan, PLAN_LOOKUP_TIMEOUT_MS, freeAccessActive }

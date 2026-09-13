@@ -25,6 +25,7 @@ import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
 import { CachedThemeLabelsSchema, decodeKvJson } from '../../lib/boundary-decode'
 import { logEvent } from '../../lib/log'
 import { ensureTownhallSchema } from '../../lib/session-schema-repair'
+import { effectivePlan } from '../../lib/free-access'
 
 export type SessionVars = AuthVariables & PlanVariables
 export type SessionRow = Session & { team_id: string | null }
@@ -461,10 +462,14 @@ export async function precomputeInsights(
     return
   }
 
+  // Team-tier gate. This runs off a request, so `planMiddleware` never touched
+  // it — ADR-0074's promo override has to be applied at the read or the
+  // precompute keeps silently skipping every account during the window.
   const userRow = await env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
     .bind(ownerId)
     .first<{ plan: string }>()
-  if (userRow?.plan !== 'team') return
+  const storedPlan: PlanTier = isPlanTier(userRow?.plan) ? userRow.plan : 'free'
+  if (effectivePlan(env, storedPlan) !== 'team') return
 
   // Collect open-ended responses
   const openRows = await env.DB.prepare(
@@ -594,6 +599,10 @@ export async function precomputeInsights(
   })
 
   logEvent({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length, embedding_ref: embeddingRef })
+}
+
+function isPlanTier(value: unknown): value is PlanTier {
+  return value === 'free' || value === 'starter' || value === 'team'
 }
 
 /** Extract theme labels from a cached precompute/analyze payload (`{ themes: string[] }`). */

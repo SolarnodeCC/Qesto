@@ -112,7 +112,7 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
     const trendTraceId = `ws-trends-${Date.now()}`
     try {
       const kv = env.ACTIONS_KV ?? env.TEAMS_KV
-      const { scanned, recomputed } = await recomputeStaleWorkspaceTrends(env.DB, kv, env.TEAMS_KV)
+      const { scanned, recomputed } = await recomputeStaleWorkspaceTrends(env.DB, kv, env.TEAMS_KV, env)
       console.log(`[ws-trends] OK — scanned ${scanned} stale workspace(s), recomputed ${recomputed}`)
     } catch (err) {
       safeLogContext(err, {

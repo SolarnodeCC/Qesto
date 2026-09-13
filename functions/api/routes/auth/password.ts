@@ -21,6 +21,8 @@ import { authJsonInternalError } from './errors'
 import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/protocol-schemas'
 import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
+import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
+import { errorResponse } from '../../lib/error-handler'
 import type { AuthApp } from './types'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
@@ -36,6 +38,36 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
     try {
       const { email, password, name } = parsed.data
       const normalEmail = email.toLowerCase().trim()
+
+      // ADR-0074: refuse disposable inboxes.
+      if (isDisposableEmail(c.env, normalEmail)) {
+        return errorResponse(c, 400, 'validation', DISPOSABLE_EMAIL_MESSAGE)
+      }
+
+      // ADR-0074: password signup had no limiter at all — the magic-link path
+      // was rate-limited but this one was open, which does not survive a public
+      // free-access window. Same dual gate (L1 burst + L2 product window).
+      const signupIp = c.req.header('cf-connecting-ip') ?? null
+      if (signupIp) {
+        const ipGate = await atomicRateLimitDual(c.env, {
+          key: `ip:${signupIp}`,
+          burst: 'auth_burst',
+          sustained: { max: LOGIN_MAX_PER_IP, windowSeconds: LOGIN_WINDOW_SECONDS, prefix: 'auth-signup' },
+          profileLabel: 'auth_signup_ip',
+        })
+        if (!ipGate.allowed) {
+          return errorResponse(c, 429, 'rate_limited', 'Too many signups. Try again later.')
+        }
+      }
+      const signupEmailGate = await atomicRateLimitDual(c.env, {
+        key: `email:${normalEmail}`,
+        burst: 'auth_burst',
+        sustained: { max: LOGIN_MAX_PER_EMAIL, windowSeconds: LOGIN_WINDOW_SECONDS, prefix: 'auth-signup' },
+        profileLabel: 'auth_signup_email',
+      })
+      if (!signupEmailGate.allowed) {
+        return errorResponse(c, 429, 'rate_limited', 'Too many signups. Try again later.')
+      }
 
       const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
         .bind(normalEmail)

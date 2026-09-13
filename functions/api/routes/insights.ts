@@ -24,6 +24,7 @@ import { checkInsightsAllowed } from '../lib/insights-guards'
 import { errorResponse, sanitizeError } from '../lib/error-handler'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { atomicRateLimitDual } from '../lib/atomic-rate-limit'
+import { consumePromoAiRun } from '../lib/promo-ai-quota'
 import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
 import type { Anonymity, Env } from '../types'
 
@@ -244,6 +245,19 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     })
     if (!rl.allowed) {
       return errorResponse(c, 429, 'rate_limited', 'Too many insights requests; try again later')
+    }
+
+    // ADR-0074: monthly ceiling while the free-access window is open. No-op
+    // outside it — `team` remains unlimited as sold. Consumed after the cache
+    // check above so a repeat read never costs the user a run.
+    const promoQuota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
+    if (!promoQuota.allowed) {
+      return errorResponse(
+        c,
+        429,
+        'limit_exceeded',
+        `Free-access AI limit reached (${promoQuota.limit} insight runs this month). Resets on the 1st.`,
+      )
     }
 
     const [openResponses, pollBreakdown, trend] = await Promise.all([

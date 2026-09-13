@@ -112,6 +112,20 @@ Promoted by PO decision 2026-07-14 (commit criticals only; the rest goes to [Aud
 | `GDPR-RETENTION-CLAIM-01` | 5 | P0 | PO + backend | Open (needs PO decision) | Consent copy in all 5 locales promises a 30-day purge with no enforcing cron (verified again 2026-07-14: no purge job in `worker/`). Either (a) build the auto-redaction cron matching promised windows, or (b) reword consent copy + pricing-matrix framing. Promoted from [`BACKLOG_MASTER.md`](./BACKLOG_MASTER.md) (raised 2026-06-20) |
 | `MKTG-TEMPLATE-PIPELINE-FIX-01` | 8 | P0 | backend + ai-engineer | **Done (2026-07-12)** | Retroactive row for shipped work: MKTP-001..016/018/019 from [`MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md`](../../quality/audits/MARKETING_TEMPLATE_PIPELINE_AUDIT_2026-07-12.md) fixed in commit `6335af3` — real question text in generation, working email-capture "use template" flow, fail-closed anonymisation gates, draft-first publish, D1 template registry (migration 0079). Open residue: MKTP-017/020 (LOW → triage) |
 
+### RT-02 addendum — Temporary free access (ADR-0074, 2026-09-13)
+
+PO decision 2026-09-13: open qesto.cc to every account for a bounded window to drive signups, with no Stripe involvement. Design and rollout: [`ADR-0074-temporary-free-access-promo.md`](../../adr/ADR-0074-temporary-free-access-promo.md).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `GROWTH-FREE-ACCESS-01` | 8 | P0 | backend + frontend | **Done (2026-09-13)** | Runtime effective-plan override behind `FREE_ACCESS_ALL` + `FREE_ACCESS_UNTIL`; `users.plan` never written; applied at `planMiddleware` and all four bypass readers (cached usage, insights precompute, DO snapshot, `TEAMS_KV` team plan); `free_access` on `/api/auth/me`, `promo` on `/api/plans/catalog`, `plan_stored` on the usage payload; countdown banner + upgrade CTAs suppressed. 30 cases in `tests/unit/free-access-promo.test.ts` |
+| `GROWTH-PROMO-AI-CAP-01` | 3 | P0 | backend | **Done (2026-09-13)** | Enforced 25 runs/user/month AI ceiling (`lib/promo-ai-quota.ts`) at both insight entry points, active only inside the window, fails open on KV fault. Closes the gap where `countInsightsThisMonth` was reported but never enforced |
+| `SEC-SIGNUP-HYGIENE-01` | 3 | P1 | backend + security | **Done (2026-09-13)** | Disposable-inbox rejection at both auth paths (`lib/email-domain.ts`, flag-gated, env-extensible); `/api/auth/password/signup` gained the dual rate limiter it never had. Both permanent, independent of the window |
+| `OPS-FREE-ACCESS-ENABLE-01` | 2 | P0 | devops | **Open — operator action** | Runbook steps 2–5 of ADR-0074 before flipping: AI Gateway confirmed engaged (not silently falling back), AE alerts armed on signups/day + sessions/day + AI calls/day, preview rehearsal against a real `free` account, then `FREE_ACCESS_UNTIL` set before `FREE_ACCESS_ALL="true"` |
+| `MKTG-FREE-ACCESS-COMMS-01` | 3 | P1 | marketing | **Open** | Launch copy, plus the T−14 / T−3 exit sequence in ADR-0074 §Exit. Exit email must state that sessions stay readable but exports/insights/embeds re-lock |
+
+**Ships OFF.** `FREE_ACCESS_ALL = "false"` in `wrangler.toml`; window configured for 2026-12-12 granting `team`. Rollback is the same flag — no migration.
+
 ### RT-02 exit criteria
 
 - [ ] P0 UI stories demo-able end-to-end on staging

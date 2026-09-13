@@ -50,6 +50,24 @@ export type Env = {
   SUPERUSER_EMAIL?: string
   /** Seed admin email — granted owner/admin in dev/test. */
   SEED_ADMIN_EMAIL?: string
+  /**
+   * ADR-0074 — temporary all-users free access. Master switch; `'true'` alone is
+   * insufficient, {@link FREE_ACCESS_UNTIL} must also be in the future.
+   */
+  FREE_ACCESS_ALL?: string
+  /** ADR-0074 — ISO-8601 close time for the free-access window. */
+  FREE_ACCESS_UNTIL?: string
+  /** ADR-0074 — tier granted while the window is open: `'team'` (default) or `'starter'`. */
+  FREE_ACCESS_TIER?: string
+  /**
+   * ADR-0074 — AI insight runs per user per month while the promo is open.
+   * Only enforced when the window is active; `'0'` disables the cap.
+   */
+  PROMO_AI_MONTHLY_CAP?: string
+  /** ADR-0074 — reject disposable/throwaway email domains at signup. */
+  SIGNUP_BLOCK_DISPOSABLE_DOMAINS?: string
+  /** ADR-0074 — extra blocked signup domains, comma-separated; extends the built-in list. */
+  SIGNUP_BLOCKED_EMAIL_DOMAINS_EXTRA?: string
   /** Checkout URL for paid plan upgrades. */
   CHECKOUT_URL?: string
   /** Public Stripe price IDs; safe to expose for checkout/price reconciliation. */

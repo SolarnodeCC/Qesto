@@ -31,6 +31,12 @@ export type FlagName =
   // ignores inbound xr_avatar_sync and omits the 'xr' init feature capability.
   | 'BETA_XR_ENABLED'
   | 'JOIN_CAPTCHA_ENABLED'
+  // ADR-0074: temporary all-users free access. OFF by default; the flag alone
+  // is insufficient — FREE_ACCESS_UNTIL must also be in the future. Prefer
+  // lib/free-access.ts over reading this flag directly.
+  | 'FREE_ACCESS_ALL'
+  // ADR-0074: reject disposable/throwaway email domains at signup.
+  | 'SIGNUP_BLOCK_DISPOSABLE_DOMAINS'
   | 'LDAP_SYNC_MOCK'
   // SEC-SAML-01 (#529): SAML SSO is OFF unless explicitly enabled. The SP does
   // not yet verify the XML-DSig signature on the assertion, so the routes must

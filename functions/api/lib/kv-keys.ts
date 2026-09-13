@@ -10,6 +10,11 @@ export function quotaSessionsKey(userId: string, monthYYYYMM: string): string {
   return `quota:sessions:${userId}:${monthYYYYMM}`
 }
 
+/** Monthly promo AI-run counter in SESSIONS_KV (ADR-0074, see lib/promo-ai-quota.ts). */
+export function promoAiRunsKey(userId: string, monthYYYYMM: string): string {
+  return `quota:promo-ai:${userId}:${monthYYYYMM}`
+}
+
 /** Team JSON document in TEAMS_KV. */
 export function teamDocumentKey(teamId: string): string {
   return `team:${teamId}`

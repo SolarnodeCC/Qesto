@@ -88,7 +88,7 @@ function RoadmapStrip({ items }: { items: string[] }) {
 }
 
 export default function Pricing() {
-  const { plans } = usePlanCatalog()
+  const { plans, promo } = usePlanCatalog()
   const free = plans.find((p) => p.id === 'free')
   const starter = plans.find((p) => p.id === 'starter')
   const team = plans.find((p) => p.id === 'team')
@@ -97,6 +97,13 @@ export default function Pricing() {
     if (!free || !starter || !team) return PRICING_MATRIX_BASE
     return enrichPricingMatrix(PRICING_MATRIX_BASE, free, starter, team)
   }, [free, starter, team])
+
+  // ADR-0074: the tiers below keep telling the truth about what each plan
+  // contains; the promo is stated once, above them, with its end date.
+  const promoActive = promo?.active === true && !!promo.until
+  const promoEndsOn = promoActive
+    ? new Date(promo!.until!).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
 
   const starterAnnual = formatEuro(starter?.pricing.annual_cents ?? 2400)
   const starterMonthly = formatEuro(starter?.pricing.monthly_cents ?? 2900)
@@ -127,6 +134,17 @@ export default function Pricing() {
             tier and match what the product enforces—you don’t get surprise hard-stops after you’ve committed to a
             room.
           </p>
+          {promoActive && (
+            <p
+              role="status"
+              className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50 dark:bg-teal-950/40 px-4 py-3 text-sm text-teal-900 dark:text-teal-100"
+            >
+              <strong className="font-semibold">Every tier below is free right now.</strong>
+              <span className="text-teal-800 dark:text-teal-200">
+                Create an account and you get the full product until {promoEndsOn} — no card, nothing to cancel.
+              </span>
+            </p>
+          )}
         </div>
       </section>
 
@@ -234,7 +252,7 @@ export default function Pricing() {
                 to="/login"
                 className={btnPrimary + ' w-full justify-center !bg-white !text-pulse-900 hover:shadow-lg'}
               >
-                Start 14-day trial
+                {promoActive ? 'Create a free account' : 'Start 14-day trial'}
               </Link>
             </div>
 

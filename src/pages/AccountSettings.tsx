@@ -46,6 +46,7 @@ function SettingsSection({
 
 export default function AccountSettings() {
   const t = useT('settings')
+  const tCommon = useT('common')
   const auth = useAuth()
   const navigate = useNavigate()
   const { density, setDensity } = useDensity()
@@ -136,6 +137,8 @@ export default function AccountSettings() {
     spacious: t('appearance.spacious'),
   }
 
+  // ADR-0074: temporary free-access window (server-reported).
+  const promoActive = quotaData?.free_access?.active === true
   const resetDateLabel = quotaData?.reset_date
     ? new Date(quotaData.reset_date).toLocaleDateString(undefined, {
         day: 'numeric',
@@ -244,12 +247,20 @@ export default function AccountSettings() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Link
-                  to="/pricing"
-                  className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                >
-                  {t('billing.upgrade')}
-                </Link>
+                {/* ADR-0074: no upgrade CTA while everything is already free.
+                    "Manage billing" stays — existing subscribers still need it. */}
+                {promoActive ? (
+                  <p className="inline-flex items-center rounded-lg border border-teal-200 dark:border-teal-900/60 bg-teal-50 dark:bg-teal-950/40 px-4 py-2 text-sm font-medium text-teal-800 dark:text-teal-200">
+                    {tCommon('freeAccess.ctaSuppressed')}
+                  </p>
+                ) : (
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    {t('billing.upgrade')}
+                  </Link>
+                )}
                 <button
                   type="button"
                   disabled={portalLoading}

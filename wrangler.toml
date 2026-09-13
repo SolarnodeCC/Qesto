@@ -98,6 +98,21 @@ SAML_SIGNATURE_VERIFY_ENABLED = "false"
 # while this flag is off — see knowledge-base/operations/deployment/RATE_LIMIT_BINDINGS_SETUP.md.
 ATOMIC_RATE_LIMIT_ENABLED = "false"
 
+# ADR-0074 — temporary all-users free access.
+# SHIPS OFF. Enabling requires BOTH: FREE_ACCESS_ALL="true" AND a
+# FREE_ACCESS_UNTIL still in the future, so a flag left on cannot silently
+# extend the window. Rollback = set FREE_ACCESS_ALL="false" and deploy; every
+# account falls back to its stored users.plan on the next request.
+# Set FREE_ACCESS_UNTIL first, FREE_ACCESS_ALL second.
+FREE_ACCESS_ALL = "false"
+FREE_ACCESS_UNTIL = "2026-12-12T23:59:59Z"
+FREE_ACCESS_TIER = "team"
+# Monthly AI insight runs per user while the window is open ("0" disables the
+# cap). Inert outside the window — team stays unlimited as sold.
+PROMO_AI_MONTHLY_CAP = "25"
+# Reject disposable/throwaway inboxes at signup (magic link + password).
+SIGNUP_BLOCK_DISPOSABLE_DOMAINS = "true"
+
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
 # Only apply during Sprint 26 release with feature flag approval.

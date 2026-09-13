@@ -1,6 +1,7 @@
 import { requireFeature } from '../../middleware/feature-gate'
 import { recordAuditEvent } from '../../lib/audit'
 import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
+import { consumePromoAiRun } from '../../lib/promo-ai-quota'
 import {
   extractThemes,
   InsightsAIError,
@@ -51,6 +52,19 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
           reset_at: rl.resetAt,
           limit: AI_RATE_LIMIT.max,
         })
+      }
+
+      // ADR-0074: monthly ceiling while the free-access window is open; no-op
+      // outside it. Consumed before the AI call, after the burst limiter.
+      const promoQuota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
+      if (!promoQuota.allowed) {
+        return fail(
+          c,
+          'limit_exceeded',
+          `Free-access AI limit reached (${promoQuota.limit} insight runs this month). Resets on the 1st.`,
+          429,
+          { limit: promoQuota.limit, used: promoQuota.used },
+        )
       }
 
       const sessionResult = await fetchSessionAIGovernanceForOwner(c.env.DB, sessionId, user.sub)

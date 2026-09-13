@@ -18,6 +18,7 @@ import { authEmailRequestSchema } from './schemas'
 import { authJsonInternalError, authRedirectLoginServerError } from './errors'
 import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
+import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
 import type { AuthApp } from './types'
 
 export function registerMagicLinkRoutes(app: AuthApp): void {
@@ -29,6 +30,13 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         return errorResponse(c, 400, 'validation', 'Invalid email')
       }
       const email = parsed.data.email.toLowerCase().trim()
+
+      // ADR-0074: refuse disposable inboxes before spending a rate-limit slot
+      // or sending mail. Off unless SIGNUP_BLOCK_DISPOSABLE_DOMAINS is on.
+      if (isDisposableEmail(c.env, email)) {
+        return errorResponse(c, 400, 'validation', DISPOSABLE_EMAIL_MESSAGE)
+      }
+
       // SEC M-6: trust only the unspoofable edge header for rate-limit keys.
       const ip = c.req.header('cf-connecting-ip') ?? null
 

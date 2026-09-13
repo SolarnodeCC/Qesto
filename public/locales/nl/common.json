@@ -272,5 +272,13 @@
     "matchScore": "{{score}}% match",
     "viewSessionAria": "Bekijk sessie voor beslissing: {{question}}",
     "viewSession": "Bekijk sessie"
+  },
+  "freeAccess": {
+    "title": "Alles ontgrendeld, gratis.",
+    "body": "Elke Qesto-functie is gratis op alle accounts tot {{date}}. Geen creditcard nodig.",
+    "daysLeft_one": "Nog {{count}} dag",
+    "daysLeft_other": "Nog {{count}} dagen",
+    "endsToday": "Eindigt vandaag",
+    "ctaSuppressed": "Nu gratis voor iedereen — niets om te upgraden."
   }
 }

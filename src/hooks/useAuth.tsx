@@ -12,6 +12,19 @@ export type AuthUser = {
   townhallEnabled?: boolean
   /** Present only while an admin is impersonating this account (Module 3). */
   impersonating?: { email: string; impersonator_id: string }
+  /**
+   * ADR-0074: temporary free-access window. When `active`, `plan` above is
+   * already the granted tier — the UI reads this only to show the countdown
+   * and hide upgrade CTAs, never to decide what is unlocked.
+   */
+  free_access?: FreeAccessStatus
+}
+
+export type FreeAccessStatus = {
+  active: boolean
+  /** ISO-8601 close time; null when inactive. */
+  until: string | null
+  granted_tier: 'free' | 'starter' | 'team' | null
 }
 
 type AuthState =

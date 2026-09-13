@@ -272,5 +272,13 @@
     "matchScore": "{{score}}% match",
     "viewSessionAria": "View session for decision: {{question}}",
     "viewSession": "View session"
+  },
+  "freeAccess": {
+    "title": "Tout est débloqué, gratuitement.",
+    "body": "Toutes les fonctionnalités Qesto sont gratuites sur tous les comptes jusqu’au {{date}}. Sans carte bancaire.",
+    "daysLeft_one": "Encore {{count}} jour",
+    "daysLeft_other": "Encore {{count}} jours",
+    "endsToday": "Se termine aujourd’hui",
+    "ctaSuppressed": "Gratuit pour tous en ce moment — rien à mettre à niveau."
   }
 }

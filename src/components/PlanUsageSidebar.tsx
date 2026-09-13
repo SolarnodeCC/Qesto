@@ -73,10 +73,15 @@ function FeatureRow({ label, value }: { label: string; value: boolean | string }
 
 export default function PlanUsageSidebar({ data, loading }: Props) {
   const planInfo = PLAN_DISPLAY[data.plan] ?? PLAN_DISPLAY.free
-  const aiLimit = AI_INSIGHTS_LIMIT[data.plan] ?? null
+  // While the promo runs the server enforces its own monthly ceiling, which
+  // overrides the per-tier figure below.
+  const aiLimit = data.usage.insights_limit ?? AI_INSIGHTS_LIMIT[data.plan] ?? null
   const resetDate = new Date(data.reset_date)
   const daysLeft = Math.max(0, Math.ceil((resetDate.getTime() - Date.now()) / 86_400_000))
-  const isUpgradeable = data.plan !== 'team'
+  // ADR-0074: asking someone to pay for what they already have free reads as a
+  // bug, so the CTA stands down for the window and returns on its own after.
+  const promoActive = data.free_access?.active === true
+  const isUpgradeable = data.plan !== 'team' && !promoActive
 
   if (loading) {
     return (

@@ -3,6 +3,7 @@ import { namespacedKey } from './tenant-namespace'
 import { readKvJson } from './kv'
 import { teamDocumentKey } from './kv-keys'
 import { featureAllowed } from './entitlements'
+import { effectivePlan, type FreeAccessEnv } from './free-access'
 import type { WorkspaceKind, WorkspaceTrendKind, WorkspaceTrendWindow } from './workspace-types'
 import type { z } from 'zod'
 import {
@@ -389,6 +390,8 @@ export async function recomputeStaleWorkspaceTrends(
   db: D1Database,
   kv: KVNamespace,
   teamsKv: KVNamespace,
+  /** ADR-0074 free-access vars. Omit to gate on the stored team plan only. */
+  freeAccess?: FreeAccessEnv,
 ): Promise<{ scanned: number; recomputed: number }> {
   // One query: workspaces whose latest closed instance is newer than their
   // newest trend computed_at (LEFT JOIN → NULL when no trend rows exist yet).
@@ -416,7 +419,7 @@ export async function recomputeStaleWorkspaceTrends(
   for (const ws of candidates) {
     let entitled = entitledByTeam.get(ws.team_id)
     if (entitled === undefined) {
-      entitled = await teamHoldsCrossSessionInsights(teamsKv, ws.team_id)
+      entitled = await teamHoldsCrossSessionInsights(teamsKv, ws.team_id, freeAccess)
       entitledByTeam.set(ws.team_id, entitled)
     }
     if (!entitled) continue // cost control: skip non-entitled teams
@@ -427,10 +430,22 @@ export async function recomputeStaleWorkspaceTrends(
   return { scanned: candidates.length, recomputed }
 }
 
-/** Resolve a team's plan from TEAMS_KV and test the crossSessionInsights gate. */
-async function teamHoldsCrossSessionInsights(teamsKv: KVNamespace, teamId: string): Promise<boolean> {
+/**
+ * Resolve a team's plan from TEAMS_KV and test the crossSessionInsights gate.
+ *
+ * Teams carry their OWN plan on the team document, separate from `users.plan`,
+ * and are created as `free` (routes/teams/index.ts). ADR-0074's promo override
+ * therefore has to be applied here too — without it, cross-session insights
+ * stay locked for every team for the whole free-access window.
+ */
+async function teamHoldsCrossSessionInsights(
+  teamsKv: KVNamespace,
+  teamId: string,
+  freeAccess?: FreeAccessEnv,
+): Promise<boolean> {
   const team = await readKvJson<{ plan?: PlanTier }>(teamsKv, teamDocumentKey(teamId))
-  const plan: PlanTier = team?.plan ?? 'free'
+  const stored: PlanTier = team?.plan ?? 'free'
+  const plan = freeAccess ? effectivePlan(freeAccess, stored) : stored
   const quotas = PLAN_QUOTAS[plan] ?? PLAN_QUOTAS.free
   return featureAllowed(quotas, 'crossSessionInsights')
 }
