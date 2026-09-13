@@ -272,5 +272,13 @@
     "matchScore": "{{score}}% match",
     "viewSessionAria": "View session for decision: {{question}}",
     "viewSession": "View session"
+  },
+  "freeAccess": {
+    "title": "Alles freigeschaltet, kostenlos.",
+    "body": "Jede Qesto-Funktion ist bis zum {{date}} für alle Konten kostenlos. Ohne Kreditkarte.",
+    "daysLeft_one": "Noch {{count}} Tag",
+    "daysLeft_other": "Noch {{count}} Tage",
+    "endsToday": "Endet heute",
+    "ctaSuppressed": "Derzeit für alle kostenlos – nichts zu upgraden."
   }
 }

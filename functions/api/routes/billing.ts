@@ -28,6 +28,8 @@ import { BillingSubscriptionSchema } from '../lib/domain-schemas'
 import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema } from '../lib/protocol-schemas'
 import { PLAN_QUOTAS, type Env, type PlanTier } from '../types'
 import { makeStripeClient } from '../lib/stripe-client'
+import { freeAccessStatus } from '../lib/free-access'
+import { promoInsightsCap } from '../lib/promo-ai-quota'
 import {
   countInsightsThisMonth,
 } from '../repositories/billingRepository'
@@ -45,7 +47,14 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       PlanTier,
       ReturnType<typeof shared.catalogRow>
     >
-    return c.json({ ok: true, data: { ...data, pricing: shared.catalogPricing(c.env) }, trace_id: c.get('trace_id') })
+    // ADR-0074: the tiers stay honest — the promo is reported alongside them,
+    // never folded into what a tier contains, because this payload is what the
+    // public pricing page renders.
+    return c.json({
+      ok: true,
+      data: { ...data, pricing: shared.catalogPricing(c.env), promo: freeAccessStatus(c.env) },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   // GET /api/plans/:userId/usage — Fetch quota usage for authenticated user
@@ -80,6 +89,11 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       data: {
         user_id: userId,
         plan,
+        // ADR-0074: `plan` is the effective tier; when the promo upgraded this
+        // request, `plan_stored` is what the account actually holds and what it
+        // reverts to when the window closes.
+        ...(c.get('plan_stored') ? { plan_stored: c.get('plan_stored') } : {}),
+        free_access: freeAccessStatus(c.env),
         quotas: {
           max_sessions_per_month: quotas.maxSessionsPerMonth,
           max_participants_per_session: quotas.maxParticipantsPerSession,
@@ -89,6 +103,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           sessions_created: usage.sessions_created,
           remaining: usage.remaining,
           insights_generated: insightsUsedThisMonth,
+          insights_limit: promoInsightsCap(c.env),
         },
         reset_date: resetDate.toISOString(),
       },

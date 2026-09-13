@@ -21,6 +21,7 @@ import type { AuthVariables } from './auth'
 import { validateData, CachedDataSchema } from '../lib/protocol-schemas'
 import { readKvJson } from '../lib/kv'
 import type { UserRow } from '../lib/db-row-types'
+import { effectivePlan } from '../lib/free-access'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
 export function kvNamespaceForCacheKey(key: string): 'USERS_KV' | 'TEAMS_KV' | 'SESSIONS_KV' {
@@ -118,7 +119,7 @@ export async function getPlanUsageWithCache(
     const raw = await readKvJson(c.env.USERS_KV, key)
     const cached = validateData(raw, CachedDataSchema)
     if (cached && cached.expires_at && cached.expires_at > Date.now()) {
-      return cached.data as Record<string, any>
+      return projectPlanUsage(c.env, cached.data as Record<string, unknown>)
     }
   } catch {
     // Fall through to D1 + quota KV
@@ -128,21 +129,41 @@ export async function getPlanUsageWithCache(
     `SELECT plan FROM users WHERE id = ?1`,
   ).bind(userId).first()) as Pick<UserRow, "plan"> | null
 
-  const plan: PlanTier = row?.plan ?? 'free'
-  const sessionLimit = PLAN_QUOTAS[plan].maxSessionsPerMonth
-  const quota = await getQuotaUsage(c.env.SESSIONS_KV, userId, sessionLimit)
+  const stored: PlanTier = row?.plan ?? 'free'
+  // ADR-0074: the entry caches the STORED tier and the raw used-count, and the
+  // served payload is projected from it on every read. Caching the effective
+  // tier instead would leave the promo (or its rollback) stale for the 5-minute
+  // TTL after the flag moves.
+  const quota = await getQuotaUsage(c.env.SESSIONS_KV, userId, PLAN_QUOTAS[stored].maxSessionsPerMonth)
+  const entry = { plan_stored: stored, sessions_used: quota.sessions_created }
 
-  const usage = {
+  await cachePlanUsage(c, userId, entry, 5 * 60)
+  return projectPlanUsage(c.env, entry)
+}
+
+/** Project a cached plan-usage entry onto the served shape at the current effective tier. */
+function projectPlanUsage(
+  env: Env,
+  entry: { plan_stored?: unknown; sessions_used?: unknown; plan?: unknown; sessions?: unknown },
+): Record<string, any> {
+  // `plan` / `sessions.used` are the pre-ADR-0074 entry shape; entries written
+  // before the deploy stay readable until their 5-minute TTL expires.
+  const legacyUsed = (entry.sessions as { used?: unknown } | undefined)?.used
+  const storedRaw = entry.plan_stored ?? entry.plan
+  const stored: PlanTier = isPlanTier(storedRaw) ? storedRaw : 'free'
+  const usedRaw = entry.sessions_used ?? legacyUsed
+  const used = typeof usedRaw === 'number' && usedRaw >= 0 ? usedRaw : 0
+  const plan = effectivePlan(env, stored)
+  const limit = PLAN_QUOTAS[plan].maxSessionsPerMonth
+  return {
     plan,
-    sessions: {
-      used: quota.sessions_created,
-      limit: quota.limit,
-      remaining: quota.remaining,
-    },
+    ...(plan === stored ? {} : { plan_stored: stored }),
+    sessions: { used, limit, remaining: Math.max(0, limit - used) },
   }
+}
 
-  await cachePlanUsage(c, userId, usage, 5 * 60)
-  return usage
+function isPlanTier(value: unknown): value is PlanTier {
+  return value === 'free' || value === 'starter' || value === 'team'
 }
 
 /**

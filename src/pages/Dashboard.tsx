@@ -21,6 +21,7 @@ import { TeamsSection } from './dashboard/TeamsSection'
 import { TemplatesSection } from './dashboard/TemplatesSection'
 import { TemplatePreviewModal } from './dashboard/TemplatePreviewModal'
 import type { Template, TemplateModalState, StatusFilter, DashboardTeam, DuplicateModalState } from './dashboard/types'
+import FreeAccessBanner from '../components/FreeAccessBanner'
 
 export default function Dashboard() {
   const auth = useAuth()
@@ -312,6 +313,9 @@ export default function Dashboard() {
       isSuperuser={isSuperuser}
     >
       <div className="max-w-[1200px] mx-auto px-8 lg:px-16 py-16 animate-page-enter density-stack-12">
+        {/* ADR-0074: temporary free-access window. Self-hides when closed. */}
+        <FreeAccessBanner />
+
         <HeroSection
           userName={userName}
           townhallFeatureEnabled={townhallFeatureEnabled}

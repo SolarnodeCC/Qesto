@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { buildPlansFromCatalog, PLANS, type PlanConfig } from '../config/plans'
-import type { PlanCatalogApiPayload, PlanCatalogPricingPayload, PlanCatalogApiResponse } from '../types/plan-catalog'
+import type {
+  PlanCatalogApiPayload,
+  PlanCatalogPricingPayload,
+  PlanCatalogApiResponse,
+  PlanCatalogPromo,
+} from '../types/plan-catalog'
 
 /**
  * Loads `GET /api/plans/catalog` when available; falls back to `PLANS` (from `PLAN_QUOTAS`).
@@ -10,15 +15,18 @@ import type { PlanCatalogApiPayload, PlanCatalogPricingPayload, PlanCatalogApiRe
 export function usePlanCatalog() {
   const [remote, setRemote] = useState<PlanCatalogApiPayload | null>(null)
   const [remotePricing, setRemotePricing] = useState<PlanCatalogPricingPayload | null>(null)
+  // ADR-0074 free-access window; reported next to the tiers, never inside them.
+  const [promo, setPromo] = useState<PlanCatalogPromo | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     void api<PlanCatalogApiResponse>('/api/plans/catalog')
       .then((res) => {
         if (res.ok) {
-          const { pricing, ...catalog } = res.data
+          const { pricing, promo: remotePromo, ...catalog } = res.data
           setRemote(catalog as PlanCatalogApiPayload)
           setRemotePricing(pricing ?? null)
+          setPromo(remotePromo ?? null)
           setError(null)
         } else {
           setError(res.error.message)
@@ -35,6 +43,7 @@ export function usePlanCatalog() {
   return {
     plans,
     error,
+    promo,
     hydratedFromApi: remote !== null,
   }
 }

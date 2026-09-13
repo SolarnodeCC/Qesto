@@ -6,6 +6,7 @@ import { authMiddleware, IMPERSONATION_COOKIE, SESSION_COOKIE } from '../../midd
 import { planMiddleware } from '../../middleware/plan'
 import { townhallEnabled } from '../../realtime'
 import { isPlatformAdmin } from '../../lib/platform-admin'
+import { freeAccessStatus } from '../../lib/free-access'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
@@ -28,6 +29,9 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
         id: user.sub,
         email: user.email,
         plan: c.get('plan'),
+        // ADR-0074: the SPA renders the countdown banner and hides upgrade CTAs
+        // off this. `plan` above is already the effective tier.
+        free_access: freeAccessStatus(c.env),
         isAdmin,
         townhallEnabled: townhallEnabled(c.env),
         ...(impersonatorId ? { impersonating: { email: user.email, impersonator_id: impersonatorId } } : {}),

@@ -245,5 +245,13 @@
   "soc2.slaLink": "Partner SLA",
   "soc2.privacyLink": "Privacy policy",
   "soc2.updated": "Last updated: May 2026. Evidence pack: knowledge-base/security/SOC2_TYPE_II_EVIDENCE/",
-  "soc2.bottomSubheading": "Qesto maintains security and availability controls aligned with SOC 2 Type II. Independent Type II certification is in progress (expected 2027 Q3)."
+  "soc2.bottomSubheading": "Qesto maintains security and availability controls aligned with SOC 2 Type II. Independent Type II certification is in progress (expected 2027 Q3).",
+  "freeAccess": {
+    "title": "Everything unlocked, free.",
+    "body": "Every Qesto feature is free on all accounts until {{date}}. No card needed.",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left",
+    "endsToday": "Ends today",
+    "ctaSuppressed": "Free for everyone right now — nothing to upgrade."
+  }
 }

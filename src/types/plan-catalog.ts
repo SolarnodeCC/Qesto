@@ -37,6 +37,14 @@ export type PlanCatalogPricingRow = {
 
 export type PlanCatalogPricingPayload = Record<PlanTier, PlanCatalogPricingRow>
 
+/** ADR-0074 free-access window, reported alongside the tiers — never folded into them. */
+export type PlanCatalogPromo = {
+  active: boolean
+  until: string | null
+  granted_tier: PlanTier | null
+}
+
 export type PlanCatalogApiResponse = PlanCatalogApiPayload & {
   pricing?: PlanCatalogPricingPayload
+  promo?: PlanCatalogPromo
 }
