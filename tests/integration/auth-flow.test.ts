@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'
+import { LOGIN_MAX_PER_IP } from '../../functions/api/routes/auth/constants'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
@@ -325,6 +326,49 @@ describe('password signup + login', () => {
     expect(res.status).toBe(400)
     const body = (await res.json()) as { ok: boolean; error: { code: string } }
     expect(body.error.code).toBe('validation')
+  })
+
+  it('rate-limits signup attempts from one IP before creating more accounts', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db, { actions: new KVMock() })
+    const now = Date.now()
+
+    for (let i = 0; i < LOGIN_MAX_PER_IP; i++) {
+      db.users.set(`existing-${i}`, {
+        id: `existing-${i}`,
+        email: `existing-${i}@example.com`,
+        display_name: null,
+        created_at: now,
+        last_login_at: now,
+        plan: 'free',
+      })
+    }
+
+    const signupFromIp = (email: string) =>
+      app.fetch(
+        new Request('http://local/api/auth/password/signup', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'cf-connecting-ip': '203.0.113.42',
+          },
+          body: JSON.stringify({ email, password: SIGNUP_PASSWORD }),
+        }),
+        env,
+      )
+
+    for (let i = 0; i < LOGIN_MAX_PER_IP; i++) {
+      const res = await signupFromIp(`existing-${i}@example.com`)
+      expect(res.status).toBe(409)
+    }
+
+    const blocked = await signupFromIp('new-after-limit@example.com')
+    expect(blocked.status).toBe(429)
+    const body = (await blocked.json()) as { ok: boolean; error: { code: string } }
+    expect(body.ok).toBe(false)
+    expect(body.error.code).toBe('rate_limited')
+    expect([...db.users.values()].some((user) => user.email === 'new-after-limit@example.com')).toBe(false)
   })
 
   it('logs in with correct password and returns 200 with cookie', async () => {
