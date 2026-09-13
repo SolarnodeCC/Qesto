@@ -1,14 +1,27 @@
 name: Playwright Tests
 on:
+  # PRs run the smoke lane so E2E actually gates a merge; main runs the full
+  # suite. Only run the (expensive) E2E suite when app code or the E2E harness
+  # changes; docs/KB merges skip it entirely.
   push:
     branches: [ main ]
-    # Only run the (expensive) E2E suite when app code or the E2E harness changes;
-    # docs/KB merges skip it entirely.
     paths:
       - 'src/**'
       - 'functions/**'
       - 'worker/**'
       - 'tests/**'
+      - 'ops/ci/playwright.sh'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/playwright.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'functions/**'
+      - 'worker/**'
+      - 'tests/**'
+      - 'ops/ci/playwright.sh'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/playwright.yml'
@@ -36,7 +49,7 @@ jobs:
     # ops/ci/playwright.sh + the config's webServer block, so CI and a local
     # run execute the same code path (issues #688, #692).
     - name: Playwright E2E lane
-      run: bash ops/ci/playwright.sh
+      run: bash ops/ci/playwright.sh "${{ github.event_name == 'pull_request' && 'smoke' || 'full' }}"
       env:
         WRANGLER_SEND_METRICS: 'false'
 

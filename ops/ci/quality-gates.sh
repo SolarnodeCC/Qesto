@@ -44,11 +44,12 @@ node scripts/check-kv-access.mjs
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit
 
-# Lint (if configured)
-if [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
-  report_success "Linting"
-  npm run lint 2>/dev/null || true
-fi
+# Lint ratchet. Until RT-2026-09 this block was dead twice over: it was guarded
+# on an .eslintrc.json that never existed, and `|| true` meant it could not fail
+# even if it had run. ESLint now runs for real against a per-rule baseline
+# (scripts/check-lint-baseline.mjs) — errors may only shrink.
+report_success "Lint ratchet (check:lint)"
+node scripts/check-lint-baseline.mjs
 
 # AI eval golden set (REV-10 DoD gate): prompt-injection confinement, output
 # schema acceptance/rejection corpus, PII scrub, governance guard matrix.

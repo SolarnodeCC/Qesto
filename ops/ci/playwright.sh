@@ -26,6 +26,26 @@ npx playwright install chromium --with-deps
 # explicit export documents the contract and lets an override flow through.
 export PLAYWRIGHT_BASE_URL="${PLAYWRIGHT_BASE_URL:-http://localhost:8788}"
 
+# Lane selection. PRs run `smoke` — signup/login, session lifecycle, and the
+# join-and-vote round trip — which is the shortest path that still exercises a
+# real WebSocket. `main` runs the full fullstack project. Before RT-2026-09 the
+# workflow had no pull_request trigger at all, so every E2E signal arrived after
+# merge; the split keeps PR feedback fast without giving that up again.
+LANE="${1:-full}"
+
 # Playwright's webServer block builds dist/, applies local D1 migrations and
 # starts the Worker (scripts/e2e-webserver.sh), then tears it down afterwards.
-npm run test:e2e:fullstack
+case "$LANE" in
+  smoke)
+    report_success "E2E lane: smoke (auth · session lifecycle · participant voting)"
+    npm run test:e2e:smoke
+    ;;
+  full)
+    report_success "E2E lane: full (fullstack-chrome)"
+    npm run test:e2e:fullstack
+    ;;
+  *)
+    report_error "Unknown E2E lane '$LANE' (expected: smoke | full)"
+    exit 1
+    ;;
+esac
