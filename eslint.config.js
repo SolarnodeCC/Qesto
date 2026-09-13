@@ -18,11 +18,24 @@ import globals from 'globals'
 export default tseslint.config(
   {
     // Build output, vendored code, and generated artifacts are not ours to lint.
+    // Keep in step with .gitignore: anything git ignores, ESLint should too.
+    // Drift here is fail-closed rather than silent — a newly generated
+    // directory trips the ratchet in scripts/check-lint-baseline.mjs loudly
+    // (which is exactly how `.wrangler/tmp` was caught), so it gets noticed.
     ignores: [
       'dist/**',
       'coverage/**',
       'node_modules/**',
       'vendor/**',
+      // Wrangler writes bundled Worker output here on every dev/E2E run; it is
+      // megabytes of generated JS and swamps the real findings.
+      '.wrangler/**',
+      '.vite/**',
+      'target/**',
+      'test-results/**',
+      'playwright-report/**',
+      'blob-report/**',
+      '**/artifacts/**',
       'contracts/generated/**',
       'packages/**/dist/**',
       'apps/**/dist/**',

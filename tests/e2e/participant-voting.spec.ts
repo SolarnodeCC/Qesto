@@ -24,7 +24,12 @@ test.describe('Participant voting flow', () => {
       await participantPage.getByRole('button', { name: /option a/i }).click()
       await expect(participantPage.getByRole('status')).toContainText(/recorded|response/i, { timeout: 10_000 })
 
-      await expect(page.getByLabel(/Option A: 100% of votes/i)).toBeVisible({ timeout: 15_000 })
+      // AdaptiveVizResults labels each result via i18n: `viz.ariaBar` renders
+      // "Option A: 1 (100%)" and `viz.ariaDonut` "Option A: 1 (100% of votes)".
+      // The old expectation ("Option A: 100% of votes") matched neither, so this
+      // assertion could never pass — unnoticed because the E2E lane never ran.
+      // Tolerate either visualisation; the meaningful claim is Option A at 100%.
+      await expect(page.getByLabel(/Option A: \d+ \(100%/i)).toBeVisible({ timeout: 15_000 })
     } finally {
       await participantContext.close()
     }

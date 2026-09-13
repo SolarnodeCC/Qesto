@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const testsDir = path.dirname(fileURLToPath(import.meta.url))
+const repoRoot = path.join(testsDir, '..')
 const marketingVideoDir = path.join(testsDir, 'artifacts', 'marketing-videos')
 
 // The full-stack server (scripts/e2e-serve-fullstack.sh) serves both the SPA and
@@ -34,6 +35,12 @@ export default defineConfig({
   // pass, and keeps CI and local runs on one code path (issues #692, #688).
   webServer: {
     command: 'bash scripts/e2e-webserver.sh',
+    // Playwright defaults `cwd` to the CONFIG FILE's directory — `tests/` —
+    // so the command resolved to tests/scripts/e2e-webserver.sh and died with
+    // exit 127 ("No such file or directory") before a single spec ran. That is
+    // why every Playwright run on main has failed; the lane never actually
+    // executed. Anchor it to the repo root instead.
+    cwd: repoRoot,
     url: BASE_URL,
     // Cold start includes a Vite build + D1 migrations.
     timeout: 300_000,
