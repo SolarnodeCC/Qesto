@@ -19,6 +19,7 @@ import { authJsonInternalError, authRedirectLoginServerError } from './errors'
 import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
+import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
 
 export function registerMagicLinkRoutes(app: AuthApp): void {
@@ -41,7 +42,7 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
       const ip = c.req.header('cf-connecting-ip') ?? null
 
       // ADR-0073 Tier B: L1 auth_burst + L2 product window (15m).
-      if (ip) {
+      if (ip && !isLocalDevHost(c.req.url)) {
         const ipGate = await atomicRateLimitDual(c.env, {
           key: `ip:${ip}`,
           burst: 'auth_burst',

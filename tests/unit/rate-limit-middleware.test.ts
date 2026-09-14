@@ -125,6 +125,21 @@ describe('rateLimit middleware (ADR-0073)', () => {
     expect((await app.fetch(new Request('http://local/join/probe', { headers }), env)).status).toBe(200)
   })
 
+  it('skips limits on localhost even when cf-connecting-ip is set', async () => {
+    const app = makeApp({
+      sustained: { max: 1, windowSeconds: 60, prefix: 'mw-local' },
+      profileLabel: 'local',
+    })
+    const env = makeEnv(new KVMock() as unknown as KVNamespace)
+    const headers = { 'cf-connecting-ip': '127.0.0.1' }
+
+    const first = await app.fetch(new Request('http://localhost:8788/probe', { headers }), env)
+    const second = await app.fetch(new Request('http://localhost:8788/probe', { headers }), env)
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(200)
+  })
+
   it('fails open by default when ACTIONS_KV is unavailable', async () => {
     const app = makeApp({
       sustained: { max: 1, windowSeconds: 60, prefix: 'mw-open' },

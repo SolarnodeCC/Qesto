@@ -16,6 +16,7 @@ import {
 } from '../lib/atomic-rate-limit'
 import { writeEvent } from '../lib/observability'
 import { getFlag } from '../lib/flags'
+import { isLocalDevHost } from '../lib/origin'
 
 export type RateLimitOptions =
   | { profile: AtomicRateLimitProfile }
@@ -50,8 +51,7 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
   options: RateLimitOptions,
 ): MiddlewareHandler<{ Bindings: Env; Variables: V }> {
   return async (c, next) => {
-    const host = new URL(c.req.url).hostname
-    if (host === 'localhost' || host === '127.0.0.1') {
+    if (isLocalDevHost(c.req.url)) {
       return next()
     }
 

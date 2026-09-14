@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'
+import { LOGIN_MAX_PER_IP } from '../../functions/api/routes/auth/constants'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
@@ -397,6 +398,56 @@ describe('password signup + login', () => {
       makeEnv(db),
     )
     expect(res.status).toBe(401)
+  })
+
+  it('rate-limits password signup by edge IP on non-local hosts', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const actionsKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv, actions: actionsKv })
+    const headers = { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.88' }
+
+    const overLimit = LOGIN_MAX_PER_IP + 1
+    const statuses: number[] = []
+    for (let i = 0; i < overLimit; i++) {
+      const res = await app.fetch(
+        new Request('http://local/api/auth/password/signup', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ email: `prod-ip-${i}@example.com`, password: SIGNUP_PASSWORD }),
+        }),
+        env,
+      )
+      statuses.push(res.status)
+    }
+
+    expect(statuses.slice(0, LOGIN_MAX_PER_IP).every((s) => s === 201)).toBe(true)
+    expect(statuses[LOGIN_MAX_PER_IP]).toBe(429)
+  })
+
+  it('does not apply the IP signup limit on localhost (wrangler E2E)', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const actionsKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv, actions: actionsKv })
+    const headers = { 'content-type': 'application/json', 'cf-connecting-ip': '127.0.0.1' }
+
+    const statuses: number[] = []
+    for (let i = 0; i < LOGIN_MAX_PER_IP + 1; i++) {
+      const res = await app.fetch(
+        new Request('http://localhost:8788/api/auth/password/signup', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ email: `e2e-ip-${i}@example.com`, password: SIGNUP_PASSWORD }),
+        }),
+        env,
+      )
+      statuses.push(res.status)
+    }
+
+    expect(statuses.every((s) => s === 201)).toBe(true)
   })
 })
 
