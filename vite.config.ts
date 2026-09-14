@@ -83,15 +83,24 @@ export default defineConfig(() => {
       globals: true,
       environment: 'node',
       include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+      setupFiles: ['tests/setup/rtl.ts'],
       environmentMatchGlobs: [
         // a11y tests run in jsdom so axe-core can access a real DOM API
         ['tests/a11y/**', 'jsdom'],
+        // Component tests render real React trees (hooks, effects, events),
+        // which needs a DOM. Everything else stays on `node` — it is faster,
+        // and the API/unit tests have no use for one.
+        ['tests/component/**', 'jsdom'],
       ],
       coverage: {
         provider: 'v8',
         reporter: ['json', 'text', 'html'],
         reportsDirectory: './coverage',
-        include: ['functions/**/*.ts', 'src/**/*.tsx'],
+        // Measure the whole shipped surface. `src/**/*.ts` was missing until
+        // RT-2026-09: 75 files / ~6.5k lines — including the WebSocket client
+        // `src/hooks/useLiveSession.ts` — were excluded from the denominator,
+        // so the headline number flattered the least-tested part of the app.
+        include: ['functions/**/*.ts', 'src/**/*.ts', 'src/**/*.tsx'],
         exclude: ['dist/**', 'node_modules/**', 'scripts/**', 'tests/**', '**/*.test.ts', '**/*.test.tsx'],
         skipFull: true,
         // Regression FLOOR — set just below current project coverage so the
@@ -100,11 +109,17 @@ export default defineConfig(() => {
         // NOTE: under vitest v4 thresholds MUST live here, inside `thresholds`.
         // The previous top-level `lines: 85` keys were in the v3 location and
         // were silently ignored (coverage was ~31% with a green build).
+        // Measured 2026-09 under the corrected `include` above, after the
+        // component lane landed: 42.51 stmt / 31.07 branch / 38.18 func /
+        // 43.87 line. Each floor sits one point under the measurement, so
+        // today's slack cannot be spent silently. Long-term target is
+        // 85/85/75/85; raise these as coverage grows — never lower one to
+        // make a build pass.
         thresholds: {
-          statements: 35,
-          branches: 22,
-          functions: 30,
-          lines: 36,
+          statements: 41,
+          branches: 30,
+          functions: 37,
+          lines: 42,
         },
       },
     },

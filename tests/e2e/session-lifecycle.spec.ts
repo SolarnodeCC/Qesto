@@ -3,6 +3,11 @@ import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } f
 import { addPollQuestion, closeSession, createDraftSession, startSession } from './helpers/session'
 
 test.describe('Session lifecycle coverage', () => {
+  // Six navigations plus Durable Object init and a presenter WebSocket. The
+  // 30s default is too tight: the lighter sibling spec already burns ~27s of
+  // it. Same budget participant-voting.spec.ts uses for the same reason.
+  test.setTimeout(90_000)
+
   test('draft session is visible in launchpad and startable', async ({ page }) => {
     const email = createUniqueEmail('pw-life')
     await signupWithPassword(page, email, 'PlaywrightPass123!')
