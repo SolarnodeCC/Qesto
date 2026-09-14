@@ -25,6 +25,13 @@ export async function signupWithPassword(page: Page, email: string, password: st
   await page.getByRole('button', { name: /create account/i }).click()
 }
 
+async function failIfSignupErrored(page: Page): Promise<void> {
+  const error = page.getByRole('alert').filter({ hasText: /something went wrong/i })
+  if (await error.isVisible().catch(() => false)) {
+    throw new Error('Password signup stayed on /login with a generic error (check auth rate limits)')
+  }
+}
+
 export async function loginWithPassword(page: Page, email: string, password: string): Promise<void> {
   await openLoginTab(page, 'login')
   await page.locator('#login-email').fill(email)
@@ -33,7 +40,12 @@ export async function loginWithPassword(page: Page, email: string, password: str
 }
 
 export async function expectAuthenticatedDashboard(page: Page): Promise<void> {
-  await page.waitForURL(/\/dashboard(?:\?.*)?$/)
+  try {
+    await page.waitForURL(/\/dashboard(?:\?.*)?$/, { timeout: 20_000 })
+  } catch (err) {
+    await failIfSignupErrored(page)
+    throw err
+  }
   await expect(page.getByRole('button', { name: /^Account:/i })).toBeVisible({ timeout: 15_000 })
 }
 

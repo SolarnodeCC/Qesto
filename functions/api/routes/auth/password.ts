@@ -24,6 +24,7 @@ import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
 import { errorResponse } from '../../lib/error-handler'
+import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
@@ -49,7 +50,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       // was rate-limited but this one was open, which does not survive a public
       // free-access window. Same dual gate (L1 burst + L2 product window).
       const signupIp = c.req.header('cf-connecting-ip') ?? null
-      if (signupIp) {
+      if (signupIp && !isLocalDevHost(c.req.url)) {
         const ipGate = await atomicRateLimitDual(c.env, {
           key: `ip:${signupIp}`,
           burst: 'auth_burst',
@@ -142,7 +143,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         )
       const ip = c.req.header('cf-connecting-ip') ?? null
       // ADR-0073 Tier B: L1 auth_burst + L2 login window.
-      if (ip) {
+      if (ip && !isLocalDevHost(c.req.url)) {
         const ipGate = await atomicRateLimitDual(c.env, {
           key: `ip:${ip}`,
           burst: 'auth_burst',
