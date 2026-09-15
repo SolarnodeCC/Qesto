@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0003 (preflight validation contract) — session preflight route.
+ */
 // Tests for S18-prerequisite routes added to sessions.ts:
 //   GET  /api/sessions/:id/preflight
 //   POST /api/sessions/:id/ai/refine

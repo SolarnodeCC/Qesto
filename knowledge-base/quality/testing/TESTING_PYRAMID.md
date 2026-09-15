@@ -4,461 +4,187 @@ type: guide
 domain: governance
 category: policy
 status: active
-version: 1.0
+version: 2.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-09-14
 tags:
   - governance
   - policy
   - guidelines
+  - testing
 relates_to:
   - CONTRIBUTING
+  - QA_FULL
 ---
 
 # Testing Pyramid & CI Quality Gates
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
+
+_Last verified: 2026-09-14 (UTC). Counts below are measured output of `npm test`
+on that date, not targets._
 
 ## Overview
 
-Qesto uses a structured testing pyramid to ensure comprehensive coverage while maintaining fast feedback loops. Tests are classified into three levels: Unit, Integration, and E2E, with target distributions and performance gates.
+Qesto tests at the lowest level that fully captures the behaviour, and reserves
+browser tests for what only a browser can prove. Gate definitions, coverage
+floors and the requirement-traceability convention live in
+[`QA_FULL.md`](./QA_FULL.md); this document is the level-choice guide.
 
-## Testing Pyramid Structure
-
-```
-        🔺 E2E Tests (10%)
-        Slow, brittle, valuable
-        
-     📦 Integration Tests (20%)
-     Medium speed, higher confidence
-     
-🏗️  Unit Tests (70%)
-   Fast, isolated, foundation
-```
-
-### Target Distribution
-
-| Level | Target | Count | Per PR | Speed |
-|-------|--------|-------|--------|-------|
-| **Unit** | 70% | ~42 files | 0 failures | <100ms each |
-| **Integration** | 20% | ~12 files | 0 failures | <1s each |
-| **E2E** | 10% | ~6 files | 0 failures (or skip) | <5s each |
-
-**Current Stats:** 42 test files, 405 tests passing (`npm test`, verified 2026-05-01)
-
-## Test Classification
-
-### 1. Unit Tests
-
-**Location:** `tests/unit/`
-
-**Purpose:** Test individual functions, utilities, and services in isolation
-
-**Characteristics:**
-- No external dependencies (database, network, file system)
-- Use mocks/stubs for external calls
-- Run in <100ms
-- Test happy path, error cases, edge cases
-- >90% code coverage target for the tested module
-
-**Examples:**
-```typescript
-// tests/unit/services/sessionLifecycle.test.ts
-describe('SessionLifecycle', () => {
-  it('should transition from DRAFT to LIVE', () => {
-    const session = new SessionLifecycle({ status: 'draft' })
-    session.start()
-    expect(session.status).toBe('live')
-  })
-})
-
-// tests/unit/middleware/idempotency.test.ts
-describe('Idempotency middleware', () => {
-  it('should reject duplicate requests with same idempotency key', () => {
-    const req1 = idempotencyCheck({ idempotencyKey: 'abc-123' })
-    const req2 = idempotencyCheck({ idempotencyKey: 'abc-123' })
-    expect(req2.status).toBe(409)
-  })
-})
-```
-
-### 2. Integration Tests
-
-**Location:** `tests/technical/`, `tests/functional/`, `tests/data-security/`
-
-**Purpose:** Test interactions between components, APIs, and services
-
-**Characteristics:**
-- May use real or mocked databases
-- Test API routes with request/response
-- Test business logic workflows
-- Run in <1s
-- Focus on contract/interface correctness
-- Real authentication/authorization flows
-
-**Examples:**
-```typescript
-// tests/technical/api/route-integrity.test.ts
-describe('API Route Integrity', () => {
-  it('should have all routes properly mounted', () => {
-    // Tests that route structure matches expected paths
-    expect(getRoutePaths()).toContain('/api/sessions/:id')
-  })
-})
-
-// tests/functional/workflows/decision-workflow.test.ts
-describe('Decision Workflow', () => {
-  it('should complete full voting cycle', async () => {
-    const session = await createSession()
-    await submitVote(session.id, 'option-a')
-    const result = await getResults(session.id)
-    expect(result.votes).toContain('option-a')
-  })
-})
-```
-
-### 3. E2E Tests
-
-**Location:** `tests/functional/e2e/`, `tests/load/`, `tests/perf/`
-
-**Purpose:** Test complete user journeys from entry to exit
-
-**Characteristics:**
-- Full browser/client simulation
-- Real or staging environment
-- Test entire workflows
-- Run in <5s
-- Focus on critical paths (join, vote, results)
-- May be skipped in CI if infrastructure not available
-
-**Examples:**
-```typescript
-// tests/functional/e2e/e2e-scenario.test.ts
-describe('E2E: Complete Session Workflow', () => {
-  it('user should join, vote, and see results', async () => {
-    // Simulate complete user flow
-    await joinSession('code-1234')
-    await submitVote('option-a')
-    const results = await viewResults()
-    expect(results.winner).toBe('option-a')
-  })
-})
-```
-
-## Test Organization
-
-### By Feature Domain
+## Shape today
 
 ```
-tests/
-├── unit/                          # Atomic unit tests
-│   ├── services/                  # Business logic
-│   ├── middleware/                # Request/response handlers
-│   └── db/                        # Database queries
-├── functional/                    # Feature workflows
-│   ├── ui/                        # Component behavior
-│   ├── workflows/                 # Multi-step flows
-│   └── e2e/                       # Full user journeys
-├── technical/                     # Infrastructure
-│   ├── api/                       # Route/endpoint testing
-│   ├── integration/               # External service integration
-│   ├── websockets/                # WebSocket communication
-│   └── messaging/                 # Async messaging
-├── data-security/                 # Data & security
-│   ├── authentication/            # Auth flows
-│   ├── permissions/               # Access control
-│   ├── ownership/                 # Data isolation
-│   └── data-integrity/            # GDPR, audit logs
-├── a11y/                          # Accessibility
-│   └── critical-flows.test.ts     # WCAG AA compliance
-├── load/                          # Performance at scale
-│   └── k6/                        # Load testing
-└── perf/                          # Build performance
-    └── measure-performance.cjs    # Bundle size tracking
+         E2E (Playwright)           20 spec files
+      Component + a11y + stress     10 files
+   Integration (routes, migrations) 38 files
+          Unit                      248 files + 11 AI eval
 ```
 
-## Running Tests
+| Level | Location | Files | Tests | Runner |
+|---|---|---:|---:|---|
+| Unit | `tests/unit/` | 248 | 1959 | Vitest (node) |
+| AI eval | `tests/eval/` | 11 | 58 | Vitest golden set |
+| Integration | `tests/integration/` | 38 | 385 | Vitest + Hono app / SQLite |
+| Functional UI contract | `tests/functional/ui/` | 9 | 39 | Vitest (source-text assertions) |
+| Component | `tests/component/` | 2 | 16 | Vitest + RTL (jsdom) |
+| A11y | `tests/a11y/` | 5 | 76 | Vitest + axe-core (jsdom) |
+| Stress | `tests/stress/` | 3 | 27 | Vitest + MockDurableObjectState |
+| E2E | `tests/e2e/` | 20 | 58 | Playwright (Chromium) |
 
-### All Tests
+**`npm test` total: 316 files, 2706 tests, ~65 s.** (`npm test` picks up every
+`*.test.ts(x)` under `tests/`, so unit, integration, functional, component, a11y,
+stress and eval all run in that single command. Playwright `*.spec.ts` and the k6
+`tests/load/*.js` scripts do not.)
+
+## Choosing a level
+
+```
+What are you testing?                            → Level                      Helper
+──────────────────────────────────────────────────────────────────────────────────────
+Pure function, schema, key builder, JWT          → tests/unit/                mockEnv, vi.fn()
+Route handler, middleware, state transition      → tests/integration/         testHonoApp()
+Migration / real SQL behaviour                   → tests/integration/         tests/helpers/d1-sqlite.ts
+DO concurrency, WebSocket protocol under load    → tests/stress/              MockDurableObjectState
+React tree: hooks, effects, events               → tests/component/           RTL + jsdom
+Prompt, retrieval or AI output schema (REV-10)   → tests/eval/                golden fixtures
+WCAG on rendered markup                          → tests/a11y/                axe-core
+Whole journey in a real browser                  → tests/e2e/                 Playwright fixtures
+Throughput at scale                              → tests/load/                k6 (manual, not CI)
+```
+
+**Rule:** never write an integration test for what a unit test fully covers, and
+never write a unit test for what only end-to-end execution can prove.
+`tests/functional/ui/` asserts on *source text* (a route is registered, an endpoint
+is called); it is a cheap contract net, not a substitute for the component lane.
+
+## Running
+
 ```bash
-npm test
+npm test                          # every Vitest lane (CI mode)
+npm test -- tests/unit/           # one lane
+npm run test:a11y                 # a11y lane only
+npm run test:stress               # stress lane only
+npm run test:eval                 # AI golden set (REV-10 gate)
+npm run test:coverage             # + coverage thresholds
+npm run test:e2e:smoke            # Playwright: auth, lifecycle, participant voting
+npm run test:e2e:fullstack        # Playwright: full fullstack-chrome project
+npx vitest -t "supersede"         # filter by test name
 ```
 
-### By Level
-```bash
-# Unit tests only
-npm test -- tests/unit/
+The Playwright lane builds `dist/`, applies local D1 migrations and starts the
+Worker itself ([`scripts/e2e-webserver.sh`](../../../scripts/e2e-webserver.sh)) — no
+manual setup.
 
-# Integration tests only
-npm test -- tests/technical/ tests/functional/ tests/data-security/
+## Performance expectations
 
-# E2E tests only
-npm test -- tests/functional/e2e/ tests/load/
+| Lane | Measured 2026-09-14 |
+|---|---|
+| Full Vitest run | ~65 s (2706 tests) |
+| E2E smoke (7 tests) | ~18 s + ~10 s server cold start |
 
-# Accessibility tests
-npm test -- tests/a11y/
-```
+A unit test that needs more than ~100 ms is usually doing integration work in the
+wrong lane. DO tests get a 10 s timeout by default.
 
-### By Feature
-```bash
-# Session lifecycle
-npm test -- tests/unit/services/sessionLifecycle.test.ts
+## CI
 
-# Authentication
-npm test -- tests/data-security/authentication/
+| Workflow | Runs |
+|---|---|
+| [`ci.yml`](../../../.github/workflows/ci.yml) | quality gates (`ops/ci/quality-gates.sh`) |
+| [`playwright.yml`](../../../.github/workflows/playwright.yml) | E2E via `ops/ci/playwright.sh` — `smoke` on PRs, `full` on `main` |
 
-# API routes
-npm test -- tests/technical/api/
-```
+The gate list, coverage floors and the traceability ratchet are specified in
+[`QA_FULL.md`](./QA_FULL.md) §2–§5. Keep this file's counts and that file's gate
+table in step with reality — both were wrong for months (this document described
+`tests/technical/`, `tests/data-security/` and `tests/perf/`, none of which exist,
+and a `qa-gates.yml` workflow that was never added).
 
-### With Filtering
-```bash
-# Run tests matching pattern
-npm test -- --grep "should submit vote"
+## Writing good tests
 
-# Run single file
-npm test -- tests/unit/services/sessionLifecycle.test.ts
+### Every test file
 
-# Run with coverage (requires @vitest/coverage-v8)
-npm test -- --coverage
-```
+- [ ] Header docblock naming the requirement it proves (QA_FULL §5) — enforced by
+      `npm run check:test-traceability`
+- [ ] No `test.only` / `it.skip` in committed code (quarantine with an issue link instead)
+- [ ] Mock setup in `beforeEach`, never in `describe` scope
+- [ ] No dependence on execution order or shared state
+- [ ] No real external calls — Stripe, Resend, Workers AI and Vectorize are mocked
 
-## Performance Targets
+### Unit
 
-### Test Execution Time
+- [ ] One function or module under test, dependencies mocked
+- [ ] Happy path, error path, and the edge that motivated the code
+- [ ] Runs in <100 ms
 
-| Level | Target | Actual | Status |
-|-------|--------|--------|--------|
-| Unit (42 files) | 4.2s (100ms each) | <3s | ✅ PASS |
-| Integration (18 files) | 18s (1s each) | <12s | ✅ PASS |
-| E2E (3 files) | 15s (5s each) | <3s | ✅ PASS |
-| **Total** | **~37s** | **~18s** | ✅ PASS |
+### Integration
 
-### Coverage Targets
+- [ ] Crosses a route or storage boundary on purpose
+- [ ] Asserts the response contract (status, envelope, error code)
+- [ ] Real auth/RBAC path rather than a bypass
 
-| Metric | Target | Status | Notes |
-|--------|--------|--------|-------|
-| Line Coverage | 80% | 🔄 Pending | Coverage gate not yet implemented |
-| Branch Coverage | 75% | 🔄 Pending | Hit all code paths |
-| Function Coverage | 85% | 🔄 Pending | All functions tested |
-| Statement Coverage | 80% | 🔄 Pending | Every statement executed |
+### E2E
 
-## CI Quality Gates
+- [ ] A journey a user actually performs, asserted from the user's perspective
+- [ ] Deterministic selectors and generated unique fixtures (e.g. `createUniqueEmail`)
+- [ ] Budgeted timeout when the flow includes DO init plus a WebSocket
 
-### PR Gates (Required)
+## Common patterns
 
-✅ **All tests pass**
-```bash
-npm test 2>&1 | grep "Test Files"
-# Must show: "Test Files" "passed"
-```
-
-✅ **No TypeScript errors**
-```bash
-npm run typecheck
-# Must show no errors
-```
-
-✅ **Code quality checks**
-- ESLint (style + security)
-- No critical violations
-
-✅ **Performance targets met**
-- Build size <200KB JS, <50KB CSS
-- Test execution <30s total
-
-### CI Implementation
-
-See `.github/workflows/qa-gates.yml` for implementation.
-
-## Writing Good Tests
-
-### Unit Test Checklist
-
-- [ ] Tests a single function/method
-- [ ] No external dependencies (mock them)
-- [ ] Tests success case
-- [ ] Tests error/edge cases
-- [ ] Clear test name: `should [behavior] when [condition]`
-- [ ] Runs in <100ms
-- [ ] No shared state between tests
-
-### Integration Test Checklist
-
-- [ ] Tests interaction between components
-- [ ] Tests API contract (request/response)
-- [ ] Mock external services (Stripe, email, etc.)
-- [ ] Tests success and error flows
-- [ ] Clear business context in test name
-- [ ] Runs in <1s
-- [ ] Setup/teardown properly isolated
-
-### E2E Test Checklist
-
-- [ ] Tests complete user journey
-- [ ] Tests critical business flow
-- [ ] Can skip gracefully in CI (skip when infrastructure unavailable)
-- [ ] Tests from user perspective (not internal details)
-- [ ] Clear scenario description
-- [ ] Runs in <5s
-
-## Common Test Patterns
-
-### Mocking External Services
+### Mocking an external service
 
 ```typescript
-// Mock Stripe API
 vi.mock('../lib/stripe', () => ({
-  createCharge: vi.fn().mockResolvedValue({ id: 'ch_123' })
+  createCharge: vi.fn().mockResolvedValue({ id: 'ch_123' }),
 }))
-
-// Use in test
-import { createCharge } from '../lib/stripe'
-expect(createCharge).toHaveBeenCalledWith({ amount: 999 })
 ```
 
-### Testing Database Queries
+### Real SQL instead of a mock
 
 ```typescript
-// Use D1 test utilities
-import { createTestDB } from '../test-helpers'
-
-const db = createTestDB()
-await db.query('INSERT INTO sessions (id) VALUES (?)', ['sess-123'])
-const session = await db.query('SELECT * FROM sessions WHERE id = ?', ['sess-123'])
-expect(session).toBeDefined()
+import { SqliteD1, migrationFiles } from '../helpers/d1-sqlite'
+// applies migrations/ against better-sqlite3 — see tests/integration/migrations.test.ts
 ```
 
-### Testing WebSocket Messages
+### WebSocket / DO behaviour
 
 ```typescript
-import { createTestWebSocket } from '../test-helpers'
-
-const ws = createTestWebSocket()
-ws.send({ type: 'submit-vote', answer: 'option-a' })
-expect(ws.lastMessage.type).toBe('vote-confirmed')
-```
-
-### Testing Error Handling
-
-```typescript
-it('should return 401 when not authenticated', async () => {
-  const res = await request('/api/sessions/123')
-    .get()
-    .expect(401)
-  expect(res.body.error).toMatch(/unauthorized|authentication required/i)
-})
-```
-
-## Continuous Integration
-
-### Test Runs on Every Push
-
-1. **Lint & Type Check** (1m)
-   - ESLint for code quality
-   - TypeScript --noEmit for type safety
-
-2. **Unit Tests** (3s)
-   - Fast feedback
-   - Run immediately
-
-3. **Integration Tests** (12s)
-   - More thorough checks
-   - Run in parallel
-
-4. **E2E Tests** (optional, 3s)
-   - Skip if infrastructure unavailable
-   - Run with continue-on-error
-
-5. **Performance Checks** (optional)
-   - Bundle size tracking
-   - Non-blocking
-
-6. **Coverage Report** (if enabled)
-   - Line coverage ≥80%
-   - Blocks merge if below threshold
-
-## Tools & Configuration
-
-### Vitest
-
-```typescript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config'
-
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'node',
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    reporters: ['verbose'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['functions/**/*.ts', 'src/**/*.ts'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        'dist/',
-        '**/*.test.ts',
-        '**/*.d.ts'
-      ],
-      lines: 80,
-      branches: 75,
-      functions: 85,
-      statements: 80
-    }
-  }
-})
+import { SessionRoom } from '../../functions/api/SessionRoom'
+// drive the DO directly with MockDurableObjectState; see tests/stress/session-room-concurrent.test.ts
 ```
 
 ## Troubleshooting
 
-### Test Timeout
-
 ```bash
-# Increase timeout for slow tests
-npm test -- --testTimeout=20000
-
-# Or use vi.setConfig in test file
-vi.setConfig({ testTimeout: 20000 })
+npx vitest run --reporter=verbose tests/unit/foo.test.ts   # see every assertion
+npm test -- --testTimeout=20000                            # slow suite
 ```
 
-### Flaky Tests
-
-- Use `beforeEach()` to reset state
-- Mock time with `vi.useFakeTimers()`
-- Avoid `setTimeout()` without mocking
-- Test isolated, no shared state
-
-### Missing Mocks
-
-```bash
-npm test -- --reporter=verbose
-# Shows which imports aren't mocked
-```
+- Flaky by time → `vi.useFakeTimers()`, never a bare `setTimeout`
+- Flaky by state → reset in `beforeEach`
+- Playwright "Executable doesn't exist" → the pinned Chromium build is missing;
+  `scripts/e2e-webserver.sh` installs it, or run `npx playwright install chromium`
 
 ## Resources
 
-- [Vitest Documentation](https://vitest.dev/)
-- [Testing Best Practices](https://github.com/goldbergyoni/javascript-testing-best-practices)
-- [Test Pyramid Article](https://martinfowler.com/bliki/TestPyramid.html)
-
-## Next Steps
-
-1. **Enable Coverage Reporting**
-   - Install `@vitest/coverage-v8`
-   - Add coverage gate to CI
-
-2. **Performance Profiling**
-   - Profile slowest tests
-   - Optimize database mocks
-
-3. **E2E Expansion**
-   - Add critical path tests
-   - Set up staging environment
-
-4. **Documentation**
-   - Add test examples per feature
-   - Create testing guidelines document
+- [Vitest](https://vitest.dev/)
+- [Playwright](https://playwright.dev/)
+- [Test Pyramid (Fowler)](https://martinfowler.com/bliki/TestPyramid.html)

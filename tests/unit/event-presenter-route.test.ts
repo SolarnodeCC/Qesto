@@ -1,3 +1,6 @@
+/**
+ * Requirement: FE-STAGE-PRES-01 — event presenter route contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

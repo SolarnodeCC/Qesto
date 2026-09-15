@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §7 Admin — platform overview aggregation.
+ */
 import { describe, it, expect, vi } from 'vitest'
 import { buildPlatformOverview } from '../../functions/api/routes/admin/platform-overview'
 import type { Env } from '../../functions/api/types'

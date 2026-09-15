@@ -1,3 +1,9 @@
+/**
+ * Requirement: knowledge-base/quality/accessibility/A11Y_FULL.md §2 — WCAG 2.1 AA baseline, applied to the energizer surfaces (ADR-0013).
+ *
+ * Energizers render during ENERGIZING with participants already in the room, so
+ * the warm-up screens carry the same AA obligation as the question screens.
+ */
 import { describe, expect, it } from 'vitest'
 // Note: @testing-library/react and jest-axe are not installed in test environment
 // These tests document patterns for component-level accessibility testing

@@ -1,4 +1,5 @@
 /**
+ * Requirement: Asset-production lane, not a requirement proof — records B-roll for marketing (scripts/copy-marketing-videos.mjs). Product behaviour it walks: SPEC_REALTIME §WebSocket Messages (join, vote, live results).
  * Marketing video: interactive session — wizard → live poll (participant + presenter).
  * Recording: tests/artifacts/marketing-videos/01b-interactive-live-session.webm
  *

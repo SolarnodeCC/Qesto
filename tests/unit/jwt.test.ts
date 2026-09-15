@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — JWT mint/verify contract.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'
 

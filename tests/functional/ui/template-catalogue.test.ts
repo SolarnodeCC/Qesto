@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Component Hierarchy — template catalogue surface contract.
+ */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 

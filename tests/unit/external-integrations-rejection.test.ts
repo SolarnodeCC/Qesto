@@ -1,4 +1,5 @@
 /**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Stripe Integration — rejection paths when an external provider fails.
  * P0-A: External integrations (Stripe, Resend) rejection test suite
  *
  * Tests that failures from external payment and email services are properly

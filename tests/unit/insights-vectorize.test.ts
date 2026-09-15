@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-040 (KB vector pipeline) — insight embedding writes into DECISIONS_VECTORIZE.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   DECISIONS_EMBED_DIM,

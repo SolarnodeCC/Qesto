@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization + §Session State Machine — smoke path across both.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 /**

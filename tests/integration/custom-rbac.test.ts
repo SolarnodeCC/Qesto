@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0004 — custom RBAC authorization: a custom role grants team-member management without changing the built-in role.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

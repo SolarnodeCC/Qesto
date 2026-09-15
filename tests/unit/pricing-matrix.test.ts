@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/quality/audits/PROMISE_AUDIT_RESOLUTION_2026-07-01.md — the published matrix may only claim what PLAN_QUOTAS enforces (see FEATURE_COMPLIANCE_MATRIX.csv).
+ */
 import { describe, expect, it } from 'vitest'
 import { enrichPricingMatrix, PRICING_MATRIX_BASE } from '../../src/config/pricing-matrix'
 import { buildPlansFromCatalog, PLANS } from '../../src/config/plans'

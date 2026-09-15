@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0018 (KB RAG activation) — help chat reducer state.
+ */
 import { describe, it, expect } from 'vitest'
 import { helpChatReducer, INITIAL_HELP_STATE } from '../../../src/hooks/useHelpChat'
 

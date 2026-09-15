@@ -51,6 +51,13 @@ npx tsc --noEmit
 report_success "Lint ratchet (check:lint)"
 node scripts/check-lint-baseline.mjs
 
+# Requirement traceability ratchet: every test file names the requirement it
+# proves (ADR / SPEC section / backlog id / issue) in a header docblock, so a
+# failing test can be triaged against a source of truth and a requirement cannot
+# quietly lose its last test. Baseline 0 — see QA_FULL.md §5.
+report_success "Test requirement traceability (check:test-traceability)"
+node scripts/check-test-traceability.mjs
+
 # AI eval golden set (REV-10 DoD gate): prompt-injection confinement, output
 # schema acceptance/rejection corpus, PII scrub, governance guard matrix.
 report_success "AI eval golden set"

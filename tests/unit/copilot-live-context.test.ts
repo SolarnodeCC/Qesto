@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0046 (live facilitator copilot) — live session context window.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   buildLiveContext,

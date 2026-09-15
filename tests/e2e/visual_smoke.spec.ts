@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0071 (design system v1) — public pages keep a stable rendered layout.
+ */
 import { test, expect } from '@playwright/test'
 
 test.describe('visual smoke', () => {

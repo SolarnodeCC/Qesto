@@ -54,12 +54,12 @@ npm test                              # all layers (CI mode)
 npm test -- tests/unit/               # unit layer only
 npm test -- tests/integration/        # integration layer only
 npm run test:watch                    # vitest watch (local dev)
-npm run type-check                    # tsc --noEmit — required before every commit
+npm run typecheck                    # tsc --noEmit — required before every commit
 npx wrangler d1 migrations apply DB --local  # run once before integration tests
 ```
 
 **Recommended local order before pushing:**
-1. `npm run type-check` — fail fast on types
+1. `npm run typecheck` — fail fast on types
 2. `npm test -- tests/unit/` — fast, no I/O
 3. `npm test -- tests/integration/` — slower, real app
 4. `npm test` — full suite confirms nothing broken
@@ -385,6 +385,10 @@ it('Workers AI timeout/retry is explicit', async () => {
 
 ## Rules
 
+- Every test file opens with a docblock naming the requirement it proves —
+  `Requirement: ADR-0073 §WS-1 — …` (ADR id, SPEC section, knowledge-base path,
+  backlog/review id, or issue). Enforced by `npm run check:test-traceability`
+  (baseline 0); convention in `knowledge-base/quality/testing/QA_FULL.md §5`
 - Never use `test.only` or `it.skip` in committed code (except quarantined flaky with issue link)
 - Never mock an entire module when you only need one function — use `vi.spyOn`
 - Never write tests that depend on execution order
@@ -396,7 +400,7 @@ it('Workers AI timeout/retry is explicit', async () => {
 
 ## Output Contract
 
-1. Test file(s) created/modified + layer (unit / integration)
+1. Test file(s) created/modified + layer (unit / integration) + the requirement each header cites
 2. Which acceptance criteria each test covers
 3. Edge cases not yet covered
 4. `npm test` result (pass/fail + count)
@@ -404,8 +408,8 @@ it('Workers AI timeout/retry is explicit', async () => {
 
 ## Docs to Update
 
-- `docs/QA_FULL.md §1` — new quality gates or CI requirements
-- `docs/QA_FULL.md §2–3` — new test patterns
+- `knowledge-base/quality/testing/QA_FULL.md §1` — new quality gates or CI requirements
+- `knowledge-base/quality/testing/QA_FULL.md §2–3` — new test patterns
 - `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` — bugs reproduced by tests
 - `tests/flaky.quarantine.txt` — quarantined flaky tests
 

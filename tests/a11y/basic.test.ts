@@ -1,4 +1,5 @@
 /**
+ * Requirement: knowledge-base/quality/accessibility/A11Y_FULL.md §2 — WCAG 2.1 AA baseline on rendered pages.
  * Accessibility audit — WCAG AA compliance
  *
  * Uses axe-core to inject and run accessibility rules against rendered HTML

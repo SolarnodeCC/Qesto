@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0013 (energizer strategy pattern) — REST-plane ↔ DO lifecycle reconciliation.
+ */
 // Audit E-2 — single energizer plane. The host lobby manages energizers over
 // REST; the routes reconcile lifecycle changes into the SessionRoom DO via the
 // internal `/energizer-sync` endpoint so participants (anonymous included)

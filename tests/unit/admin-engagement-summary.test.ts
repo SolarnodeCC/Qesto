@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0060 (analytics insight intelligence) — engagement summary aggregation for the admin plane.
+ */
 import { describe, expect, it } from 'vitest'
 import { buildEngagementSummary } from '../../functions/api/lib/admin-engagement-summary'
 

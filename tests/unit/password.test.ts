@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — password hashing (security review finding SEC L-1).
+ */
 import { describe, it, expect } from 'vitest'
 import { hashPassword, verifyPassword, passwordNeedsRehash } from '../../functions/api/lib/password'
 

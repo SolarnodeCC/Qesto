@@ -1,4 +1,5 @@
 /**
+ * Requirement: ADR-0049 (verifiable voting receipt / tally integrity) — vote flush to D1 and KV is idempotent.
  * Vote flush persistence — regression guard for the multi-vote under-count bug
  * (migration 0080 + supersede handling).
  *

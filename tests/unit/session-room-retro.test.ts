@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0025 (SessionRoom decomposition) — retro storage key layout.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   RETRO_KEYS,

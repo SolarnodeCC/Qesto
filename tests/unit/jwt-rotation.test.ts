@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — JWT secret rotation without signing out live sessions.
+ */
 import { describe, expect, it } from 'vitest'
 import { jwtVerificationSecrets, signJwt, verifyJwtWithSecrets } from '../../functions/api/lib/jwt'
 

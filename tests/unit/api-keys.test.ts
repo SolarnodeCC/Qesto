@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0021 (public API v1) — API key hashing, prefixing and lookup.
+ */
 import { describe, expect, it } from 'vitest'
 import { generateApiKey, hashApiKey } from '../../functions/api/lib/api-keys'
 

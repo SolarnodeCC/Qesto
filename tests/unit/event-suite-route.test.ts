@@ -1,3 +1,6 @@
+/**
+ * Requirement: STAGE-SUITE-01 — event suite route contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

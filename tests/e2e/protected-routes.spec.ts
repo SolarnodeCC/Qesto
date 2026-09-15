@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Route AuthZ — authenticated routes redirect anonymous visitors.
+ */
 import { test, expect } from '@playwright/test'
 
 const protectedRoutes = [

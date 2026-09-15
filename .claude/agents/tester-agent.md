@@ -75,8 +75,8 @@ Miniflare DO hangs     → add per-test timeout, e.g. it('…', async () => {…
 
 | Change | Doc |
 |---|---|
-| New quality gates or CI requirements | `docs/QA_FULL.md §1` |
-| New test patterns | `docs/QA_FULL.md §2–3` |
+| New quality gates or CI requirements | `knowledge-base/quality/testing/QA_FULL.md §1` |
+| New test patterns | `knowledge-base/quality/testing/QA_FULL.md §2–3` |
 | Bug reproduced by test | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` |
 | Story AC verified | `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` — mark exit criteria done |
 

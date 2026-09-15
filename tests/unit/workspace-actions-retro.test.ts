@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0048 (recurring workspace data model) — retro actions merge on close.
+ */
 import { describe, expect, it } from 'vitest'
 import { mergeRetroActionsOnClose, readWorkspaceActions } from '../../functions/api/lib/workspace-actions'
 import { KVMock } from '../helpers/kv-mock'

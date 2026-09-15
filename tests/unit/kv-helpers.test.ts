@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-KV-Tenant-Conventions — KV access helpers (lib/kv.ts is the only permitted caller of env.*_KV).
+ */
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { readKvJson, readKvText, writeKvJson, writeKvText, deleteKv } from '../../functions/api/lib/kv'

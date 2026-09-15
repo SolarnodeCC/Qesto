@@ -1,3 +1,6 @@
+/**
+ * Requirement: STAGE-AGENDA-01 — event agenda route contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

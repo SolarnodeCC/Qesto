@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-040 (KB vector pipeline) — kb:sync CLI argument contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { parseKbSyncCliArgs } from '../../scripts/kb-sync-cli'
 

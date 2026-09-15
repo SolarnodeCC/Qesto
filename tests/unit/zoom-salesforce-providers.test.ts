@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0020 (Zoom/Salesforce OAuth) — provider adapters.
+ */
 import { describe, expect, it } from 'vitest'
 import { getZoomProvider } from '../../functions/api/lib/integrations/providers/zoom'
 import { getSalesforceProvider } from '../../functions/api/lib/integrations/providers/salesforce'

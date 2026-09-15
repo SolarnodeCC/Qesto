@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0019 (LDAP/Salesforce sync) — LDAP group → Qesto role mapping.
+ */
 import { describe, expect, it } from 'vitest'
 import { entryPassesFilter, resolveRoleForGroups } from '../../functions/api/lib/ldap-group-map'
 

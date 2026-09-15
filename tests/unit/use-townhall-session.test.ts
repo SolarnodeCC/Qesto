@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0044 (town hall Q&A board) — town hall client hook.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   townhallReducer,

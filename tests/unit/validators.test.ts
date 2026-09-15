@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0005 (DO protocol versioning) — realtime protocol schema validation.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   validateData,

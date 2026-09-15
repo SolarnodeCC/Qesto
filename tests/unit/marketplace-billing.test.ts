@@ -1,3 +1,6 @@
+/**
+ * Requirement: MARKETPLACE-CONNECT-01 (knowledge-base/product/backlog/BACKLOG_MASTER.md) — Stripe Connect revenue share.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   deriveAccountStatus,

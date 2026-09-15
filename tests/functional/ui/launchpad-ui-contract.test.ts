@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Routes & Pages — launchpad host controls contract.
+ */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 

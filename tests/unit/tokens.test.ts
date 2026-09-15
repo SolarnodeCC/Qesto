@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — magic-link token mint, single use and expiry.
+ */
 import { describe, expect, it } from 'vitest'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../functions/api/lib/tokens'
 

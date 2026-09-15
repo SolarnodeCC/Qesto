@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_DATAMODEL.md — participant flow per question type (poll, ranking, open, consent).
+ */
 import { test, expect } from './fixtures'
 import type { Browser, Page } from '@playwright/test'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0019 (LDAP/Salesforce sync) — directory sync run and its KV bookkeeping.
+ */
 import { describe, expect, it } from 'vitest'
 import { fetchLdapDirectory, syncLdapDirectoryToTeam } from '../../functions/api/lib/ldap-sync'
 import type { Team } from '../../functions/api/routes/teams'

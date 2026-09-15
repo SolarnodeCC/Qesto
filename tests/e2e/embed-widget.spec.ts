@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0050 — embeddable SDK: widget mint, origin sandboxing and the public read plane.
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 import { apiFetch } from './helpers/platform-api'

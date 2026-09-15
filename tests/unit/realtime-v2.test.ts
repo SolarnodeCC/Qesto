@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0031 (realtime protocol v2) — message envelope and version negotiation.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   defaultLiveProtocolVersion,

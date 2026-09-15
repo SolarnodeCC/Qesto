@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_DATAMODEL.md §KV Namespaces — KV JSON decode at the trust boundary (no unchecked casts).
+ */
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 import { decodeKvJson, decodeObject, decodeRequestBody } from '../../functions/api/lib/boundary-decode'

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §2 Sessions — duplicate title suggestion.
+ */
 import { describe, expect, it } from 'vitest'
 import { suggestDuplicateTitle } from '../../functions/api/lib/session-title'
 

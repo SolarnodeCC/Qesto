@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §i18n & Localization — i18n init must not block first render (LCP).
+ */
 // @vitest-environment jsdom
 //
 // LCP render-delay fix: English locales are bundled and seeded synchronously, so

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0004 (custom RBAC) — role enforcement and the audit trail it writes.
+ */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { testHonoApp, cookieFor, SEED_ADMIN_EMAIL } from './setup'
 

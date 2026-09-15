@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0060 (analytics insight intelligence) — team insight refresh route.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { writeKvJson } from '../../functions/api/lib/kv'

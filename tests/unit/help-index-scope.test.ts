@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0018 (KB RAG activation) — the help index contains help documents only (KB ⊇ help).
+ */
 import { describe, expect, it } from 'vitest'
 import * as fs from 'fs'
 

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0022 (multi-region foundation) + ADR-0001 (DO per session) — cross-region SessionRoom behaviour.
+ */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   crossRegionEnergizerKey,

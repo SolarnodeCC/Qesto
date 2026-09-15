@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — span tracing helpers.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   composeRateLimitDetail,

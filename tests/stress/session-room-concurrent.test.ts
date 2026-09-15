@@ -1,4 +1,5 @@
 /**
+ * Requirement: ADR-0001 (DO per session) + ADR-0073 (atomic rate limiting); caps in knowledge-base/specifications/domain/SPEC_REALTIME.md §SessionRoom Durable Object.
  * Stress tests for SessionRoom Durable Object under load.
  *
  * Scenarios:

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Slack Integration — webhook delivery, retry and HMAC signature.
+ */
 import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest'
 import {
   deliverWebhook,

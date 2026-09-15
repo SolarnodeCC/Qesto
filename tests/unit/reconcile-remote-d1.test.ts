@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_DATAMODEL.md §Migration Pattern — remote migration tracker reconciliation (scripts/reconcile-remote-d1.mjs).
+ */
 import { execFileSync } from 'node:child_process'
 import {
   chmodSync,

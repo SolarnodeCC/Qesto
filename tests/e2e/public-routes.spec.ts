@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Route AuthZ — public routes render without a session.
+ */
 import { test, expect } from '@playwright/test'
 
 const publicRoutes = [

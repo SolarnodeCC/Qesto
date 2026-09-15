@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-KV-Tenant-Conventions — KV key builders and tenant prefixes.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   cachePlanUsageKey,

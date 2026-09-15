@@ -1,3 +1,6 @@
+/**
+ * Requirement: REV-10 (AI eval gate) — help prompt version management.
+ */
 import { describe, it, expect } from 'vitest'
 
 /**

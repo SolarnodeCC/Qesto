@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0062 (federation trust isolation model) + knowledge-base/specifications/domain/SPEC_DATAMODEL.md §KV Namespaces — no cross-tenant read of session or team data.
+ */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { testHonoApp } from './setup'
 

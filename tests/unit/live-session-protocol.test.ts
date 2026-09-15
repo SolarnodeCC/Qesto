@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0031 (realtime protocol v2) + knowledge-base/specifications/domain/SPEC_REALTIME.md §Wire format (normative).
+ */
 import { describe, expect, it } from 'vitest'
 import { parseInitPayload } from '../../src/lib/live-session-protocol'
 

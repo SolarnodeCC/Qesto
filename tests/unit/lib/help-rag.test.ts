@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0018 (KB RAG activation) — help RAG system-prompt assembly.
+ */
 import { describe, it, expect } from 'vitest'
 import { buildSystemPrompt } from '../../../functions/api/lib/help-rag'
 

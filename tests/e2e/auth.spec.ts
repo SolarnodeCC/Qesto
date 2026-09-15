@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — password signup, login and logout round trip.
+ */
 import { test, expect } from './fixtures'
 import {
   createUniqueEmail,

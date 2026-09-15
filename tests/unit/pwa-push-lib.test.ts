@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0034 (PWA offline/push) — web push subscription and payload encryption helpers.
+ */
 import { describe, expect, it, beforeEach } from 'vitest'
 import {
   PushSubscriptionSchema,

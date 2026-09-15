@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §1 Auth — magic-link round trip and password signup/login.
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'

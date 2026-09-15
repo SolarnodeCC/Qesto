@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0044 (town hall Q&A board) — storage key layout and moderation state.
+ */
 import { describe, expect, it } from 'vitest'
 import type { TownhallItem } from '../../functions/api/realtime'
 import {

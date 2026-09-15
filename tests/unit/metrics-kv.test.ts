@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — time-series bucketing of metrics in KV.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { recordMetric, readBucket, percentile, bucketKeyFor } from '../../functions/api/lib/metrics-kv'
 

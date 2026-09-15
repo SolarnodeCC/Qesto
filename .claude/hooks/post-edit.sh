@@ -48,7 +48,7 @@ fi
 if [[ "$FILE" =~ ^src/.*\.(ts|tsx)$ ]] || \
    [[ "$FILE" =~ ^functions/api/.*\.ts$ ]] || \
    [[ "$FILE" =~ ^worker/.*\.ts$ ]]; then
-  echo "INFO: TypeScript file edited — run 'npm run type-check' before committing." >&2
+  echo "INFO: TypeScript file edited — run 'npm run typecheck' before committing." >&2
 fi
 
 # ── Frontend component test reminder ─────────────────────────────────────────

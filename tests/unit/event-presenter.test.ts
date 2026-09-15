@@ -1,3 +1,6 @@
+/**
+ * Requirement: FE-STAGE-PRES-01 — presenter model and slide-deck URL normalisation.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   applyPresenterPut,

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-KV-Tenant-Conventions — tenant namespace derivation.
+ */
 import { describe, expect, it } from 'vitest'
 import { namespacedKey, tenantNamespacePrefix } from '../../functions/api/lib/tenant-namespace'
 

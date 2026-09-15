@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0029 (AI workflows) + ADR-0006 — question generation for the session wizard.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   WizardAIError,

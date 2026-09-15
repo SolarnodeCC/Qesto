@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §10 Collaboration — gamification badge mechanics.
+ */
 import { describe, it, expect } from 'vitest'
 import { determineBadgesAwarded, type BadgeType } from '../../functions/api/lib/gamification'
 

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0013 (energizer strategy pattern) + ADR-0010 (zero-knowledge mode) — per-viewer redaction of energizer state.
+ */
 // Core-audit E-1/E-4: per-viewer projection of live energizer state. Voters
 // must never receive the answer key or other voters' raw answers; presenters
 // keep the full state.

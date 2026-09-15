@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0048 (recurring workspace data model) — workspace routes.
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — signup/login validation surfaces.
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, openLoginTab } from './helpers/auth'
 

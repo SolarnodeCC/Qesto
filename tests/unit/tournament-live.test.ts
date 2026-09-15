@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0017 (tournament state machines) — live bracket progression.
+ */
 import { describe, it, expect } from 'vitest'
 import {
   maybeAdvanceBattleRoyale,

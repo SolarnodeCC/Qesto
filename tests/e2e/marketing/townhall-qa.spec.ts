@@ -1,4 +1,5 @@
 /**
+ * Requirement: Asset-production lane, not a requirement proof — records B-roll for marketing (scripts/copy-marketing-videos.mjs). Product behaviour it walks: ADR-0044 (town hall Q&A board).
  * Marketing video: Town hall Q&A — create → start → audience question → approve.
  * Recording: tests/artifacts/marketing-videos/02-townhall-live-qa.webm
  */

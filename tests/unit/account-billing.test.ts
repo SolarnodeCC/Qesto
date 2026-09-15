@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Stripe Integration — billing portal session from the client.
+ */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createBillingPortalSession } from '../../src/lib/account-billing'
 

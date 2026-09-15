@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Session Modes — retro mode client hook.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   RETRO_INITIAL,

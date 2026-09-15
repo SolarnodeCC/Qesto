@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0022 (multi-region foundation) + ADR-0027 (multi-region writes) — region routing.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   getMultiRegionConfig,

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0046 (live facilitator copilot) + ADR-0029 (AI workflows) — drafting a poll from host intent.
+ */
 import { describe, expect, it } from 'vitest'
 import { draftPollFromIntent, DRAFT_POLL_INTENT_MAX } from '../../functions/api/lib/copilot-draft-poll'
 import { WizardValidationError } from '../../functions/api/lib/ai-wizard'

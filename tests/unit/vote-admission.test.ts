@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Voter Deduplication (PSM-007) — vote admission evaluation.
+ */
 import { describe, expect, it } from 'vitest'
 import { evaluateVoteAdmission, type TokenBucket } from '../../functions/api/lib/session-room-vote'
 

@@ -16,7 +16,7 @@ if [[ $TOTAL_TS -gt 0 ]]; then
   echo ""
   echo " Before committing, verify:"
   echo "   npm test              → all unit tests pass"
-  echo "   npm run type-check    → no TypeScript errors"
+  echo "   npm run typecheck     → no TypeScript errors"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
 fi

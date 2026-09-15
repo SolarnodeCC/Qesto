@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_DATAMODEL.md §Migration Pattern — detect and repair a sessions table predating the mode widening.
+ */
 import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest'
 import {
   __resetTownhallSchemaRepairForTests,

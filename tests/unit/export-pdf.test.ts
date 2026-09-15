@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §2 Sessions — results export rendering.
+ */
 import { describe, expect, it } from 'vitest'
 import { generateSessionHtmlExport, type ExportSessionData } from '../../functions/api/lib/export-pdf'
 

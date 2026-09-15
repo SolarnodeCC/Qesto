@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0034 (PWA offline + push) + ADR-0042 (Capacitor native shell) — native push token registration.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

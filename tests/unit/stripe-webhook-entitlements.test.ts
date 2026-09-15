@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Stripe Integration — webhook-driven entitlement changes (issue #585).
+ */
 import { describe, expect, it, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import { mountStripeWebhookRoutes } from '../../functions/api/routes/billing-webhooks'

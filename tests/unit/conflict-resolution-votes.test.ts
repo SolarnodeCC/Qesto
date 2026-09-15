@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Voter Deduplication (PSM-007) — vote admission guards.
+ */
 import { describe, expect, it, beforeEach } from 'vitest'
 import {
   evaluateVoteAdmission,

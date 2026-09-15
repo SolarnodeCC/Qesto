@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0049 (verifiable voting receipt / tally integrity) — vote policy resolution for multi-vote kinds.
+ */
 // WS4-A — characterization tests for SessionRoom vote semantics (pure applyVoteMutation).
 
 import { describe, expect, it } from 'vitest'

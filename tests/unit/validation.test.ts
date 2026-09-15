@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §Validation (Zod) — session creation schema.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   CreateSessionSchema,

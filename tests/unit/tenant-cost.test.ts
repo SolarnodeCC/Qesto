@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0032 (tenant quota attribution) — per-tenant cost accounting.
+ */
 import { describe, expect, it } from 'vitest'
 import { buildCostSnapshot, estimateTenantCostCents } from '../../functions/api/lib/tenant-cost'
 

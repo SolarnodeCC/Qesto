@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0020 (Zoom/Salesforce OAuth) — Zoom embed surface.
+ */
 import { describe, expect, it } from 'vitest'
 
 describe('zoom embed', () => {
