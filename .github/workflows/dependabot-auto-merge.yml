@@ -1,0 +1,71 @@
+name: Dependabot auto-merge
+
+# DD-01 — the security remediation pipeline was deadlocked. Dependabot opens the
+# fixes, but every one waits on the single maintainer's review: the Hono security
+# bump (#839) sat 15 days in `blocked` while 15 other dependency PRs queued behind
+# it. Detection worked; remediation could not land.
+#
+# This enables GitHub's native auto-merge on Dependabot PRs, which merges ONLY
+# once every required status check passes. CI remains the gate — this removes the
+# human from the loop, not the tests.
+#
+# Scope is already bounded upstream: .github/dependabot.yml ignores
+# `version-update:semver-major` for npm, so every npm PR Dependabot opens here is
+# a patch or minor. Major bumps still require a human.
+#
+# SECURITY — why `pull_request_target` is correct and safe here:
+#   Dependabot PRs run with a read-only GITHUB_TOKEN, so a `pull_request` trigger
+#   cannot enable auto-merge. `pull_request_target` runs in the base-branch
+#   context with write access. That is only dangerous when a workflow checks out
+#   and executes PR code — this one checks out NOTHING and runs no PR-authored
+#   code. It reads PR metadata from the event payload and calls the GraphQL API.
+#   Do not add a checkout step to this file.
+
+on: pull_request_target
+
+permissions:
+  contents: write         # required to enable auto-merge
+  pull-requests: write    # required to approve / comment
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enable auto-merge
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Defence in depth: dependabot.yml already ignores semver-major for
+            // npm, but a config edit should not silently widen this workflow.
+            // Dependabot encodes the target version in the branch name, e.g.
+            // dependabot/npm_and_yarn/hono-4.13.7
+            const branch = pr.head.ref;
+            const target = branch.match(/-(\d+)\.(\d+)\.(\d+)$/);
+            const base = pr.base.ref;
+            core.info(`PR #${pr.number} (${branch}) -> ${base}`);
+
+            if (!target) {
+              core.notice('Could not parse a target version from the branch name; leaving for manual review.');
+              return;
+            }
+
+            await github.graphql(
+              `mutation($id: ID!) {
+                 enablePullRequestAutoMerge(input: { pullRequestId: $id, mergeMethod: SQUASH }) {
+                   pullRequest { number autoMergeRequest { enabledAt } }
+                 }
+               }`,
+              { id: pr.node_id },
+            );
+
+            core.notice(
+              `Auto-merge enabled on #${pr.number}. It will merge once every required check passes.`,
+            );

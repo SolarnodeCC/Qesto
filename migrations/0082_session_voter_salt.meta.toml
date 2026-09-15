@@ -1,0 +1,26 @@
+id = "0082_session_voter_salt"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "additive"
+stage = "expand"
+
+[approval]
+# Additive nullable column, no backfill, no rewrite — no destructive-change gate.
+approved_by = ""
+approval_date = ""
+
+[rollback]
+strategy = "drop-column"
+procedure = "ALTER TABLE sessions DROP COLUMN voter_salt; the code falls back to the legacy derivation when the column is absent, so rollback is non-breaking."
+
+[backup]
+required = false
+note = "Additive nullable column; no existing row is read or rewritten."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+post_check = "0082_session_voter_salt.verify.sql"
+verify = true

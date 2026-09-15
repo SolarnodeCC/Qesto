@@ -101,8 +101,12 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
+    // /api/version rather than /api/admin/health: this test is about CSRF
+    // allowing safe methods cross-origin, and health now runs real dependency
+    // probes (DD-08) whose outcome against a mock is irrelevant here. Asserting
+    // on a route with no side conditions keeps the test about one thing.
     const res = await app.fetch(
-      new Request('http://local/api/admin/health', {
+      new Request('http://local/api/version', {
         headers: { origin: 'https://anywhere.example' },
       }),
       env,

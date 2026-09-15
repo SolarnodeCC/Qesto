@@ -1,0 +1,79 @@
+# DD-02 — gitleaks configuration.
+#
+# The secret-scanning lane in ops/ci/supply-chain.sh runs with `--exit-code 1`,
+# so a finding fails the build. That only works if deliberate placeholders are
+# allowlisted narrowly — otherwise the first false positive re-teaches everyone
+# to ignore the lane, which is the failure mode DD-02 is about.
+#
+# ⚠️ On its first blocking run this lane found REAL credentials (DD-41): a live
+# Cloudflare API token, an Access service-token id + secret, and the KB admin key
+# pasted into knowledge-base/operations/deployment/KB_SYNC_CLI_PHASE4.md. Those
+# are redacted from the working tree and are NOT allowlisted here. Every entry
+# below was individually inspected and is an obviously-fake placeholder or a
+# non-secret identifier.
+#
+# Rule for additions: allowlist the exact VALUE where possible, not the file.
+# When adding an example to documentation, use an obviously-fake placeholder so
+# no allowlist entry is needed at all.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Obviously-fake placeholders in documentation and specs."
+regexTarget = "match"
+regexes = [
+  # Stripe / Resend / webhook doc examples
+  '''sk_(live|test)_(abc123|xxxx|TEST123|12345|51234567890abcdefghij|4eC39HqLyjWDarht12345|\.\.\.)''',
+  '''whsec_(abc123|xxxx|\.\.\.)''',
+  '''re_(xxxx|abc123|\.\.\.)''',
+  # Slack's own documented placeholder webhook
+  '''hooks\.slack\.com/services/T00000000/B00000000/X+''',
+  # Redacted markers introduced by the DD-41 cleanup
+  '''<(CLOUDFLARE_API_TOKEN|CF_ACCESS_CLIENT_ID|CF_ACCESS_CLIENT_SECRET|KB_ADMIN_KEY)>''',
+]
+
+[[allowlists]]
+description = "Test fixtures — self-describing fake values used to assert rejection paths."
+paths = [
+  '''tests/unit/external-integrations-rejection\.test\.ts''',
+  '''tests/unit/rate-limit-middleware\.test\.ts''',
+  '''tests/integration/wave1-auth-session-lifecycle\.test\.ts''',
+]
+regexTarget = "match"
+regexes = [
+  '''integration-test-secret-at-least-32-bytes''',
+  '''eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.sig''',   # literal ".sig" — not a real signature
+  '''sk_live_51234567890abcdefghij''',
+]
+
+[[allowlists]]
+description = "Non-secret Cloudflare identifiers. CF_ACCESS_AUDIENCE is a public audience tag, not a credential; it appears in wrangler.toml by design."
+paths = ['''wrangler\.toml''']
+regexTarget = "match"
+regexes = ['''0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de''']
+
+[[allowlists]]
+description = "Detector definitions — lib/log.ts and the guard hooks contain the redaction patterns themselves, which necessarily look like the secrets they match."
+paths = [
+  '''functions/api/lib/log\.ts''',
+  '''\.claude/hooks/post-edit\.sh''',
+  '''\.claude/QA_CHECKLIST\.md''',
+  '''\.claude/skills/COMMON_RULES\.md''',
+  '''ops/ci/secret-scan\.sh''',
+  '''\.gitleaks\.toml''',
+]
+
+[[allowlists]]
+description = "Documentation key NAMES, not values (e.g. the KB sync guides reference env-var names in prose)."
+paths = [
+  '''knowledge-base/metadata/migration/PHASE1_FINAL_GUIDE\.md''',
+  '''knowledge-base/operations/deployment/PHASE1_DEPLOYMENT_READY\.md''',
+  '''knowledge-base/operations/deployment/KB_SYNC_CLI_PHASE4\.md''',
+]
+regexTarget = "match"
+regexes = ['''phase1-vectorize-sync-test-key-2026''']
+
+[[allowlists]]
+description = "Lockfile integrity hashes are not credentials."
+paths = ['''package-lock\.json''']

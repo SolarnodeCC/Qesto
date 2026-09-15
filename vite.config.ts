@@ -41,7 +41,12 @@ export default defineConfig(() => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true,
+      // DD-15: 'hidden' still EMITS .map files (upload them to an error tracker)
+      // but omits the //# sourceMappingURL comment, so the browser never requests
+      // them. Previously `true` published unminified source — comments, feature
+      // flag names, plan-gating logic, unshipped functionality — to anyone, cached
+      // `immutable` for a year via public/_headers.
+      sourcemap: 'hidden',
       target: 'es2022',
       // Performance budget: warn in the build log when any chunk exceeds ~250 kB
       // (pre-gzip). Large chunks on the critical path delay LCP, so a visible
@@ -53,7 +58,10 @@ export default defineConfig(() => {
           manualChunks: (id) => {
             // Split vendor libraries into separate chunks
             if (id.includes('node_modules')) {
-              if (id.includes('react')) {
+              // Match the package directory, not any path containing "react"
+              // (which also caught react-router-dom, react-qr-code, and anything
+              // else with the substring).
+              if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
                 return 'react-vendor'
               }
               if (id.includes('@tailwindcss') || id.includes('tailwindcss')) {
