@@ -1,4 +1,5 @@
 /**
+ * Requirement: knowledge-base/quality/accessibility/A11Y_FULL.md §2 — keyboard operability (WCAG 2.1.1/2.1.2/2.4.3/4.1.2).
  * Keyboard navigation accessibility tests
  *
  * Verifies:

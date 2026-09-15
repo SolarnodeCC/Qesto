@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0032 (tenant quota attribution) + ADR-0036 (EU multi-region write GA) — quota routing and the EU cohort.
+ */
 import { describe, expect, it } from 'vitest'
 import { isTeamInEuWriteCohort } from '../../functions/api/lib/db-router'
 

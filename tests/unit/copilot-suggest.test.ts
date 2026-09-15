@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0056 (agentic maturity L2 copilot) — suggestion ranking and guardrails.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   buildSuggestMessages,

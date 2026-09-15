@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §7 Admin + §Validation (Zod) — admin user-creation schema.
+ */
 import { describe, it, expect } from 'vitest'
 import { AdminCreateUserSchema } from '../../functions/api/lib/domain-schemas'
 

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0048 (recurring workspace data model) §4 — stale workspace trend recomputation.
+ */
 import { describe, expect, it } from 'vitest'
 import { recomputeStaleWorkspaceTrends } from '../../functions/api/lib/workspace-trends'
 import { D1Mock } from '../helpers/d1-mock'

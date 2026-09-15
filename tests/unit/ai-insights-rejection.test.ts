@@ -1,4 +1,5 @@
 /**
+ * Requirement: ADR-0006 (Workers AI capabilities) + REV-10 — insights rejection and retry paths; no external LLM APIs.
  * P0-A: AI rejection test suite
  *
  * Tests that Workers AI rejection paths are properly sanitized and don't leak

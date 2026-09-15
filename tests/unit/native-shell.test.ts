@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0042 (Capacitor native shell) + ADR-0015 (mobile client contract) — native shell bridge.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { isNativeShell, nativePlatform, nativeSafeAreaClass } from '../../src/lib/native-shell'

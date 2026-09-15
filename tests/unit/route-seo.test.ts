@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0065 (HTML shell + SWR edge caching) — per-route SEO metadata must not duplicate across routes.
+ */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'

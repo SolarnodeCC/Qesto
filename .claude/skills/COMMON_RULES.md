@@ -109,7 +109,7 @@ Every skill file must reference which docs to update:
 - Policy changes → `docs/AGENT_SKILL_GOVERNANCE.md`
 - Architecture changes → `knowledge-base/architecture/ARCHITECTURE.md`
 - Security findings → `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0) or `§4 Security`
-- QA/test patterns → `docs/QA_FULL.md §2–3`
+- QA/test patterns → `knowledge-base/quality/testing/QA_FULL.md §2–3`
 - Flaky tests → `docs/FLAKY_TESTS.md`
 
 ## 10) Skill Governance Alignment (Non-Negotiable)

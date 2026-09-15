@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — error-budget computation.
+ */
 import { describe, expect, it } from 'vitest'
 import { computeSloBudgets, PLATFORM_SLOS } from '../../functions/api/lib/slo'
 

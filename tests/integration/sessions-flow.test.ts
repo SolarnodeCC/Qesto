@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §2 Sessions — response contracts and the POST → GET → PATCH → GET round trip.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

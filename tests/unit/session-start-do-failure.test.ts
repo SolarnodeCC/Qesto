@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0001 (DO per session) — POST /start surfaces a SessionRoom fetch failure instead of leaving a half-started session.
+ */
 // /start DO-failure hardening: a SessionRoom stub.fetch rejection must be
 // logged with class/message/retryable, retried exactly once when Cloudflare
 // marks it `retryable` (guaranteed undelivered), and otherwise surface the

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — threshold state evaluation.
+ */
 import { describe, it, expect } from 'vitest'
 import {
   DEFAULT_THRESHOLDS,

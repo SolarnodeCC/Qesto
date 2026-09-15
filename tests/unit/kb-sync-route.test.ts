@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-040 (KB vector pipeline) — admin kb-sync writes Vectorize AND D1.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'

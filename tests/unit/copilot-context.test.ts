@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0046 (live facilitator copilot) — context assembly for copilot prompts.
+ */
 import { describe, expect, it } from 'vitest'
 import { CopilotContextSchema, buildCopilotContext } from '../../functions/api/lib/copilot-context'
 

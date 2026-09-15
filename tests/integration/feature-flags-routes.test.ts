@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §Middleware stack — plan-gated routes via featureAllowed (ADR-0074 for the served plan).
+ */
 import { describe, expect, it } from 'vitest'
 import { getFlag } from '../../functions/api/lib/flags'
 import { featureAllowed, denyFeature } from '../../functions/api/lib/entitlements'

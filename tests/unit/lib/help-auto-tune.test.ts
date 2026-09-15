@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0018 (KB RAG activation) + REV-10 — help assistant auto-tuning flow.
+ */
 import { describe, it, expect } from 'vitest'
 
 /**

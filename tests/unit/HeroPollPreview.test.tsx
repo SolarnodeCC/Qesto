@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0071 (design system v1) — marketing hero poll preview component contract.
+ */
 // @vitest-environment jsdom
 //
 // HeroPollPreview (Finding 4) — landing-page hero "live results" preview.

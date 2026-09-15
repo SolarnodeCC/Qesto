@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0046 (live facilitator copilot) + ADR-0009 (PII sanitization) — coaching route audit controls.
+ */
 import { Hono } from 'hono'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuthVariables } from '../../functions/api/middleware/auth'

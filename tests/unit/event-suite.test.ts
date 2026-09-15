@@ -1,3 +1,6 @@
+/**
+ * Requirement: STAGE-SUITE-01 — event suite composition over agenda + presenters.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   closeEventSuite,

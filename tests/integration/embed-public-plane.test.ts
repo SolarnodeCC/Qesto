@@ -1,4 +1,5 @@
 /**
+ * Requirement: ADR-0050 — embeddable SDK: the public read plane and the EMBED_WIDGET_SECRET HMAC token boundary.
  * Integration: embed public read plane (mint → token → aggregate state).
  * Complements tests/unit/embed-routes.test.ts with the integration test lane label.
  */

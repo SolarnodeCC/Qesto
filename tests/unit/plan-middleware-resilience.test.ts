@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0074 (temporary free access promo) — planMiddleware resolves the served plan and degrades safely.
+ */
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 import { planMiddleware } from '../../functions/api/middleware/plan'

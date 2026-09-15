@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — audit query builder and webhook SLA forensics.
+ */
 import { describe, expect, it } from 'vitest'
 import { filterAuditRecords } from '../../functions/api/lib/audit-query'
 import { computeWebhookSla } from '../../functions/api/lib/webhook-sla'

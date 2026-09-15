@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0013 — energizer REST plane in DRAFT/ENERGIZING (create, list, patch state).
+ */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { testHonoApp, cookieFor } from './setup'
 

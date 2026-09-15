@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0021 (public API v1) — API key lifecycle: mint, rotate, revoke.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   generateApiKey,

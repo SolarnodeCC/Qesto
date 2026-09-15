@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Session Modes — idempotent upvoter merge.
+ */
 import { describe, expect, it } from 'vitest'
 import { mergeIdeateUpvoters } from '../../functions/api/lib/session-room-ideate'
 

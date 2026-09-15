@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0003 (preflight validation contract) — idempotency key handling on mutating routes.
+ */
 import { describe, expect, it } from 'vitest'
 import { IdempotencyInFlightError, withIdempotency } from '../../functions/api/lib/idempotency'
 

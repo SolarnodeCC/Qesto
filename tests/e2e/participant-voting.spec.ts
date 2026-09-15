@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §WebSocket Messages — join by code, vote, and see results in LIVE.
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 import { newParticipantContext } from './helpers/context'

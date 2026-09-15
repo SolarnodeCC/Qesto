@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — trace id propagation across edge hops.
+ */
 import { describe, expect, it } from 'vitest'
 import { parseTraceHeaders, traceDetail } from '../../functions/api/lib/distributed-trace'
 

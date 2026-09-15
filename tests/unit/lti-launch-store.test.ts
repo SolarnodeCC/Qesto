@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Authentication Flows — LTI launch-context store (issue #587).
+ */
 import { describe, expect, it } from 'vitest'
 import {
   persistLaunchContext,

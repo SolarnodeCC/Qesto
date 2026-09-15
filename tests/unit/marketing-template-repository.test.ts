@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0026 (repository layer) — marketing template repository access pattern.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   findUserIdByEmail,

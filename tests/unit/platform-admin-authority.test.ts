@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0004 (custom RBAC authorization) — platform-admin authority boundary.
+ */
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 import { adminMiddleware } from '../../functions/api/middleware/admin'

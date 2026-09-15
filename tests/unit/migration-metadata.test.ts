@@ -1,3 +1,6 @@
+/**
+ * Requirement: HLT-021 / HLT-030 — every migration carries safety metadata; see knowledge-base/specifications/domain/SPEC_DATAMODEL.md §Migration Pattern.
+ */
 import { describe, expect, it } from 'vitest'
 import { readFileSync, existsSync, readdirSync } from 'fs'
 import { join } from 'path'

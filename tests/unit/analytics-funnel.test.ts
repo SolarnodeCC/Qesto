@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0060 (analytics insight intelligence) — conversion funnel computation.
+ */
 import { describe, it, expect } from 'vitest'
 import { computeFunnel, csvField, toCsv, resolveWindow } from '../../functions/api/lib/analytics-funnel'
 

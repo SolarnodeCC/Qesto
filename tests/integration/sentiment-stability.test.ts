@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0011 — live sentiment inference: success path and degradation behaviour.
+ */
 // Integration tests for SENTIMENT_ENABLED stability (error logging, retry, circuit breaker).
 // Covers: success path, failure paths, retry logic, circuit breaker respect, cooldown enforcement.
 

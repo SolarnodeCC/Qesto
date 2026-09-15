@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0036 (EU multi-region write GA) — data residency enforcement on writes.
+ */
 import { describe, expect, it } from 'vitest'
 import { assertResidencyAllowsMutation } from '../../functions/api/lib/residency-enforce'
 

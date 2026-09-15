@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0071 (design system v1) — scroll-reveal hook.
+ */
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { act } from 'react'

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0057 (pulse analytics data model) — PULSE-AUDIT-01 audit trail.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   buildPulseAuditRecord,

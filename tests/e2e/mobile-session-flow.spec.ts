@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0015 (mobile client contract) + knowledge-base/specifications/domain/SPEC_FRONTEND.md §Routes & Pages — mobile-first host and participant flows.
+ */
 import { test, expect } from './fixtures'
 
 /**

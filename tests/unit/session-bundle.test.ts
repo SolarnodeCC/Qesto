@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0006 (Workers AI capabilities) — session bundle → insights input projection.
+ */
 import { describe, expect, it } from 'vitest'
 import { toInsightsInput } from '../../functions/api/lib/session-bundle'
 import type { SessionBundle } from '../../functions/api/lib/session-bundle'

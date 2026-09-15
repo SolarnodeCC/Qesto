@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0033 (federation trust) + ADR-0062 (federation trust isolation model).
+ */
 import { describe, expect, it } from 'vitest'
 import { FederationLinkSchema } from '../../functions/api/lib/federation'
 

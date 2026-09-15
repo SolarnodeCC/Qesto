@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0056 (agentic maturity L2 copilot) — multi-turn copilot state.
+ */
 import { describe, expect, it } from 'vitest'
 import { appendTurn, CopilotThreadSchema } from '../../functions/api/lib/copilot-multiturn'
 

@@ -1,3 +1,9 @@
+/**
+ * Requirement: knowledge-base/quality/accessibility/A11Y_FULL.md §3 — axe audit of the real, served pages.
+ *
+ * The Vitest a11y lane audits rendered markup in jsdom; this lane is the same
+ * requirement proved against the shipped SPA in a browser.
+ */
 import { test, expect } from './fixtures'
 import { expectNoSeriousA11yViolations } from './helpers/a11y'
 

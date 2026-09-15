@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0073 (atomic rate limiting on Workers API) — the non-atomic KV fallback path.
+ */
 import { beforeEach, describe, expect, it } from 'vitest'
 import { rateLimit } from '../../functions/api/lib/rate-limit'
 

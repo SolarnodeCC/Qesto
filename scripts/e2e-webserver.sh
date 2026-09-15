@@ -26,4 +26,17 @@ fi
 echo "e2e-webserver: applying local D1 migrations…" >&2
 npm run e2e:db:local
 
+# Chromium, pinned by the installed @playwright/test. Playwright refuses to launch
+# when the browser build its version expects is absent, which is what a clean
+# checkout (and any container with a differently-pinned pre-provisioned Chromium)
+# hits: "Executable doesn't exist at .../chromium_headless_shell-<build>". The
+# install is a no-op once the right build is on disk, so the lane stays
+# standalone-runnable without a documented manual step. Set
+# E2E_SKIP_BROWSER_INSTALL=1 where the browser is provisioned by the image
+# (ops/ci/playwright.sh installs it with --with-deps before calling Playwright).
+if [[ "${E2E_SKIP_BROWSER_INSTALL:-0}" != "1" ]]; then
+  echo "e2e-webserver: ensuring the pinned Chromium build is installed…" >&2
+  npx playwright install chromium
+fi
+
 exec bash scripts/e2e-serve-fullstack.sh

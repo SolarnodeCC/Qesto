@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Slack Integration — webhook dead-letter retry helpers.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   buildDlqDeliveryFn,

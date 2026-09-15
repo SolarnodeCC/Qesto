@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0034 (PWA offline/push) — push route contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { PushPayloadSchema, PushSubscriptionSchema } from '../../functions/api/lib/pwa-push'
 

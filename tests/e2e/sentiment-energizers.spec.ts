@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0011 (live sentiment inference) + ADR-0013 (energizer strategy pattern), behind SENTIMENT_ENABLED / LIVE_ENERGIZERS_ENABLED.
+ */
 // E2E tests for SENTIMENT_ENABLED and LIVE_ENERGIZERS_ENABLED.
 // Tests full flow: create session, start session, participant join/vote via WebSocket.
 

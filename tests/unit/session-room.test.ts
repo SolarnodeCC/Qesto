@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0001 (DO per session) + ADR-0005 (DO protocol versioning) — init, request_state and the DO message surface.
+ */
 // S1–S5 acceptance for the SessionRoom Durable Object.
 //
 // The harness mocks just the slice of the runtime the DO actually touches

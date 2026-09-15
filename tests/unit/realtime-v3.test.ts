@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0038 (results delta realtime v3) — delta results frames.
+ */
 import { describe, expect, it } from 'vitest'
 import { isLiveProtocolSupported, liveProtocolFeatures, LIVE_PROTOCOL_VERSION_V3 } from '../../functions/api/realtime'
 import { parseResultsDelta } from '../../src/lib/live-session-protocol'

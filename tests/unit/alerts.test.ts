@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0030 (SLOs & error budgets) — alert threshold detection.
+ */
 import { describe, it, expect } from 'vitest'
 import { checkAlert } from '../../functions/api/lib/alerts'
 

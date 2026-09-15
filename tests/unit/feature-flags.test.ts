@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0074 (temporary free access promo) — flag resolution and plan gating via effectivePlan.
+ */
 import { describe, expect, it } from 'vitest'
 import { getFlag, flagOff, type FlagName } from '../../functions/api/lib/flags'
 

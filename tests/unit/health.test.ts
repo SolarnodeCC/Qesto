@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §7 Admin — health endpoint contract.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import type { Env } from '../../functions/api/types'

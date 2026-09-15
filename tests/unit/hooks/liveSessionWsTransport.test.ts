@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §WebSocket Protocol — client transport: connect, backoff, teardown.
+ */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   createReconnectingWs,

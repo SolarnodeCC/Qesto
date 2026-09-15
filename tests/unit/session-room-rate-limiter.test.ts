@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0073 (atomic rate limiting) — in-DO token bucket for WebSocket traffic.
+ */
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { RateLimiter, pruneRateLimitMap } from '../../functions/api/lib/session-room-rate-limiter'
 

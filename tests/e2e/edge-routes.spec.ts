@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Routes & Pages — unknown-route and edge-route behaviour.
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 

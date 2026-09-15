@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0042 (Capacitor native shell) + ADR-0034 (PWA offline/push) — native push payload schema.
+ */
 import { describe, expect, it } from 'vitest'
 import { RegisterDeviceTokenSchema } from '../../functions/api/lib/native-push'
 

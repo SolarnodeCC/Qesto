@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Session State Machine — POST /start branches to ENERGIZING or LIVE.
+ */
 // Integration tests for the DRAFT → LIVE session lifecycle.
 // Covers: single start, idempotent concurrent start, DO failure + rollback,
 // validation guards, and structured log event emission.

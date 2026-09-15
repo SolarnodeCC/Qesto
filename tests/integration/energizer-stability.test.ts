@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0013 (energizer strategy pattern) + knowledge-base/specifications/domain/SPEC_REALTIME.md §LIVE Energizer v1 Extension — activation and state stability.
+ */
 // Integration tests for LIVE_ENERGIZERS_ENABLED stability (timeout, permissions, broadcast).
 // Covers: activation, timeout auto-completion, permission checks, answer handling, failure modes.
 

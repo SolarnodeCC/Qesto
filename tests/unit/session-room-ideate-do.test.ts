@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Session Modes — ideate init and snapshot in the DO.
+ */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { testJwtSecret } from '../helpers/test-credentials'
 import { SessionRoom } from '../../functions/api/SessionRoom'

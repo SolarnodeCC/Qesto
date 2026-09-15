@@ -1,4 +1,5 @@
 /**
+ * Requirement: Asset-production lane, not a requirement proof — records B-roll for marketing (scripts/copy-marketing-videos.mjs). Product behaviour it walks: SPEC_CORE §Session State Machine + ADR-0044 (town hall Q&A).
  * Marketing video: full product showcase (live poll + town hall Q&A).
  * Recording: tests/artifacts/marketing-videos/00-full-product-showcase.webm
  */

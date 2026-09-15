@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0073 (atomic rate limiting on Workers API), work-stream WS-1.
+ */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ATOMIC_RATE_LIMIT_PROFILES,

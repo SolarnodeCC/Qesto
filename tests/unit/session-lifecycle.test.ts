@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Session State Machine — permitted transitions.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   rejectDraftForResults,

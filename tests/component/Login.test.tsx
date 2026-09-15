@@ -1,4 +1,5 @@
 /**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Authentication & Authorization — magic link + password sign-in.
  * Login — the acquisition funnel (magic link, password login, signup).
  *
  * These render the real component with real hooks, effects and events: the

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0006 (Workers AI capabilities) + REV-10 — theme extraction contract for session insights.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   InsightsAIError,

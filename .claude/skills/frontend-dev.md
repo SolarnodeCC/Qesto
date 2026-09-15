@@ -173,7 +173,7 @@ const debouncedSearch = useDebouncedCallback((q) => fetch(`/api/search?q=${q}`),
 ## PR Checklist
 
 ```
-□ npm run type-check passes
+□ npm run typecheck passes
 □ All buttons ≥ 44px height (min-h-[44px])
 □ Icon-only buttons have aria-label
 □ Ghost buttons have visible border

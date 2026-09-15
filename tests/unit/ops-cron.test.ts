@@ -1,3 +1,7 @@
+/**
+ * Requirement: ADR-DO-Timers — scheduled job liveness (missed-cron detection).
+ * Requirement: ADR-DO-Timers — scheduled job liveness (missed-cron detection).
+ */
 import { describe, it, expect } from 'vitest'
 import { CRON_REGISTRY, isCronMissed, nextRunAfter, MISSED_RUN_GRACE_MS } from '../../functions/api/lib/ops-cron'
 

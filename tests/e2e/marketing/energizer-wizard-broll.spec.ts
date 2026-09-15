@@ -1,4 +1,5 @@
 /**
+ * Requirement: Asset-production lane, not a requirement proof — records B-roll for marketing (scripts/copy-marketing-videos.mjs). Product behaviour it walks: ADR-0013 (energizers) + SPEC_FRONTEND §Routes & Pages.
  * Marketing B-roll: wizard + Emoji Poll energizer on launchpad (pre-live).
  * Recording: tests/artifacts/marketing-videos/01a-wizard-energizer-setup.webm
  */

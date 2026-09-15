@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0060 (analytics insight intelligence) + ADR-0026 (repository layer) — team insights repository.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   deleteTeamInsightRollups,

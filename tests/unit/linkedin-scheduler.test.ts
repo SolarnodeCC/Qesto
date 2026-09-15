@@ -1,3 +1,6 @@
+/**
+ * Requirement: REV-41 (LinkedIn auto-posting, knowledge-base/product/backlog/REV_LOW_STORIES.md) — post clamping and scheduling.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { runScheduled, type SchedulerEnv } from '../../workers/linkedin-scheduler/index'
 import { createEncryptedTokenStore } from '../../functions/api/lib/integrations/token-store'

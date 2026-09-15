@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0028 (public API v3) — Deprecation/Sunset headers on superseded API versions.
+ */
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 import { deprecationHeaders } from '../../functions/api/lib/deprecation'

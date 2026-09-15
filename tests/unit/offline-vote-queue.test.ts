@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0034 (PWA offline + push) — votes queued offline replay once the client reconnects.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, beforeEach } from 'vitest'
 import {

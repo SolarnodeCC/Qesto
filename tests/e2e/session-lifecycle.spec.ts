@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Session State Machine — DRAFT → ENERGIZING → LIVE → CLOSED.
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 import { addPollQuestion, closeSession, createDraftSession, startSession } from './helpers/session'

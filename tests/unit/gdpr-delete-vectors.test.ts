@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Data Lifecycle + ADR-040 (KB vector pipeline) — GDPR erasure reaches the vector layer.
+ */
 import { describe, it, expect, vi } from 'vitest'
 import { deleteUserGdprData } from '../../functions/api/lib/gdpr-delete-user'
 

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Slack Integration — outbound webhook contract and HMAC signing.
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { hmacSha256Hex } from '../../functions/api/lib/webhooks'

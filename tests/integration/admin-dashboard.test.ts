@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §7 Admin — platform metrics and admin route contracts.
+ */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { testHonoApp, cookieFor, SEED_ADMIN_EMAIL } from './setup'
 

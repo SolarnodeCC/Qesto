@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Authentication Flows + ADR-0009 (PII sanitization) — OAuth/SAML hardening and error sanitization.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import * as oauth from '../../functions/api/lib/oauth'

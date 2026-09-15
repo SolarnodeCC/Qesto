@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0044 (town hall Q&A board) + ADR-0073 (atomic rate limiting) — per-participant submit token bucket.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   BOARD_SUBMIT_BUCKET_CAPACITY,

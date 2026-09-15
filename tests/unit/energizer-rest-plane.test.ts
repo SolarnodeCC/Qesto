@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0013 (energizer strategy pattern) — host-only REST plane for the active energizer.
+ */
 // Audit E-1 (REST half) + E-2 — the REST energizer plane after consolidation:
 //  - GET /energizers/active is host-only (it returns raw configs incl. answer
 //    keys; it previously had NO access check at all),

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_INTEGRATIONS.md §Stripe Integration — plan catalogue is the single source of quota truth.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { PLAN_QUOTAS } from '../../functions/api/types'

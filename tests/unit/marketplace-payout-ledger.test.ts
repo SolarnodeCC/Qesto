@@ -1,3 +1,6 @@
+/**
+ * Requirement: MARKETPLACE-CONNECT-01 (knowledge-base/product/backlog/BACKLOG_MASTER.md) — payout ledger integrity (issue #588).
+ */
 import { describe, expect, it } from 'vitest'
 import {
   computeNetEarningsCents,

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0048 (recurring workspace data model) — workspace mood/trend derivation.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   moodFromRetroCounts,

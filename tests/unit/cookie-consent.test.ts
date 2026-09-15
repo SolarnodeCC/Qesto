@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Data Lifecycle — GDPR consent gate before any analytics script loads.
+ */
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
 import {

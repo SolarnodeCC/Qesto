@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0071 (design system v1) — animated number hook honours reduced motion.
+ */
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'

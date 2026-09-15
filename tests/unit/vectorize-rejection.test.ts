@@ -1,4 +1,5 @@
 /**
+ * Requirement: ADR-040 (KB vector pipeline) — Vectorize rejection and degradation paths.
  * P0-A: Vectorize rejection test suite
  *
  * Tests that Vectorize failures are gracefully degraded. Vectorize is optional

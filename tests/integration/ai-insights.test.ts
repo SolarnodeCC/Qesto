@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_BACKEND.md §4 AI + ADR-0010 (zero-knowledge mode) — insights response contract and the governance guard (REV-06).
+ */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { testHonoApp, cookieFor } from './setup'
 

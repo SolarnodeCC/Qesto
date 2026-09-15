@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §Routes & Pages — host session-creation funnel (wizard → launchpad).
+ */
 import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 import { createDraftSession, addPollQuestion, startSession, openPresenterView } from './helpers/session'

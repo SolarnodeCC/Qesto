@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0057 (pulse analytics data model) — longitudinal aggregation, k-anonymity, retention and tenant isolation.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   applyKAnonymityToDailyRows,

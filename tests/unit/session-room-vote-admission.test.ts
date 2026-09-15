@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_REALTIME.md §Voter Deduplication (PSM-007) — buffered vote supersede glue.
+ */
 // Regression coverage for the DO-side vote admission glue. The pure vote
 // mutation and D1 flush layers are tested separately; these tests prove the
 // handler carries count-decrement intent into the buffered vote shape.

@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Session State Machine — close → persist → results round trip.
+ */
 // Phase 4 integration: DRAFT → LIVE (start) → seed votes into the DO →
 // POST /close (persists to D1.votes, flips status) → GET /results returns
 // the persisted aggregate.

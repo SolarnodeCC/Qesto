@@ -96,7 +96,7 @@ function reconnect() {
 ## Output Format
 
 1. Files changed
-2. Run `npm run type-check` — flag any type issues
+2. Run `npm run typecheck` — flag any type issues
 3. Note if `npm test` needs updating
 4. **Docs updated** — list which `docs/` files changed and what
 

@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0018 (KB RAG activation) — service-key auth on the knowledge-base search route.
+ */
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import type { Env } from '../../functions/api/types'

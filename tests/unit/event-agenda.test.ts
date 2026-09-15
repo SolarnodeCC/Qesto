@@ -1,3 +1,6 @@
+/**
+ * Requirement: STAGE-AGENDA-01 — event agenda model (sibling route contract: tests/unit/event-agenda-route.test.ts).
+ */
 import { describe, expect, it } from 'vitest'
 import { buildPublicAgenda, joinPathForMode, normalizeAgendaPut } from '../../functions/api/lib/event-agenda'
 

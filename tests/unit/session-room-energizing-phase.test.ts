@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_CORE.md §Session State Machine — the ENERGIZING phase inside the DO.
+ */
 // DO energizing phase (#529 Janurai re-audit): D1 may be `energizing` while the DO
 // must not expose questions or accept votes until transition-to-live.
 

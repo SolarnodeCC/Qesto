@@ -1,3 +1,6 @@
+/**
+ * Requirement: knowledge-base/specifications/domain/SPEC_FRONTEND.md §State Management Patterns — useLiveSession reducer transitions.
+ */
 import { describe, expect, it } from 'vitest'
 import { reducer, INITIAL } from '../../src/hooks/useLiveSession'
 import type { LiveState, LiveQuestion, LiveSessionSummary } from '../../src/hooks/useLiveSession'
