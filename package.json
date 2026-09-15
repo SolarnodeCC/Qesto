@@ -6,7 +6,7 @@
   "overrides": {
     "esbuild": "^0.28.1",
     "ws": "^8.21.0",
-    "js-yaml": "^4.3.1"
+    "js-yaml": "^4.3.2"
   },
   "scripts": {
     "dev": "vite",
@@ -42,7 +42,7 @@
     "seo:setup": "bash scripts/seo-setup.sh",
     "seo:doctor": "bash scripts/seo-cli.sh doctor --json",
     "seo:run": "bash scripts/seo-cli.sh",
-    "check:rc": "npm run check:claude-config && npm run check:lint && npm run check:migrations && npm run check:kv-access && npm run check:ai-gateway && npm run check:d1-access && npm run check:error-response && npm run check:no-any && npm run typecheck && npm run check:i18n && npm run check:help-seed && npm run check:contrast-tokens && npm run check:test-traceability && npm run check:baseline && npm test && npm run test:eval && npm run test:a11y && npm run build",
+    "check:rc": "npm run check:claude-config && npm run check:circular && npm run check:lint && npm run check:migrations && npm run check:kv-access && npm run check:ai-gateway && npm run check:d1-access && npm run check:error-response && npm run check:no-any && npm run typecheck && npm run check:i18n && npm run check:help-seed && npm run check:contrast-tokens && npm run check:test-traceability && npm run check:baseline && npm test && npm run test:eval && npm run test:a11y && npm run build",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "smoke:platform": "node scripts/smoke-platform.mjs",
@@ -72,15 +72,12 @@
     "check:test-traceability": "node scripts/check-test-traceability.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
-    "cap:android": "npx cap open android"
+    "cap:android": "npx cap open android",
+    "check:audit": "npm audit --audit-level=high --json > target/security/npm-audit.json || true && node scripts/check-audit-allowlist.mjs target/security/npm-audit.json",
+    "check:circular": "node scripts/check-circular-deps.mjs"
   },
   "dependencies": {
-    "@capacitor/app": "^7.0.1",
-    "@capacitor/core": "^7.6.8",
-    "@capacitor/preferences": "^7.0.1",
-    "@capacitor/push-notifications": "^7.0.7",
     "hono": "^4.13.1",
-    "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
     "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -90,8 +87,12 @@
   },
   "devDependencies": {
     "@capacitor/android": "^7.6.8",
+    "@capacitor/app": "^7.0.1",
     "@capacitor/cli": "^7.6.8",
+    "@capacitor/core": "^7.6.8",
     "@capacitor/ios": "^7.6.8",
+    "@capacitor/preferences": "^7.0.1",
+    "@capacitor/push-notifications": "^7.0.7",
     "@cloudflare/workers-types": "^4.20260702.1",
     "@eslint/js": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -112,6 +113,7 @@
     "eslint": "^10.10.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
+    "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
     "jsdom": "^29.1.1",
     "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.3",

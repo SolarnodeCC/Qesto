@@ -1,0 +1,67 @@
+{
+  "$comment": [
+    "DD-02 — dated risk acceptances for `npm audit`, consumed by scripts/check-audit-allowlist.mjs.",
+    "An entry here is a deliberate, time-boxed decision, not a mute: once `expires` passes,",
+    "the build fails on it exactly as if it were unlisted. Shrink this list; never extend a",
+    "date without re-assessing. Every entry below is a devDependency — none ships to the edge",
+    "runtime (`npm audit --omit=dev` reports only hono, which PR #839 resolves).",
+    "Remediation for all of these is already open as Dependabot PRs; the blocker is review",
+    "throughput (DD-01), which the dependabot-auto-merge workflow addresses."
+  ],
+  "allow": [
+    {
+      "name": "wrangler",
+      "severity": "high",
+      "reason": "devDependency only (CLI). Transitively vulnerable via miniflare -> sharp -> libheif. Not reachable from the deployed Worker. Fix open as PR #861 / #853.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "miniflare",
+      "severity": "high",
+      "reason": "devDependency only (local Workers emulator). Vulnerable via sharp -> libheif. Fix open as PR #861.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "sharp",
+      "severity": "high",
+      "reason": "devDependency only, pulled in by miniflare. libheif CVEs require decoding attacker-supplied HEIF; no such path in dev tooling. Fix open as PR #861.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "@redocly/openapi-core",
+      "severity": "high",
+      "reason": "devDependency of openapi-typescript (contract generation). Vulnerable via js-yaml. Fix open as PR #862.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "js-yaml",
+      "severity": "high",
+      "reason": "devDependency, transitively via @redocly/openapi-core. The package.json override now pins ^4.3.2, which is outside the advisory range; entry retained until the lockfile resolves. Fix open as PR #862.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "nanoid",
+      "severity": "high",
+      "reason": "devDependency (build tooling). Infinite loop requires a custom generator with size 0, which is not used.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "@xmldom/xmldom",
+      "severity": "high",
+      "reason": "devDependency only. Fix open as PR #849.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "browserslist",
+      "severity": "high",
+      "reason": "devDependency (build-time target resolution). Fix open as PR #857.",
+      "expires": "2026-10-15"
+    },
+    {
+      "name": "fast-uri",
+      "severity": "high",
+      "reason": "devDependency, transitive. Fix open as PR #850.",
+      "expires": "2026-10-15"
+    }
+  ]
+}

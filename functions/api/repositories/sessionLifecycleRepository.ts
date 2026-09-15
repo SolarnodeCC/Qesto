@@ -7,6 +7,7 @@
  * unit-testable in isolation.
  */
 import { ulid } from '../lib/ulid'
+import { generateVoterSalt } from '../lib/voter'
 import type { Session } from '../types'
 
 /** Count energizers still in `draft` for a session (drives energizing vs live start). */
@@ -29,12 +30,21 @@ export async function startSessionTransition(
   status: 'energizing' | 'live',
   startedAt: number,
 ): Promise<number> {
+  // DD-03: mint the per-session voter salt here, in the same conditional write
+  // that starts the session. This is the one moment that is both exactly-once
+  // (the `status = 'draft'` predicate makes a concurrent second call a no-op)
+  // and strictly before any vote can be cast, so every participant in a session
+  // is hashed under one key and no vote can precede it.
+  //
+  // COALESCE keeps an existing salt if one is somehow already present, so a
+  // replayed start can never re-key a session mid-flight and split one voter's
+  // identity in two.
   const result = await db
     .prepare(
-      `UPDATE sessions SET status = ?1, started_at = ?2
+      `UPDATE sessions SET status = ?1, started_at = ?2, voter_salt = COALESCE(voter_salt, ?5)
        WHERE id = ?3 AND owner_id = ?4 AND status = 'draft'`,
     )
-    .bind(status, startedAt, id, ownerId)
+    .bind(status, startedAt, id, ownerId, generateVoterSalt())
     .run()
   return result.meta.changes ?? 0
 }

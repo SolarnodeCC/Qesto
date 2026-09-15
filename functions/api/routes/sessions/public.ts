@@ -70,12 +70,12 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     const session = await c.env.DB
       .prepare(
         `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-                created_at, started_at, closed_at, archived_at, team_id
+                created_at, started_at, closed_at, archived_at, team_id, voter_salt
            FROM sessions
           WHERE id = ?1`,
       )
       .bind(id)
-      .first<SessionRow>()
+      .first<SessionRow & { voter_salt: string | null }>()
     if (!session) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
@@ -127,7 +127,9 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
       }
     }
 
-    const identity = await deriveVoterIdentity(c.req.raw)
+    // DD-03: key the anonymous identity to this session's salt, so the stored
+    // voter_id is not an invertible function of the participant's IP.
+    const identity = await deriveVoterIdentity(c.req.raw, session.voter_salt)
     const voterId = role === 'presenter' && presenterUserId ? `host_${presenterUserId}` : identity.voterId
 
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? ''

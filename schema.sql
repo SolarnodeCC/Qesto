@@ -59,7 +59,12 @@ CREATE TABLE IF NOT EXISTS sessions (
   team_id TEXT DEFAULT NULL,
   is_public INTEGER DEFAULT 1,
   workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
-  workspace_seq INTEGER
+  workspace_seq INTEGER,
+  -- DD-03 (migration 0082): per-session 32-byte random salt keying the anonymous
+  -- voter identifier. NULL means "derive the legacy way" so sessions created
+  -- before the migration keep working. Deleting the salt at close makes that
+  -- session's stored voter_ids permanently un-invertible.
+  voter_salt TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
@@ -172,8 +177,21 @@ CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
 -- ─────────────────────────────────────────────────────────────────────────────
 -- townhall_questions — TOWNHALL-01 (ADR-0044). Audience-submitted Q&A board.
 -- LIVE board state lives in the SessionRoom DO; this table is the persist-on-close
--- archive/export tier and the GDPR-erasure surface. author_hash = opaque voterId
--- (sha256(ip || fingerprint)), never PII — enables targeted per-author erasure.
+-- archive/export tier and the GDPR-erasure surface.
+--
+-- author_hash = the session-scoped voterId, used for targeted per-author erasure.
+--
+-- DD-03 CORRECTION: this comment previously asserted the identifier was
+-- "never PII". That was factually wrong. It was `sha256(ip)[0:8]` — unsalted,
+-- truncated to 32 bits over a 32-bit input — and therefore invertible by
+-- exhaustive search. Under GDPR Recital 26 / EDPB 05/2014 that is
+-- pseudonymisation, not anonymisation: it remained personal data.
+--
+-- Since migration 0082 the identifier is HMAC-SHA256 keyed on a per-session
+-- random salt (`sessions.voter_salt`), which removes cross-session correlation
+-- and becomes un-invertible once the salt is destroyed at session close. Treat
+-- it as PSEUDONYMOUS personal data, not anonymous: it is still within scope for
+-- erasure requests, and rows written before 0082 carry the old reversible form.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS townhall_questions (
   id            TEXT PRIMARY KEY,                              -- DO-generated item id

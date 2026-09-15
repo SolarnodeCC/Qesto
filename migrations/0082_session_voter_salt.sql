@@ -1,0 +1,27 @@
+-- 0082_session_voter_salt.sql
+-- DD-03 — make anonymous voter identifiers non-invertible.
+--
+-- `votes.voter_id` is derived from the participant's IP. It was
+-- `sha256(ip)[0:8]` — an UNSALTED 32-bit truncation of a 32-bit input, so a
+-- complete IPv4 rainbow table inverts it in minutes. Every anonymous vote, in
+-- every anonymity mode including `zero_knowledge`, therefore carried a
+-- reversible link back to the voter's IP address. Under GDPR Recital 26 /
+-- EDPB 05/2014 that is pseudonymisation, not anonymisation: still personal data.
+--
+-- This column adds a per-session 32-byte random salt so the identifier becomes
+-- HMAC-SHA256(salt, ip || fingerprint):
+--   * within a session, dedupe still works (same voter -> same id);
+--   * across sessions, the same IP yields unrelated ids, so votes cannot be
+--     correlated between sessions;
+--   * deleting the salt at session close makes that session's historical ids
+--     permanently un-invertible, because the key is gone.
+--
+-- Nullable with no default and no backfill, deliberately: existing rows keep
+-- whatever they had, and the code falls back to the legacy derivation when the
+-- salt is absent so in-flight sessions are not disrupted mid-run. Remediating
+-- ALREADY-STORED voter_ids is a separate decision with legal input (rewrite in
+-- place / null on closed sessions / accept and document) — see the DD-03 issue.
+--
+-- jankurai:migration-safe verify
+
+ALTER TABLE sessions ADD COLUMN voter_salt TEXT;

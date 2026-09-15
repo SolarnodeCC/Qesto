@@ -1,4 +1,3 @@
-import type { Team } from '../routes/teams'
 import { validateData, PermissionSchema, PermissionArraySchema } from './protocol-schemas'
 
 // Derived from PermissionSchema — single source of truth, no manual drift possible
@@ -21,6 +20,25 @@ const ALL_TEAM_PERMISSIONS: Permission[] = [
   'team:read_audit',
   'billing:manage',
 ]
+
+/**
+ * DD-13 — the minimum a team must expose to be authorized against.
+ *
+ * This module previously imported `Team` from `../routes/teams`, inverting the
+ * dependency: the authorization primitive depended on the route layer it exists
+ * to serve. The import was type-only (erased at compile time, so never a runtime
+ * hazard), but it made `lib/authz.ts` unresolvable without pulling in the whole
+ * teams route tree, and put a domain type's home in the HTTP layer.
+ *
+ * Interface segregation instead: declare only what authorization actually reads
+ * — a team id and its members' roles. The richer `Team` in routes/teams/shared.ts
+ * satisfies this structurally, so every existing call site keeps working with no
+ * cast and no behaviour change.
+ */
+export type AuthorizableTeam = {
+  id: string
+  members: ReadonlyArray<{ userId: string; role: string }>
+}
 
 export const BUILTIN_ROLE_PERMISSIONS: Record<string, Permission[]> = {
   owner: ALL_TEAM_PERMISSIONS,
@@ -95,7 +113,7 @@ export async function customPermissionsForUser(
 
 export async function effectiveTeamPermissionsForUser(
   db: D1Database,
-  team: Team,
+  team: AuthorizableTeam,
   userId: string,
 ): Promise<Permission[]> {
   const member = team.members.find((entry) => entry.userId === userId)
@@ -107,7 +125,7 @@ export async function effectiveTeamPermissionsForUser(
 
 export async function hasTeamPermission(
   db: D1Database,
-  team: Team,
+  team: AuthorizableTeam,
   userId: string,
   permission: Permission,
 ): Promise<boolean> {
