@@ -696,8 +696,17 @@ Switch the insert to `INSERT OR IGNORE` so the duplicate case is handled by the 
 | | |
 |---|---|
 | **Category** | Architecture / Clean Architecture / Maintainability |
-| **Severity** | **Medium** |
+| **Severity** | **Low** *(revised down from Medium — see correction)* |
 | **Confidence** | **High** |
+
+> **Correction (2026-09-15, during remediation).** This was filed as Medium on
+> the grounds that ESM cycles can yield partially-initialised bindings. That
+> reasoning does not apply here: **all 8 cycles are `import type`**, which
+> TypeScript erases at compile time, so none can produce a runtime hazard. A
+> purpose-built checker that excludes type-only edges reports **0** runtime
+> cycles. What remains is real but smaller: a layering inversion and a type
+> living in the wrong module. Severity lowered to Low and the rationale below
+> rewritten.
 
 **Evidence.** `npx madge --circular --extensions ts,tsx functions/api src`:
 
@@ -717,9 +726,15 @@ Cycles 6-8 are a **layering inversion**: `lib/authz.ts` — the authorization pr
 
 **Business impact.** Raises the cost and risk of every change to authorization, which is exactly where change must be cheapest and safest to review.
 
-**Technical impact.** Module-initialisation order becomes significant and fragile; tree-shaking is defeated; `authz.ts` cannot be unit-tested in isolation without pulling in the entire teams route tree and its transitive KV/D1 dependencies — which is a plausible contributor to the low branch coverage on this exact path (DD-18).
+**Technical impact.** Because every edge is type-only, there is no runtime
+consequence: no initialisation-order hazard, and no tree-shaking penalty (erased
+imports emit nothing). The cost is structural. `lib/authz.ts` could not be read,
+reasoned about, or unit-tested without the reader following a dependency into the
+HTTP layer, and a domain type (`Team`) had its home in a route module rather than
+in the domain.
 
-**Exploitation scenario.** Not directly exploitable. It is a latent-defect amplifier: circular imports in ESM can yield partially-initialised bindings (`undefined` at call time) depending on entry order. On an authorization module, a `TypeError` on an undefined guard function — or worse, a falsy check that silently passes — is a plausible failure mode that would only surface under a specific import path.
+**Exploitation scenario.** None. This is a maintainability finding, and filing it
+as a latent correctness risk was an error — corrected above.
 
 **Recommended fix.** Invert the dependency: move shared types and pure helpers down, never import routes from `lib/`.
 
@@ -1265,7 +1280,7 @@ Highest risk reduction per hour. All are configuration or single-file changes.
 | **P2** | DD-12 Vote flush batching | High | S | High | Week 4 |
 | **P2** | DD-16 Per-request DB lookups | Medium | M | Medium | Days 46-60 |
 | **P2** | DD-17 KV write per API request | Medium | XS | Medium | Days 46-60 |
-| **P2** | DD-13 Circular dependencies | Medium | M | Medium | Days 46-60 |
+| ~~P2~~ | ~~DD-13 Circular dependencies~~ | ~~Low~~ | ~~S~~ | — | **Done** (commit 3c35578) |
 | **P3** | DD-05 Empty OpenAPI contract | High | L | Medium | Days 61-90 |
 | **P3** | DD-14 No pagination | Medium | L | Medium | Days 61-90 |
 | **P3** | DD-18 Coverage floors | Medium | L | Medium | Days 61-90 |
@@ -1288,5 +1303,6 @@ Three findings changed materially from the first pass and are flagged in place:
 - **DD-08** originally read "the API deploy is manual." That was **wrong**. The Cloudflare Workers Builds Git integration disproved it — discovered only because this audit's own PR triggered the deploy bot. The corrected finding is more serious than the original.
 - **DD-19** originally treated three Hono advisories as live risk. Applicability testing against actual imports shows **one of four** applies. Stated precisely rather than inflated.
 - **DD-31** records that `main` **is** protected per the GitHub API, contradicting both the repository's own CODEOWNERS comment and the July 2026 infrastructure audit. The repository's documentation is stale; the rule detail remains unverifiable without dashboard access.
+- **DD-13** was filed as Medium on a partial-initialisation argument. Remediation showed all 8 cycles are `import type` and therefore erased at compile time — no runtime hazard exists. Downgraded to Low and re-scoped to the layering inversion, which was real and is fixed.
 
 Findings dependent on configuration this engagement could not read — branch-protection rule detail, Environment reviewers, Dependabot security-update state, WAF configuration, the Workers Builds command, and the secret inventory — are marked **Confidence: Medium** and state their assumption explicitly. They should be confirmed in the respective dashboards before triage.
