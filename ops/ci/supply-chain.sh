@@ -28,12 +28,26 @@ npm audit --audit-level=high --json > target/security/npm-audit.json || true
 node scripts/check-audit-allowlist.mjs target/security/npm-audit.json
 
 # ── 2. gitleaks — secret scanning ────────────────────────────────────────────
-# Real exit code. Findings fail the lane; known false positives belong in
-# .gitleaksignore, which gitleaks reads automatically from the repo root.
+# Real exit code: a finding fails the lane. Deliberate placeholders are
+# allowlisted narrowly in .gitleaks.toml, which must be passed explicitly —
+# auto-detection is unreliable when the scan runs inside the container.
+#
+# `dir` scans the WORKING TREE, not git history. That is deliberate:
+#   * as a PR gate the question is "does this change introduce a secret", and
+#     the working tree answers it;
+#   * history cannot be fixed by a build failing, so scanning it would pin the
+#     lane permanently red on commits nobody can now change — which is how a
+#     gate gets disabled again.
+# History was swept once during the 2026-09-15 due diligence. It found two real
+# leaks: a Cloudflare API token + Access service token (DD-41, redacted from the
+# tree, rotation tracked in that issue) and an Amplitude token that had already
+# expired. Both remain in history and must be treated as compromised. Re-run a
+# history sweep deliberately after any rotation:
+#   gitleaks detect --source . --config .gitleaks.toml --redact
 if command -v docker >/dev/null 2>&1; then
-  report_success "Running gitleaks (secret scanning)"
-  docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect \
-    --source /repo \
+  report_success "Running gitleaks (secret scanning, working tree)"
+  docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest dir /repo \
+    --config /repo/.gitleaks.toml \
     --redact \
     --exit-code 1 \
     --report-path /repo/target/security/gitleaks.json

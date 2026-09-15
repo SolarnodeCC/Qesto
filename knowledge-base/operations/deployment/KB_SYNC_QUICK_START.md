@@ -23,7 +23,7 @@ export CLOUDFLARE_ACCOUNT_ID="..."
 export CLOUDFLARE_D1_DATABASE_ID="..."
 export CF_ACCESS_CLIENT_ID="..."
 export CF_ACCESS_CLIENT_SECRET="..."
-export KB_ADMIN_KEY="qesto-kb-admin-phase1"
+export KB_ADMIN_KEY="<KB_ADMIN_KEY>"
 
 # Sync all KB files
 npm run kb:sync
@@ -38,7 +38,7 @@ Required (get from Cloudflare Dashboard):
 - `CLOUDFLARE_D1_DATABASE_ID` — D1 database ID (qesto_3_db)
 - `CF_ACCESS_CLIENT_ID` — Service Token client ID
 - `CF_ACCESS_CLIENT_SECRET` — Service Token secret
-- `KB_ADMIN_KEY` — Admin key (`qesto-kb-admin-phase1`)
+- `KB_ADMIN_KEY` — Admin key (`<KB_ADMIN_KEY>`)
 
 Optional:
 

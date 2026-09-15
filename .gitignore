@@ -42,3 +42,9 @@ target/jankurai/
 
 # Local Claude Code session metrics (observability hook output)
 .claude/metrics/
+
+# DD-41: local Claude settings can carry live OAuth tokens. One was committed in
+# 29d1f249 (an Amplitude RS256 JWT, since expired) purely because nothing here
+# stopped `git add -A` from picking the file up.
+.claude/settings.local.json
+
