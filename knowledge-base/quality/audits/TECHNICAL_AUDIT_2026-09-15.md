@@ -766,6 +766,37 @@ plaatsen is een classificatiefout die het in het productie-installatiepad brengt
 
 **Fix.** Verplaats naar `devDependencies`.
 
+### M-17 · Dependabot ziet meer dan `npm audit`, en negeert major-bumps
+
+Bij het pushen van deze audit meldde GitHub:
+
+> GitHub found 23 vulnerabilities on SolarnodeCC/Qesto's default branch (15 high, 8 moderate).
+
+Lokaal levert `npm audit` er 15 (9 high). Het verschil van acht komt doordat
+Dependabot ook GitHub-Actions-dependencies en transitieve paden meeneemt die
+`npm audit` niet in dezelfde vorm rapporteert. Er staan dus meer open advisories
+dan de lokale lane laat zien — en omdat geen enkele lane blokkeert (C-2) wordt
+geen van beide getallen ergens afgedwongen.
+
+Daarnaast bevat [`.github/dependabot.yml`](../../../.github/dependabot.yml) voor het
+npm-ecosysteem:
+
+```yaml
+ignore:
+- dependency-name: "*"
+  update-types: [version-update:semver-major]
+```
+
+Version-update-PR's voor majors worden daarmee onderdrukt. Dat is een redelijke
+keuze voor routine-updates, maar het betekent dat een advisory waarvan de fix pas
+in een nieuwe major landt, nooit als PR verschijnt. (Dependabot *security* updates
+zijn een aparte repo-instelling en negeren deze regel; of die aanstaat is vanuit
+de repo niet vast te stellen — zie §7.)
+
+**Fix.** Zet Dependabot security updates expliciet aan in de repo-instellingen,
+werk de 23 openstaande advisories weg, en koppel de telling aan de blokkerende
+`npm audit`-gate uit C-2 zodat er één getal is dat telt.
+
 ---
 
 ## 4. Lage bevindingen (Low)
@@ -865,12 +896,14 @@ npx tsc --noEmit          → exit 0, geen fouten
 npx vitest run            → 316 bestanden, 2.706 tests, allemaal groen (78,8s)
 npm audit                 → 15 kwetsbaarheden (1 low, 5 moderate, 9 high)
 npm audit --omit=dev      → 1 moderate (hono)
+GitHub Dependabot         → 23 kwetsbaarheden op de default branch (15 high, 8 moderate)
 git grep <secret-patronen> → geen gecommitteerde secrets
 ```
 
 Niet uitgevoerd (buiten bereik van een statische audit): dynamische pentest tegen
 de draaiende omgeving, load-/stresstests tegen de Durable Object, verificatie van
 de daadwerkelijke branch-protection-instellingen en Environment-reviewers op GitHub,
-en inspectie van de live Cloudflare-configuratie (WAF, zone-instellingen, secret-inventaris).
+inspectie van de live Cloudflare-configuratie (WAF, zone-instellingen,
+secret-inventaris) en de Dependabot-security-update-instelling.
 Bevindingen H-5, H-6, M-6 en C-2 zouden met toegang tot die oppervlakken
 scherper te kwantificeren zijn.
