@@ -8,6 +8,10 @@
 
 **Prior work:** supersedes and extends [`TECHNICAL_AUDIT_2026-09-15.md`](./TECHNICAL_AUDIT_2026-09-15.md). Where this document and that one disagree, this one is authoritative — three findings changed materially under deeper evidence (DD-03, DD-05, DD-19).
 
+**Tracking:** [EPIC #873](https://github.com/SolarnodeCC/Qesto/issues/873), with one sub-issue per finding (#874-#912).
+
+**Count:** ids run DD-01…DD-40, but **DD-21 is a consolidation table header, not a finding** — there are **39** findings. Earlier references in this document to "40 findings" are off by that one row.
+
 ---
 
 ## Scope statement and limits
