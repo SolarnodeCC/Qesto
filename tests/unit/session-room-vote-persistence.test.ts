@@ -10,6 +10,13 @@
  * double-count a vote_policy='multi' change-your-answer — so the flush also
  * deletes the superseded row. These tests exercise both behaviours against a
  * minimal D1 fake that models the widened key.
+ *
+ * DD-12: the fake now models two more real-D1 behaviours the flush depends on
+ * after batching. `bind()` returns a NEW statement rather than mutating a shared
+ * one (Cloudflare's D1PreparedStatement is immutable — the previous fake
+ * returned `this`, which silently aliased every statement pushed into a batch),
+ * and `batch()` applies an array of statements in order. `INSERT OR IGNORE` is
+ * modelled as a no-op on conflict instead of the old throw-and-string-match.
  */
 import { describe, it, expect } from 'vitest'
 import { flushVotesToD1AndKV, type VoteFlushState } from '../../functions/api/lib/session-room-persistence'
@@ -30,23 +37,43 @@ type VoteRow = {
 // issues, with the WIDENED UNIQUE(question_id, voter_id, option_id) semantics.
 class FakeD1 {
   rows: VoteRow[] = []
+  /** DD-12: how many round-trips the flush actually cost. */
+  batchCalls = 0
+  statementsRun = 0
+
   prepare(sql: string) {
     return new FakeStmt(this, sql.trim())
+  }
+
+  /** Real D1 applies a batch in order, atomically. */
+  async batch(statements: FakeStmt[]): Promise<Array<{ meta: { changes: number } }>> {
+    this.batchCalls++
+    const out: Array<{ meta: { changes: number } }> = []
+    for (const stmt of statements) out.push(await stmt.run())
+    return out
   }
 }
 
 class FakeStmt {
-  private args: unknown[] = []
   constructor(
     private readonly db: FakeD1,
     private readonly sql: string,
+    private readonly args: readonly unknown[] = [],
   ) {}
-  bind(...args: unknown[]): this {
-    this.args = args
-    return this
+
+  /**
+   * Real D1 returns a NEW statement from bind() — the prepared statement is
+   * immutable. Returning `this` (as this fake previously did) aliases every
+   * statement derived from the same prepare() call, so a batch built by pushing
+   * `stmt.bind(...)` would collapse to N copies of the last binding.
+   */
+  bind(...args: unknown[]): FakeStmt {
+    return new FakeStmt(this.db, this.sql, args)
   }
+
   async run(): Promise<{ meta: { changes: number } }> {
-    if (this.sql.startsWith('INSERT INTO votes')) {
+    this.db.statementsRun++
+    if (this.sql.startsWith('INSERT OR IGNORE INTO votes')) {
       const [id, session_id, question_id, voter_id, option_id, submitted_at] = this.args as [
         string, string, string, string, string, number,
       ]
@@ -55,7 +82,8 @@ class FakeStmt {
           (r) => r.question_id === question_id && r.voter_id === voter_id && r.option_id === option_id,
         )
       ) {
-        throw new Error('D1_ERROR: UNIQUE constraint failed: votes.question_id, votes.voter_id, votes.option_id')
+        // OR IGNORE: a conflicting row is skipped, not an error.
+        return { meta: { changes: 0 } }
       }
       this.db.rows.push({ id, session_id, question_id, voter_id, option_id, submitted_at })
       return { meta: { changes: 1 } }
@@ -170,5 +198,26 @@ describe('flushVotesToD1AndKV — multi-vote persistence', () => {
     )
     expect(optionsFor(db, 'v1')).toEqual(['b'])
     expect(optionsFor(db, 'v2')).toEqual(['a'])
+  })
+
+  it('DD-12: collapses a large flush into batched round-trips, not one per vote', async () => {
+    const db = new FakeD1()
+    // 250 distinct voters on one question — half of the `starter` plan's
+    // 500-participant cap. Under the pre-DD-12 loop this cost 250 sequential
+    // awaited .run() calls inside a single 5s flush window.
+    const buffer: BufferedVote[] = Array.from({ length: 250 }, (_, i) => ({
+      sessionId: 's1',
+      questionId: 'q1',
+      voterId: `v${i}`,
+      optionId: 'a',
+      submittedAt: i,
+    }))
+
+    await flushVotesToD1AndKV(makeStorage(), envWith(db), makeState(buffer))
+
+    expect(db.rows).toHaveLength(250)
+    // 250 statements at VOTE_FLUSH_BATCH_SIZE=100 → 3 batches, not 250 trips.
+    expect(db.batchCalls).toBe(3)
+    expect(db.statementsRun).toBe(250)
   })
 })

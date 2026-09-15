@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { jwtVerificationSecrets, verifyJwtWithSecrets, type AuthClaims } from '../lib/jwt'
-import { hashSessionToken, revokedSessionTokenKey } from '../lib/session-token'
+import { hashSessionToken, revokedSessionTokenKey, isSessionSuperseded } from '../lib/session-token'
 import { readKvText } from '../lib/kv'
 import { isPublicApiPath } from '../lib/public-api-paths'
 import { timingSafeEqual } from '../lib/shared/crypto'
@@ -109,6 +109,15 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
         401,
       )
     }
+    // DD-09: per-token revocation cannot cover password reset, which has no way
+    // to enumerate a user's outstanding tokens. The epoch invalidates all of
+    // them at once.
+    if (await isSessionSuperseded(c.env, claims)) {
+      return c.json(
+        { ok: false, error: { code: 'unauthenticated', message: 'Session superseded — sign in again' }, trace_id: c.get('trace_id') },
+        401,
+      )
+    }
   }
   c.set('user', claims)
   c.set('session_token', token)
@@ -167,6 +176,12 @@ export const softAuthMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: A
     const tokenHash = await hashSessionToken(token)
     const revoked = await readKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash))
     if (revoked) {
+      await next()
+      return
+    }
+    // DD-09 — mirror the strict pass, or RBAC would still see a principal whose
+    // session was invalidated by a password reset.
+    if (await isSessionSuperseded(c.env, claims)) {
       await next()
       return
     }

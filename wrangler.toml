@@ -32,6 +32,11 @@ compatibility_flags = ["nodejs_compat"]
 # needs `DB`) will 500 until D1 is wired.
 # ──────────────────────────────────────────────────────────────────────────────
 
+# DD-28 — the *.workers.dev route bypasses everything configured on the qesto.cc
+# zone (WAF, bot management, zone-level rate limiting, firewall rules) and leaks
+# the account subdomain. Production traffic must arrive through the zone only.
+workers_dev = false
+
 [observability]
 enabled = true
 head_sampling_rate = 1
@@ -97,6 +102,13 @@ SAML_SIGNATURE_VERIFY_ENABLED = "false"
 # canary (API-key path) is staged and burst-tested. Bindings below are inert
 # while this flag is off — see knowledge-base/operations/deployment/RATE_LIMIT_BINDINGS_SETUP.md.
 ATOMIC_RATE_LIMIT_ENABLED = "false"
+# DD-06 — a limiter fault used to fall through to `await next()`, so any KV
+# incident silently disabled rate limiting everywhere. That matters most on
+# /api/auth/password/login, which runs PBKDF2 at 600k iterations (~200-400ms CPU
+# per attempt) — fail-open turns a cheap request flood into a CPU-exhaustion DoS
+# with several-hundred-fold amplification. Auth must degrade to 503, never to
+# unlimited. Per-profile exceptions go in RATE_LIMIT_FAIL_OPEN_PROFILES.
+RATE_LIMIT_FAIL_CLOSED = "true"
 
 # ADR-0074 — temporary all-users free access.
 # SHIPS OFF. Enabling requires BOTH: FREE_ACCESS_ALL="true" AND a
@@ -311,3 +323,24 @@ crons = ["0 2 * * *", "0 3 * * 1", "0 6 * * 3,5,7", "0 */3 * * *", "0 4 * * *"]
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Having a [env.preview] block today
 # would make `wrangler versions upload` warn about an ambiguous target.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DD-20 — environment separation (Twelve-Factor III).
+#
+# The default [vars] block ships ENV = "production", which local `wrangler dev`
+# inherited. middleware/csrf.ts carries an `apiIsLocal` heuristic purely to
+# compensate for that — compensating security logic is where future gaps live.
+# Named environments make the boundary configuration rather than inference.
+#
+# Deploy with: wrangler deploy --env staging   /   wrangler dev --env dev
+# Bindings are NOT inherited by named environments in wrangler; staging needs its
+# own D1/KV ids provisioned before `--env staging` will deploy. Tracked in the
+# DD-20 issue; the dev block below is usable today because `wrangler dev` runs
+# against local emulated storage.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[env.dev.vars]
+ENV = "dev"
+PAGES_URL = "http://localhost:5173"
+API_URL = "http://localhost:8787"
+RATE_LIMIT_FAIL_CLOSED = "false"

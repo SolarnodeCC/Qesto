@@ -20,6 +20,13 @@ import {
   K_ACTIVE_ENERGIZER,
 } from './session-room-storage-keys'
 import type { Meta, Counts, Votes, BufferedVote } from './session-room-types'
+/**
+ * DD-12 — statements per D1 batch. Comfortably under D1's per-batch ceiling
+ * while still collapsing a full 500-voter flush into a handful of round-trips
+ * instead of ~1000.
+ */
+export const VOTE_FLUSH_BATCH_SIZE = 100
+
 export interface SessionRoomStorage {
   get<T>(key: string): Promise<T | undefined>
   put<T>(key: string, value: T): Promise<void>
@@ -82,8 +89,27 @@ export async function flushVotesToD1AndKV(
 
   const startMs = Date.now()
   try {
+    // DD-12: this loop used to await each statement individually — up to two
+    // sequential D1 round-trips per buffered vote. At the `starter` plan's
+    // 500-participant cap that is ~1000 serialised calls inside one 5s flush
+    // window (FLUSH_INTERVAL_MS); at 5-15ms each the flush cannot keep pace with
+    // its own interval, the buffer grows unboundedly, and the DO's single
+    // threaded event loop stalls — delaying broadcasts to every connected
+    // socket. This is the hottest path in the product and the most visible way
+    // it can fail: live, on stage, mid-session.
+    //
+    // D1 has no interactive transactions, so `batch()` is the only primitive
+    // that both pipelines the statements and applies them atomically. Ordering
+    // within a batch is preserved, so per-voter supersede (delete old -> insert
+    // new) stays correct even for A->B->A inside a single window.
     const insertStmt = env.DB.prepare(
-      'INSERT INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?)',
+      // INSERT OR IGNORE replaces the previous catch-and-string-match on
+      // "UNIQUE constraint failed". Post-widening (migration 0080) the UNIQUE key
+      // is (question_id, voter_id, option_id), so a collision only ever means an
+      // idempotent re-flush after a partial failure — exactly what IGNORE is
+      // for. Matching on an engine error message inside a batch is not possible
+      // anyway, since one conflicting row would roll the whole batch back.
+      'INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?)',
     )
     // vote_policy='multi' change-your-answer: remove the voter's superseded
     // option row (scoped to the exact (question, voter, option) identity) before
@@ -93,27 +119,34 @@ export async function flushVotesToD1AndKV(
       'DELETE FROM votes WHERE question_id = ? AND voter_id = ? AND option_id = ?',
     )
 
-    // Iterate the buffer in order so per-voter supersede (delete old → insert
-    // new) stays correct even for A→B→A within a single flush window.
+    // DD-03: `zero_knowledge` is sold as the strongest privacy tier, but it only
+    // ever suppressed sentiment analysis, XR avatars and AI insights — the vote
+    // row itself was still written with a voter identifier derived from the
+    // participant's IP. In this mode the durable row now carries a per-vote
+    // random id instead, so nothing in D1 links two votes to one person, let
+    // alone to an address. Dedupe for the session still works: it runs off
+    // `state._voters` in DO memory (K_VOTERS), which never reaches D1.
+    const zeroKnowledge = meta.anonymity === 'zero_knowledge'
+
+    const statements: D1PreparedStatement[] = []
     let insertCount = 0
     for (const v of state.voteBuffer) {
-      if (v.supersedesOptionId) {
-        await deleteStmt.bind(v.questionId, v.voterId, v.supersedesOptionId).run()
+      const durableVoterId = zeroKnowledge ? `zk_${crypto.randomUUID()}` : v.voterId
+      if (v.supersedesOptionId && !zeroKnowledge) {
+        // Supersede targets a stable voter_id; under ZK there is none to target,
+        // and the in-memory projection already holds only the final choice.
+        statements.push(deleteStmt.bind(v.questionId, v.voterId, v.supersedesOptionId))
       }
-      try {
-        await insertStmt
-          .bind(crypto.randomUUID(), v.sessionId, v.questionId, v.voterId, v.optionId, v.submittedAt)
-          .run()
-        insertCount++
-      } catch (err) {
-        // Post-widening (0080), the UNIQUE key is (question_id, voter_id,
-        // option_id), so this only fires on a genuine duplicate of the same
-        // (voter, option) — i.e. an idempotent re-flush after a partial failure.
-        // Swallow that; rethrow anything else.
-        if (!(err instanceof Error && err.message.includes('UNIQUE constraint failed'))) {
-          throw err
-        }
-      }
+      statements.push(
+        insertStmt.bind(crypto.randomUUID(), v.sessionId, v.questionId, durableVoterId, v.optionId, v.submittedAt),
+      )
+      insertCount++
+    }
+
+    // Chunked so a very large flush never exceeds D1's per-batch statement
+    // ceiling. Chunks apply in order, so cross-chunk supersede ordering holds.
+    for (let i = 0; i < statements.length; i += VOTE_FLUSH_BATCH_SIZE) {
+      await env.DB.batch(statements.slice(i, i + VOTE_FLUSH_BATCH_SIZE))
     }
 
     if (state._voters) await storage.put(K_VOTERS, state._voters)

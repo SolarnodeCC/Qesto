@@ -93,6 +93,26 @@ jobs:
 
       - run: npm ci
 
+      # DD-08 — the Worker API used to deploy only via the Cloudflare Workers
+      # Builds Git integration, entirely outside this pipeline: neither the
+      # quality gates in `needs: ci` nor the `environment: production` approval
+      # applied to it, and a docs-only commit could ship the API with no test
+      # run. Deploying it here puts it behind both.
+      #
+      # ORDER: API first, frontend second. Additive API changes must be live
+      # before the UI that calls them; the reverse briefly serves a frontend
+      # against an API that lacks its endpoints.
+      #
+      # NOTE: disable the Workers Builds and Pages Git integrations in the
+      # Cloudflare dashboard when this lands, or both will deploy the same
+      # commit twice and race. Tracked in the DD-08 / DD-20 issues.
+      - name: Deploy API (Worker)
+        run: node scripts/deploy-api.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+
       - name: Build
         run: npm run build
         env:
@@ -112,13 +132,18 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           COMMIT_SHA: ${{ steps.sha.outputs.sha }}
 
-      - name: Purge Cloudflare cache
+      # DD-37 — `purge_everything` dropped the entire global edge cache on every
+      # release: a latency spike and an origin-load spike per deploy, for no
+      # benefit. Static assets are content-hashed (`/assets/[name]-[hash]`) and
+      # served `immutable`, so they never need purging. Only the HTML shell,
+      # which carries `s-maxage=60`, has a stable URL.
+      - name: Purge Cloudflare cache (HTML shell only)
         run: |
           curl -sf -X POST \
             "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"purge_everything":true}'
+            -d '{"files":["https://qesto.cc/","https://qesto.cc/index.html"]}'
 
       - name: Verify deploy (commit parity + asset MIME types)
         run: node scripts/verify-deploy.mjs https://qesto.cc
@@ -127,20 +152,28 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
+      # DD-08 — this step read `.d1`/`.kv`/`.do`, which the handler has never
+      # returned at any nesting level, so jq yielded null and the step failed on
+      # every single release (after the deploy and purge had already run), while
+      # verifying nothing. The handler now performs real probes and reports them
+      # under `.data.checks`; tests/unit/health-contract.test.ts pins that shape
+      # so this script and the handler cannot silently drift apart again.
       - name: Verify API health
         run: |
-          echo "Checking API health endpoints..."
+          set -euo pipefail
+          echo "Checking API health endpoint..."
+          # A degraded dependency returns 503, which -f turns into a non-zero exit.
           health=$(curl -sf https://qesto.cc/api/admin/health)
 
-          # Verify all systems are operational
-          d1_ok=$(echo "$health" | jq -r '.d1')
-          kv_ok=$(echo "$health" | jq -r '.kv')
-          do_ok=$(echo "$health" | jq -r '.do')
+          d1_ok=$(echo "$health" | jq -r '.data.checks.d1')
+          kv_ok=$(echo "$health" | jq -r '.data.checks.kv')
+          do_ok=$(echo "$health" | jq -r '.data.checks.do')
 
-          echo "D1: $d1_ok, KV: $kv_ok, DO: $do_ok"
+          echo "D1: $d1_ok | KV: $kv_ok | DO: $do_ok"
 
           if [ "$d1_ok" != "ok" ] || [ "$kv_ok" != "ok" ] || [ "$do_ok" != "ok" ]; then
-            echo "ERROR: API health check failed"
+            echo "ERROR: API health check failed" >&2
+            echo "$health" | jq . >&2
             exit 1
           fi
 

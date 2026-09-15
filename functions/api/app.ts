@@ -95,9 +95,48 @@ import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
 import type { Env } from './types'
 import { getFlag } from './lib/flags'
+import { readKvText } from './lib/kv'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables> & {
   parent_trace_id?: string
+}
+
+/**
+ * DD-08 — real liveness probes for the three bindings the deploy gate names.
+ *
+ * Each probe is the cheapest call that proves the binding actually answers, and
+ * each is individually guarded so one degraded dependency reports as degraded
+ * rather than throwing and turning the whole health endpoint into a 500.
+ */
+export type HealthChecks = { d1: string; kv: string; do: string }
+
+async function probeDependencies(env: Env): Promise<HealthChecks> {
+  const settle = async (fn: () => Promise<unknown>): Promise<string> => {
+    try {
+      await fn()
+      return 'ok'
+    } catch (err) {
+      return `error: ${err instanceof Error ? err.name : 'unknown'}`
+    }
+  }
+
+  const [d1, kv, durableObject] = await Promise.all([
+    env.DB ? settle(() => env.DB.prepare('SELECT 1').first()) : Promise.resolve('unconfigured'),
+    env.ACTIONS_KV
+      // Through lib/kv.ts like every other KV read (ADR-0068 ratchet) — the
+      // wrapper still performs a real round-trip, so it probes the binding.
+      ? settle(() => readKvText(env.ACTIONS_KV!, 'health:probe'))
+      : Promise.resolve('unconfigured'),
+    env.SESSION_ROOM
+      ? settle(async () => {
+          // Addressing the stub proves the binding resolves without creating or
+          // waking a real session room.
+          env.SESSION_ROOM.idFromName('health-probe')
+        })
+      : Promise.resolve('unconfigured'),
+  ])
+
+  return { d1, kv, do: durableObject }
 }
 
 export function createApp() {
@@ -272,23 +311,44 @@ export function createApp() {
   )
 
   // Health — no auth, cheap, always on.
+  //
+  // DD-08: the post-deploy verification in ci.yml reads `.data.checks.{d1,kv,do}`
+  // from this endpoint. It previously read `.d1`/`.kv`/`.do`, which this handler
+  // has never returned at any nesting level — so `jq` yielded null, the
+  // comparison failed, and the deploy job's health step failed on EVERY release,
+  // after the deploy and cache purge had already run. The step also verified
+  // nothing about the dependencies it named. Both halves are fixed: the contract
+  // is real probes, and tests/unit/health-contract.test.ts pins the shape so the
+  // handler and the CI script cannot drift apart again.
   app.get('/api/admin/health', async (c) => {
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
     const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
-    return c.json({
-      ok: true,
-      data: {
-        env: c.env.ENV,
-        ts: Date.now(),
-        region: colo,
-        readRegion: routing.readRegion,
-        writeRegion: routing.writeRegion,
-        failoverActive: routing.failoverActive,
-        multiRegion: routing.config,
-        commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
+    const checks = await probeDependencies(c.env)
+    // `unconfigured` is a deployment-shape fact, not a runtime fault: it is the
+    // normal state under Vitest and before bootstrap, and 503-ing on it would
+    // make the endpoint useless everywhere but production. Only a binding that
+    // exists and then FAILS is a degradation. The CI gate is stricter still — it
+    // requires all three to be exactly 'ok', so a production deploy that loses a
+    // binding is still caught there.
+    const degraded = Object.values(checks).some((v) => v.startsWith('error'))
+    return c.json(
+      {
+        ok: !degraded,
+        data: {
+          env: c.env.ENV,
+          ts: Date.now(),
+          region: colo,
+          readRegion: routing.readRegion,
+          writeRegion: routing.writeRegion,
+          failoverActive: routing.failoverActive,
+          multiRegion: routing.config,
+          commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
+          checks,
+        },
+        trace_id: c.get('trace_id')!,
       },
-      trace_id: c.get('trace_id')!,
-    })
+      degraded ? 503 : 200,
+    )
   })
 
   // Authenticated identity probe.

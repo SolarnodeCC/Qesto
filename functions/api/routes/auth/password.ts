@@ -19,6 +19,7 @@ import { pwdKey, resetKey } from './helpers'
 import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
 import { authJsonInternalError } from './errors'
 import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/protocol-schemas'
+import { bumpSessionEpoch } from '../../lib/session-token'
 import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
@@ -235,6 +236,34 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
     try {
       const email = parsed.data.email.toLowerCase().trim()
 
+      // DD-11: this was the only auth endpoint with no limiter at all, while
+      // /password/login and /password/signup each carry a dual IP+email gate.
+      // Unlimited it is both an email-amplification vector (direct Resend spend,
+      // and spam complaints against the shared sending domain would break
+      // magic-link login for every tenant) and a brute-force-free way to probe
+      // the user table. Same gate as its siblings.
+      const ip = c.req.header('cf-connecting-ip') ?? null
+      if (ip) {
+        const ipGate = await atomicRateLimitDual(c.env, {
+          key: `ip:${ip}`,
+          burst: 'auth_burst',
+          sustained: { max: LOGIN_MAX_PER_IP, windowSeconds: LOGIN_WINDOW_SECONDS, prefix: 'auth-reset' },
+          profileLabel: 'auth_reset_ip',
+        })
+        if (!ipGate.allowed) {
+          return errorResponse(c, 429, 'rate_limited', 'Too many requests. Try again later.')
+        }
+      }
+      const emailGate = await atomicRateLimitDual(c.env, {
+        key: `email:${email}`,
+        burst: 'auth_burst',
+        sustained: { max: LOGIN_MAX_PER_EMAIL, windowSeconds: LOGIN_WINDOW_SECONDS, prefix: 'auth-reset' },
+        profileLabel: 'auth_reset_email',
+      })
+      if (!emailGate.allowed) {
+        return errorResponse(c, 429, 'rate_limited', 'Too many requests. Try again later.')
+      }
+
       const user = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
         .bind(email)
         .first<{ id: string }>()
@@ -251,16 +280,26 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         )
 
         const resetUrl = `${c.env.PAGES_URL}/reset-password?token=${raw}`
-        try {
-          await sendEmail(c.env.RESEND_API_KEY, {
-            to: email,
-            subject: 'Reset your Qesto password',
-            text: `Click the link to reset your password (valid 1 hour):\n\n${resetUrl}`,
-            html: `<p>Click the link below to reset your Qesto password. The link is valid for 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
-            ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
-          })
-        } catch (err) {
+        // DD-11: send AFTER the response is committed. The status was already a
+        // constant 202, but awaiting an outbound HTTPS call to Resend only on the
+        // account-exists branch made the response time itself a reliable
+        // user-existence oracle (tens to hundreds of ms). waitUntil keeps the
+        // timing identical either way (ASVS V2.2.1).
+        const deliver = sendEmail(c.env.RESEND_API_KEY, {
+          to: email,
+          subject: 'Reset your Qesto password',
+          text: `Click the link to reset your password (valid 1 hour):\n\n${resetUrl}`,
+          html: `<p>Click the link below to reset your Qesto password. The link is valid for 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+          ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
+        }).catch((err: unknown) => {
           safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] password/reset-email', errorClass: err instanceof Error ? err.name : 'UnknownError' })
+        })
+        // executionCtx is absent under the Vitest harness; fall back to a
+        // floating promise there rather than throwing.
+        try {
+          c.executionCtx.waitUntil(deliver)
+        } catch {
+          void deliver
         }
       }
 
@@ -304,6 +343,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
 
       const passwordHash = await hashPassword(password)
       await writeKvJson(c.env.USERS_KV, pwdKey(userId), { hash: passwordHash })
+
+      // DD-09: terminate every session issued before this moment BEFORE minting
+      // the new one. Without this, an attacker holding a stolen cookie kept
+      // access for the remainder of the 14-day JWT lifetime — so the control
+      // the victim reaches for to recover the account did not recover it.
+      await bumpSessionEpoch(c.env, userId, JWT_TTL_SECONDS)
 
       await c.env.DB.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`)
         .bind(Date.now(), userId)
