@@ -405,28 +405,81 @@ Voeg een unittest toe die het contract tussen handler en CI-script vastlegt.
 
 ---
 
-### H-6 · Frontend en API worden los gedeployed; alleen de frontend automatisch
+### H-6 · De Worker-API deployt buiten elke quality gate om
 
-**Bevinding.** De `build · deploy`-job draait uitsluitend
-`npx wrangler pages deploy dist --project-name=qesto` — de statische SPA. De Worker-API
-(`main = "worker/index.ts"` in `wrangler.toml`) wordt gedeployed via
-`npm run deploy:api` → `scripts/deploy-api.mjs`, dat nergens in een workflow voorkomt.
-Het is dus een **handmatige** stap.
+> **Correctie (2026-09-15, na publicatie).** De eerste versie van deze bevinding
+> stelde dat de Worker-API handmatig gedeployed werd. Dat is onjuist. PR #872
+> liet zien dat Cloudflare **Workers Builds** (Git-integratie) `qesto-api` bouwt
+> en deployt op elke commit. De bevinding hieronder is herschreven op basis van
+> dat bewijs; het werkelijke probleem is ernstiger dan het oorspronkelijk
+> beschreven probleem.
 
-**Risico.** Elke merge naar `main` zet de frontend live tegen een API die nog de
-vorige versie draait. Bij een breaking API-contractwijziging is dat een productie-outage
-tussen twee handmatige handelingen in. De commit-pariteitscheck
-(`scripts/verify-deploy.mjs`) vergelijkt `GITHUB_SHA` met `/api/version`, dat
-`COMMIT_SHA` uit `wrangler.toml` leest — daar staat letterlijk `COMMIT_SHA = "dev"`.
-De pariteitscheck kan dus alleen slagen als de API-deploy de var overschrijft, wat
-opnieuw van de handmatige stap afhangt.
+**Bevinding.** Zowel `qesto-api` (Workers Builds) als `qesto` (Pages) zijn
+**Git-geïntegreerd** in het Cloudflare-dashboard. Beide bouwen en deployen
+rechtstreeks vanuit GitHub, buiten GitHub Actions om.
 
-**Severity.** High (operationeel risico).
+*Bewijs:* op PR #872 — een docs-only PR — meldde de `cloudflare-workers-and-pages`-bot:
 
-**Aanbevolen fix.** Voeg de API-deploy toe aan dezelfde job, vóór de Pages-deploy
-(API eerst, frontend erna — dat is de veilige volgorde voor additieve wijzigingen),
-onder dezelfde `environment: production`-gate. Laat beide `COMMIT_SHA` uit
-`${{ github.sha }}` zetten.
+```
+✅ Deployment successful!  qesto-api   e4b747c5   Sep 15 2026, 07:03 AM
+✅ Deploy successful!      qesto       e4b747c5   → 69bd9913.qesto.pages.dev
+```
+
+**Waarom dit een probleem is.** De wijziging raakte uitsluitend
+`knowledge-base/`, wat in [`ci.yml`](../../../.github/workflows/ci.yml) onder
+`paths-ignore` valt. Er draaide dus **geen enkele** test, geen `tsc --noEmit`,
+geen architectuur-ratchet — en tóch is `qesto-api` gebouwd en gedeployed.
+
+Dat is het algemene geval, niet een randgeval van docs-only PR's: de
+Workers-Builds-pijplijn is *geen* consument van `ops/ci/quality-gates.sh`. Ze
+draait haar eigen buildcommando en kent de gates niet. Concreet betekent dat:
+
+1. **De quality gates bewaken de productie-API niet.** `npm test`, `tsc --noEmit`
+   en de ratchets zijn hard rule #3/#4 in `CLAUDE.md`, maar ze staan niet in het
+   pad dat de Worker daadwerkelijk live zet. Een rode CI blokkeert de
+   API-deploy niet.
+2. **De `environment: production`-approval gate wordt omzeild.** `ci.yml` zet die
+   gate bewust op de deploy-job (met een comment die naar finding C2 van de
+   infra-audit van juli verwijst). Workers Builds kent hem niet.
+3. **`scripts/deploy-api.mjs` is niet het productiepad.** Dat script zet
+   `--var=COMMIT_SHA:<sha>`, een `--tag` en een dirty-tree-guard. Workers Builds
+   draait het niet, dus `COMMIT_SHA` blijft `"dev"` uit
+   [`wrangler.toml`](../../../wrangler.toml). Geverifieerd tegen de live API:
+
+   ```
+   $ curl -s https://qesto.cc/api/version
+   {"ok":true,"data":{"env":"production","commit":"dev"},"trace_id":"..."}
+
+   $ curl -sI https://qesto.cc/api/version | grep x-qesto-api-commit
+   x-qesto-api-commit: dev
+   ```
+
+   De productie-API kan dus niet zeggen welke commit zij draait. Daarmee is de
+   commit-pariteitscheck in `scripts/verify-deploy.mjs` structureel onhaalbaar
+   (hij vergelijkt `GITHUB_SHA` met deze waarde), en is er geen enkele manier om
+   een productie-incident aan een commit te koppelen. Dit sluit direct aan op H-5.
+4. **De Pages-deploy gebeurt twee keer.** `ci.yml` draait
+   `wrangler pages deploy dist` terwijl de Pages-Git-integratie hetzelfde project
+   al deployt. Op elke push naar `main` racen twee deploys van dezelfde commit
+   naar hetzelfde project.
+5. **De configuratie staat nergens in de repo.** Er is geen build-config in
+   `wrangler.toml` en geen deployment-doc die de Git-integratie beschrijft. Het
+   werkelijke deploymentmodel is alleen zichtbaar in het Cloudflare-dashboard —
+   niet reviewbaar, niet versiebeheerd, niet herstelbaar bij accountverlies.
+
+**Severity.** High.
+
+**Aanbevolen fix.** Kies één pad en maak het het enige:
+- **Optie A (aanbevolen):** zet de Git-integratie uit voor beide projecten en laat
+  GitHub Actions deployen, met de API vóór de frontend, beide onder
+  `environment: production` en achter de gates. `deploy-api.mjs` wordt dan wél
+  het productiepad en `COMMIT_SHA` klopt.
+- **Optie B:** houd Workers Builds, maar zet in het buildcommando van het
+  dashboard `npm run check:rc && npx wrangler deploy --var=COMMIT_SHA:$CF_VERSION_METADATA_ID`,
+  beperk de Git-integratie tot de `main`-branch, en leg de dashboardconfiguratie
+  vast in `knowledge-base/operations/deployment/`.
+
+Verwijder in beide gevallen de dubbele Pages-deploy.
 
 ---
 
@@ -623,7 +676,10 @@ Zowel [`app.ts:130`](../../../functions/api/app.ts) als
 `credentials: true`.
 
 Elke preview-deploy — inclusief die van een niet-gereviewde branch — is daarmee een
-volledig vertrouwde origin tegen **productie**. Eén kwaadaardige of gecompromitteerde
+volledig vertrouwde origin tegen **productie**. PR #872 bevestigt de vorm: de
+hash-preview `https://69bd9913.qesto.pages.dev` matcht de regex exact. (De
+branch-preview `claude-codebase-technical-au.qesto.pages.dev` matcht níét, omdat
+de regex geen koppeltekens toestaat — de dekking is dus grillig, niet bewust.) Eén kwaadaardige of gecompromitteerde
 preview-build kan geauthenticeerde, state-changing requests doen namens elke ingelogde
 gebruiker die hem bezoekt.
 
@@ -878,7 +934,7 @@ een refactor niet per ongeluk sneuvelen.
 **Sprint 4 — structurele schuld (≈ 21 pt)**
 12. H-1: RBAC eerlijk maken (Optie A) — schrapt tegelijk een D1-query per request
 13. M-1: auth/plan hoisten met allowlist + route-dekkingstest
-14. H-6: API-deploy in de pipeline
+14. H-6: één deploypad kiezen — gates en approval gate vóór de API-deploy
 15. M-2/M-3: caching van plan/rollen; `lastUsedAt` niet per request schrijven
 
 **Doorlopend**
@@ -897,6 +953,9 @@ npx vitest run            → 316 bestanden, 2.706 tests, allemaal groen (78,8s)
 npm audit                 → 15 kwetsbaarheden (1 low, 5 moderate, 9 high)
 npm audit --omit=dev      → 1 moderate (hono)
 GitHub Dependabot         → 23 kwetsbaarheden op de default branch (15 high, 8 moderate)
+curl https://qesto.cc/api/version  → {"env":"production","commit":"dev"}
+PR #872 checks            → Cloudflare Pages ✅ + Workers Builds ✅ op een docs-only
+                            PR waar ci.yml door paths-ignore geen enkele test draaide
 git grep <secret-patronen> → geen gecommitteerde secrets
 ```
 
@@ -905,5 +964,15 @@ de draaiende omgeving, load-/stresstests tegen de Durable Object, verificatie va
 de daadwerkelijke branch-protection-instellingen en Environment-reviewers op GitHub,
 inspectie van de live Cloudflare-configuratie (WAF, zone-instellingen,
 secret-inventaris) en de Dependabot-security-update-instelling.
-Bevindingen H-5, H-6, M-6 en C-2 zouden met toegang tot die oppervlakken
-scherper te kwantificeren zijn.
+Bevindingen H-5, M-6 en C-2 zouden met toegang tot die oppervlakken scherper te
+kwantificeren zijn.
+
+**Correctie na publicatie.** H-6 is herschreven nadat de deploy-bots op PR #872
+aantoonden dat de oorspronkelijke lezing ("de API-deploy is handmatig") onjuist
+was. De Git-integratie van Cloudflare is dashboardconfiguratie en daarom niet
+vanuit de repo zichtbaar; zij kwam pas aan het licht doordat deze audit zelf een
+PR opende. Dat is precies het punt van H-6 §5: het werkelijke deploymentmodel
+staat nergens in versiebeheer. Andere bevindingen die op dashboardconfiguratie
+leunen (branch protection, Environment-reviewers, Dependabot security updates,
+WAF-regels) kunnen om dezelfde reden afwijken van wat de repo suggereert en
+verdienen verificatie in het dashboard vóór triage.
