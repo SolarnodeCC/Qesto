@@ -18,7 +18,7 @@ $vectorData = Get-Content '.kb-vectors-pending.json' -Raw
 
 # Set up headers
 $headers = @{
-    "x-admin-key" = "qesto-kb-admin-phase1"
+    "x-admin-key" = "<KB_ADMIN_KEY>"
     "Content-Type" = "application/json"
 }
 

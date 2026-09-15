@@ -53,7 +53,7 @@ export CLOUDFLARE_ACCOUNT_ID="..."
 export CLOUDFLARE_D1_DATABASE_ID="..."
 export CF_ACCESS_CLIENT_ID="..."
 export CF_ACCESS_CLIENT_SECRET="..."
-export KB_ADMIN_KEY="qesto-kb-admin-phase1"
+export KB_ADMIN_KEY="<KB_ADMIN_KEY>"
 ```
 
 ### Basic Usage
@@ -152,17 +152,30 @@ Next sync will treat all `.md` files as "new" and re-embed everything.
 | `KB_ADMIN_KEY` | ✅ | Admin key for `/api/admin/kb-sync` endpoint |
 | `KB_SYNC_ENDPOINT` | ❌ | Override endpoint (default: `https://qesto-api.oostelaar.workers.dev/api/admin/kb-sync`) |
 
+> ⚠️ **SECURITY — these values were REAL production credentials until 2026-09-15.**
+>
+> This block previously contained a live `cfat_`-prefixed Cloudflare API token,
+> a Cloudflare Access service-token id and secret, and the KB admin key. They
+> were not placeholders: the `CLOUDFLARE_ACCOUNT_ID` and
+> `CLOUDFLARE_D1_DATABASE_ID` beside them match `wrangler.toml` exactly.
+> Committed 2026-07-20 in `e6e18be5`.
+>
+> They are redacted here, but **redaction is not remediation** — the values
+> remain in git history and must be treated as compromised. Rotation status is
+> tracked in the DD-41 issue. Never paste real credentials into documentation;
+> use obviously-fake placeholders like the ones below.
+
 ### Local Development (.env)
 
 Create `.env.local` or use inline exports:
 
 ```bash
-export CLOUDFLARE_API_TOKEN="cfat_0vbrivvzWjQcSKs1Z9lRhJ91ip7AflIRzsHLaX5749fa2e73"
+export CLOUDFLARE_API_TOKEN="<CLOUDFLARE_API_TOKEN>"
 export CLOUDFLARE_ACCOUNT_ID="5546763229b35df670e33d9316d7f2e0"
 export CLOUDFLARE_D1_DATABASE_ID="d391bdd5-a03d-41bc-bc45-6b5f3bac1b1b"
-export CF_ACCESS_CLIENT_ID="8475c8b4d945a84c6efe7608ee4fc50f.access"
-export CF_ACCESS_CLIENT_SECRET="ca5bcf9ab5bb5345b7130c2fc455daf8562d639c763411710e54b13a141ca1f6"
-export KB_ADMIN_KEY="qesto-kb-admin-phase1"
+export CF_ACCESS_CLIENT_ID="<CF_ACCESS_CLIENT_ID>"
+export CF_ACCESS_CLIENT_SECRET="<CF_ACCESS_CLIENT_SECRET>"
+export KB_ADMIN_KEY="<KB_ADMIN_KEY>"
 
 npm run kb:sync
 ```
@@ -373,7 +386,7 @@ wrangler vectorize list
 
 # 3. Query the index (use admin-only endpoint)
 curl 'https://qesto-api.oostelaar.workers.dev/api/admin/kb-search?q=test' \
-  -H "x-admin-key: qesto-kb-admin-phase1"
+  -H "x-admin-key: <KB_ADMIN_KEY>"
 ```
 
 ### Manifest Out of Sync
