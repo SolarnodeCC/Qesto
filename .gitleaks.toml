@@ -1,0 +1,46 @@
+# DD-02 — gitleaks configuration.
+#
+# The secret-scanning lane in ops/ci/supply-chain.sh now runs with
+# `--exit-code 1`, so a finding fails the build. That only works if deliberate
+# documentation examples are allowlisted BY PATH AND PATTERN rather than by
+# blanket suppression — otherwise the first false positive re-teaches everyone
+# to ignore the lane, which is the failure mode DD-02 is about.
+#
+# Scope every entry as narrowly as it can be. When a new example is added to
+# documentation, prefer an obviously-fake placeholder (`sk_live_xxxx`) over
+# widening an allowlist.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documentation placeholders — obviously-fake Stripe/Resend example values in specs and runbooks, never real credentials."
+paths = [
+  '''knowledge-base/specifications/domain/SPEC_INTEGRATIONS\.md''',
+  '''knowledge-base/specifications/domain/SPEC_DEPLOYMENT\.md''',
+  '''knowledge-base/operations/incidents/SECRET_RUNBOOK\.md''',
+  '''knowledge-base/adr/ADR-0009-pii-sanitization\.md''',
+  '''\.env\.example''',
+  '''\.dev\.vars\.example''',
+]
+# Belt and braces: even inside those files, only match the placeholder shapes.
+regexTarget = "match"
+regexes = [
+  '''sk_(live|test)_(abc123|xxxx|TEST123|12345|4eC39HqLyjWDarht12345|\.\.\.)''',
+  '''whsec_(abc123|xxxx|\.\.\.)''',
+  '''re_(xxxx|abc123|\.\.\.)''',
+]
+
+[[allowlists]]
+description = "Detector definitions — lib/log.ts and the guard hooks contain the redaction patterns themselves, which necessarily look like the secrets they match."
+paths = [
+  '''functions/api/lib/log\.ts''',
+  '''\.claude/hooks/post-edit\.sh''',
+  '''\.claude/QA_CHECKLIST\.md''',
+  '''\.claude/skills/COMMON_RULES\.md''',
+  '''ops/ci/secret-scan\.sh''',
+]
+
+[[allowlists]]
+description = "Lockfile integrity hashes are not credentials."
+paths = ['''package-lock\.json''']
