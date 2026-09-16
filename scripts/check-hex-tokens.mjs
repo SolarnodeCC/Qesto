@@ -22,10 +22,16 @@ const SCOPED_PREFIXES = [
   'src/pages/dashboard/RecentSessionsSection.tsx',
   'src/pages/dashboard/HeroSection.tsx',
   'src/pages/Present.tsx',
+  'src/pages/Display.tsx',
+  'src/pages/EventStagePresent.tsx',
   'src/components/launchpad/JoinCodePanel.tsx',
+  'src/components/launchpad/QuestionList.tsx',
   'src/components/studio/PromptForm.tsx',
+  'src/components/session-wizard/SessionWizardFooter.tsx',
   'src/ui/FormField.tsx',
   'src/layouts/ParticipantShell.tsx',
+  'src/layouts/BigScreenShell.tsx',
+  'src/layouts/HostConsoleShell.tsx',
 ]
 
 /**

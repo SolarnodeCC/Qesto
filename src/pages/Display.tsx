@@ -11,6 +11,7 @@ import { CaptionsOverlay } from '../components/CaptionsOverlay'
 import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
 import { captionsReducer, CAPTIONS_INITIAL } from '../hooks/useCaptions'
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
+import BigScreenShell, { BigScreenFallback } from '../layouts/BigScreenShell'
 
 type Lookup =
   | { status: 'loading' }
@@ -48,9 +49,9 @@ export default function Display() {
 
 function LoadingScreen() {
   return (
-    <div className="fixed inset-0 bg-[#0f1117] flex items-center justify-center">
+    <BigScreenFallback>
       <Loader2 aria-hidden="true" className="animate-spin w-12 h-12 text-teal-500" />
-    </div>
+    </BigScreenFallback>
   )
 }
 
@@ -58,10 +59,12 @@ function ErrorScreen({ message }: { message: string }) {
   const t = useT('present')
 
   return (
-    <div className="fixed inset-0 bg-[#0f1117] flex flex-col items-center justify-center gap-3 text-center p-12">
-      <p className="text-xl font-semibold text-white">{t('sessionNotFound')}</p>
-      <p className="text-sm text-white/50">{message}</p>
-    </div>
+    <BigScreenFallback>
+      <div className="flex flex-col items-center justify-center gap-3 text-center p-12 text-white">
+        <p className="text-xl font-semibold">{t('sessionNotFound')}</p>
+        <p className="text-sm text-white/50">{message}</p>
+      </div>
+    </BigScreenFallback>
   )
 }
 
@@ -102,10 +105,25 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
   )
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
 
+  const connectionBadge =
+    state.connection === 'open'
+      ? t('live')
+      : state.connection === 'connecting'
+        ? t('connection.connecting')
+        : state.connection === 'reconnecting'
+          ? t('connection.reconnecting')
+          : state.connection === 'failed'
+            ? t('connection.failed')
+            : t('connection.closed')
+
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-hidden"
-      data-canvas-theme={theme}
+    <BigScreenShell
+      title={state.session?.title ?? 'Qesto'}
+      badgeLabel={connectionBadge}
+      code={state.session?.code ?? code}
+      pathPrefix="j"
+      joinLabel=""
+      className="overflow-hidden"
       style={{
         background: 'var(--canvas-bg)',
         color: 'var(--canvas-text)',
@@ -114,43 +132,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
         letterSpacing: 'var(--canvas-letter-spacing, 0em)',
       }}
     >
-      {/* Top accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--gradient-brand)' }} />
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-12 pt-7 pb-2 shrink-0">
-        <div
-          className="flex items-center gap-2.5 font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-xl"
-          style={{ color: 'var(--canvas-text)' }}
-        >
-          <img src="/favicon.svg" alt="" width={26} height={26} />
-          {state.session?.title ?? 'Qesto'}
-        </div>
-        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--canvas-text-muted)' }}>
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{
-              background: state.connection === 'open'
-                ? 'var(--canvas-accent)'
-                : 'color-mix(in srgb, var(--canvas-text-muted) 40%, transparent)',
-              ...(state.connection === 'open' ? { animation: 'pulse 1.8s infinite' } : {}),
-            }}
-            aria-hidden="true"
-          />
-          {state.connection === 'open'
-            ? t('live')
-            : state.connection === 'connecting'
-            ? t('connection.connecting')
-            : state.connection === 'reconnecting'
-            ? t('connection.reconnecting')
-            : state.connection === 'failed'
-            ? t('connection.failed')
-            : t('connection.closed')}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 px-12 pb-8 pt-4 flex flex-col overflow-hidden">
+      <div data-canvas-theme={theme} className="flex h-full flex-col overflow-hidden">
         {state.allDone && !isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
             <div className="text-7xl" aria-hidden="true">🎉</div>
@@ -181,7 +163,6 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-12 overflow-hidden">
-            {/* Question prompt */}
             <div className="shrink-0">
               <p
                 className="text-xs font-bold tracking-[0.14em] uppercase mb-3"
@@ -189,12 +170,12 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
               >
                 {t('questionLabel')}
               </p>
-              <h1
+              <h2
                 className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-4xl [text-wrap:balance]"
                 style={{ color: 'var(--canvas-text)', lineHeight: 'var(--canvas-line-height, 1.6)' }}
               >
                 {state.question.prompt}
-              </h1>
+              </h2>
               <div
                 className="mt-3 flex items-center gap-1.5 text-sm"
                 style={{ color: 'var(--canvas-text-muted)' }}
@@ -206,7 +187,6 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
               </div>
             </div>
 
-            {/* Results — adaptive viz (CANVAS-ADAPTIVE-VIZ-01) */}
             <div className="flex-1 overflow-y-auto">
               <AdaptiveVizResults
                 options={ordered}
@@ -217,30 +197,14 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
             </div>
           </div>
         )}
+
+        <CaptionsOverlay segments={captionsState.segments} active={captionsState.active} />
+        <ReactionsOverlay
+          particles={reactionsState.particles}
+          total={reactionsState.total}
+          active={reactionsState.total > 0}
+        />
       </div>
-
-      {/* Footer */}
-      <div
-        className="shrink-0 px-12 py-4 flex items-center justify-between text-xs border-t"
-        style={{ borderColor: 'var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
-      >
-        <span>qesto.cc/j/{state.session?.code ?? code}</span>
-        <span
-          className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-semibold"
-        >
-          Qesto
-        </span>
-      </div>
-
-      {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
-      <CaptionsOverlay segments={captionsState.segments} active={captionsState.active} />
-
-      {/* Live reactions overlay — FE-REACTIONS-RENDER-01 */}
-      <ReactionsOverlay
-        particles={reactionsState.particles}
-        total={reactionsState.total}
-        active={reactionsState.total > 0}
-      />
-    </div>
+    </BigScreenShell>
   )
 }

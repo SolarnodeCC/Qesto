@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, Pause, ShieldCheck } from 'lucide-react'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingCssVars, tryCacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
@@ -261,42 +261,38 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="relative min-h-screen bg-white dark:bg-[var(--color-bg)] flex flex-col">
+    <div className="relative">
       <ReactionsOverlay
         particles={reactionsState.particles}
         total={reactionsState.total}
         active={reactionsState.total > 0 || questionKind === 'reaction'}
       />
-      {/* Live voter chrome — shell migration deferred (Days 61+); tokens aligned Day 60 */}
-      <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[var(--color-border)] px-6 py-3 flex items-center justify-between">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[var(--text-primary)]">Qesto</span>
-        {state.connection === 'open' ? (
-          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
-            {t('participants_label', { count: state.participants })}
-          </span>
-        ) : connectionLabel ? (
-          <span className="text-xs text-amber-600">{connectionLabel}</span>
-        ) : null}
-        {xrAvailable && (
-          <button
-            ref={xrEnterButtonRef}
-            type="button"
-            onClick={openXr}
-            title={isWebXrCapable ? tXr('enter_button_hint') : tXr('enter_button_fallback_hint')}
-            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-50 dark:bg-teal-900/20 px-3 text-xs font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-          >
-            {isWebXrCapable ? tXr('enter_button') : tXr('enter_button_fallback')}
-          </button>
-        )}
-      </div>
-
-      <div className="flex-1 max-w-lg w-full mx-auto px-6 py-12 flex flex-col gap-8">
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
-          {title}
-        </h1>
-
+      <ParticipantShell
+        title={title}
+        maxWidth="lg"
+        connectionLabel={state.connection === 'open' ? null : connectionLabel}
+        headerTrailing={
+          <>
+            {state.connection === 'open' && (
+              <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
+                {t('participants_label', { count: state.participants })}
+              </span>
+            )}
+            {xrAvailable && (
+              <button
+                ref={xrEnterButtonRef}
+                type="button"
+                onClick={openXr}
+                title={isWebXrCapable ? tXr('enter_button_hint') : tXr('enter_button_fallback_hint')}
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-50 dark:bg-teal-900/20 px-3 text-xs font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              >
+                {isWebXrCapable ? tXr('enter_button') : tXr('enter_button_fallback')}
+              </button>
+            )}
+          </>
+        }
+      >
         {/* Zero-knowledge trust badge */}
         {state.session?.anonymity === 'zero_knowledge' && (
           <div
@@ -304,9 +300,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             aria-label={t('trust_badge')}
             className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
           >
-            <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.027-.505-3.938-1.396-5.617" />
-            </svg>
+            <ShieldCheck size={16} className="shrink-0" aria-hidden="true" />
             <span>{t('trust_badge')}</span>
           </div>
         )}
@@ -384,18 +378,13 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
               {state.question.prompt}
             </h2>
 
-            {/* Paused banner */}
             {state.paused && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
+                <Pause size={16} className="shrink-0" aria-hidden="true" />
                 {t('voting_paused')}
               </div>
             )}
 
-            {/* Inline reconnect notice — the disabled vote controls below would
-                otherwise look tappable with no explanation (offline state). */}
             {!state.paused && state.connection !== 'open' && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 px-4 py-3 text-sm text-amber-700 dark:text-amber-300" role="status" aria-live="polite">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" aria-hidden="true" />
@@ -432,11 +421,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             {state.error}
           </p>
         )}
-      </div>
+      </ParticipantShell>
 
-      {/* XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-mounted only after opt-in.
-          Never blocks the 2D path above — Suspense fallback is a minimal status
-          line, not a full-page blocker, since the 2D UI keeps running underneath. */}
       {xrOpen && (
         <Suspense
           fallback={
@@ -458,6 +444,6 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           />
         </Suspense>
       )}
-    </main>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
 
 /**
  * Shared "stage" surface styling for big-screen audience views. Uses the
@@ -22,6 +22,12 @@ interface BigScreenShellProps {
   pathPrefix?: string
   /** Pre-resolved "Join at" label (page owns the i18n namespace). */
   joinLabel?: string
+  /** Optional trailing header slot (e.g. connection text). */
+  headerTrailing?: ReactNode
+  /** Extra classes on the stage root (e.g. canvas overflow). */
+  className?: string
+  /** Inline styles — classic Display passes canvas theme CSS vars here. */
+  style?: CSSProperties
   children: ReactNode
 }
 
@@ -40,18 +46,24 @@ export default function BigScreenShell({
   code,
   pathPrefix,
   joinLabel,
+  headerTrailing,
+  className = '',
+  style,
   children,
 }: BigScreenShellProps) {
   return (
-    <div className={STAGE_CLASS}>
-      <header className="mb-12 flex items-center justify-between">
+    <div className={`${STAGE_CLASS} ${className}`.trim()} style={style}>
+      <header className="mb-12 flex items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">{title}</h1>
-        {badgeLabel && (
-          <span className="inline-flex items-center gap-2 text-sm text-teal-400" role="status">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-teal-400" aria-hidden="true" />
-            {badgeLabel}
-          </span>
-        )}
+        <div className="flex items-center gap-3 shrink-0">
+          {headerTrailing}
+          {badgeLabel && (
+            <span className="inline-flex items-center gap-2 text-sm text-teal-400" role="status">
+              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-teal-400" aria-hidden="true" />
+              {badgeLabel}
+            </span>
+          )}
+        </div>
       </header>
 
       <main id="main" tabIndex={-1} className="flex-1 overflow-hidden focus:outline-none">
