@@ -96,6 +96,8 @@ export function Section({
 
 // ─── Buttons ──────────────────────────────────────────────────────────────
 
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'inverse'
+
 export function Button({
   children,
   variant = 'primary',
@@ -104,24 +106,33 @@ export function Button({
   onClick,
   className = '',
   type = 'button',
+  'aria-label': ariaLabel,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHaspopup,
+  title,
 }: {
   children: ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: ButtonVariant
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
   onClick?: () => void
   className?: string
   type?: 'button' | 'submit' | 'reset'
+  'aria-label'?: string
+  'aria-expanded'?: boolean
+  'aria-haspopup'?: boolean | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'
+  title?: string
 }) {
   // ADR-0071: controls use rounded-lg (16px via --radius-lg).
-  const baseStyles = 'rounded-lg font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
+  const baseStyles =
+    'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2'
 
   // min-h keeps every Button a ≥44px touch target on phone viewports (WCAG
   // 2.5.5); sm relaxes to its compact desktop height from the sm breakpoint.
   const sizeStyles = {
     sm: 'px-3 py-2 text-body-s min-h-11 sm:min-h-9',
-    md: 'px-4 py-2 text-body-m min-h-11',
-    lg: 'px-6 py-3 text-body-m min-h-11',
+    md: 'px-4 py-2.5 text-sm min-h-11',
+    lg: 'px-6 py-3 text-[15px] font-semibold min-h-11',
   }
 
   const variantStyles = {
@@ -130,8 +141,10 @@ export function Button({
       hover:shadow-teal ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     secondary: `
-      border border-teal-500 text-teal-700 dark:text-teal-400 bg-[var(--color-surface)]
-      hover:bg-teal-50 dark:hover:bg-teal-500/10 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-transparent
+      text-pulse-700 dark:text-[var(--text-secondary)]
+      hover:border-teal-400 dark:hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400
+      ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     ghost: `
       text-[var(--text-secondary)] bg-transparent
@@ -141,6 +154,11 @@ export function Button({
       bg-signal-error text-white
       hover:shadow-error ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
+    // Dashboard / high-contrast solid CTA (light: near-black, dark: near-white).
+    inverse: `
+      bg-pulse-900 dark:bg-[var(--text-primary)] text-white dark:text-pulse-900 shadow-card
+      hover:opacity-90 ${!disabled ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}
+    `,
   }
 
   return (
@@ -148,6 +166,10 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHaspopup}
+      title={title}
       className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
     >
       {children}

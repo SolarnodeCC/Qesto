@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getLanguageHeader, useT } from '../i18n'
@@ -13,13 +13,12 @@ import {
   ENERGIZER_BACKEND_KIND,
   ENERGIZER_DEFAULT_PROMPT,
   type WizardStep,
-  type Step2Mode,
-  type AIPhase,
   type WizardQuestion,
   type GeneratedQuestion,
   type GenerateQuestionsSsePayload,
   type QuestionSsePayload,
 } from './sessionWizard.helpers'
+import { wizardReducer, WIZARD_INITIAL } from './sessionWizard.reducer'
 import { SessionWizardStep1 } from './session-wizard/SessionWizardStep1'
 import { SessionWizardStep2 } from './session-wizard/SessionWizardStep2'
 import { SessionWizardStep3 } from './session-wizard/SessionWizardStep3'
@@ -46,83 +45,21 @@ export interface SessionWizardProps {
 export default function SessionWizard({ open, onClose, onSessionCreated, initialTemplate = null }: SessionWizardProps) {
   const navigate = useNavigate()
   const t = useT('wizard')
+  const [state, dispatch] = useReducer(wizardReducer, WIZARD_INITIAL)
 
-  const [step, setStep] = useState<WizardStep>(1)
-  const [jumpedFrom5, setJumpedFrom5] = useState(false)
-
-  // Step 1
-  const [title, setTitle] = useState('')
-  const [goal, setGoal] = useState('')
-
-  // Step 2
-  const [step2Mode, setStep2Mode] = useState<Step2Mode>('idle')
-  const [aiPhase, setAiPhase] = useState<AIPhase>('consent')
-  const [aiConsented, setAiConsented] = useState(false)
-  const [aiPrompt, setAiPrompt] = useState('')
-  const [questions, setQuestions] = useState<WizardQuestion[]>([])
-  const [templateSeedName, setTemplateSeedName] = useState<string | null>(null)
-
-  // Step 3
-  const [energizerId, setEnergizerId] = useState<string | null>(null)
-
-  // Step 4
-  const [anonymity, setAnonymity] = useState<'full' | 'partial' | 'none' | 'zero_knowledge'>('partial')
-  const [votePolicy, setVotePolicy] = useState<'once' | 'multi' | 'react'>('once')
-  const [sessionMode, setSessionMode] = useState<'reflection' | 'fun'>('reflection')
-  const [isPublic, setIsPublic] = useState(true)
-
-  // Async
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  const [generatedAiGroundingHash, setGeneratedAiGroundingHash] = useState<string | null>(null)
-  const [creatingSession, setCreatingSession] = useState(false)
-  const [_generating, setGenerating] = useState(false)
-  const [launching, setLaunching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [launchError, setLaunchError] = useState<string | null>(null)
+  const {
+    step, jumpedFrom5, title, goal, step2Mode, aiPhase, aiConsented, aiPrompt,
+    questions, templateSeedName, energizerId, anonymity, votePolicy, sessionMode,
+    isPublic, sessionId, generatedAiGroundingHash, creatingSession, launching,
+    error, launchError,
+  } = state
 
   const headingRef = useRef<HTMLHeadingElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
-    setStep(1)
-    setJumpedFrom5(false)
-    setTitle('')
-    setGoal('')
-    setStep2Mode('idle')
-    setAiPhase('consent')
-    setAiConsented(false)
-    setAiPrompt('')
-    if (initialTemplate) {
-      setTitle(initialTemplate.name)
-      setGoal(initialTemplate.description)
-      setStep2Mode('template')
-      setTemplateSeedName(initialTemplate.name)
-      setQuestions(initialTemplate.questions.map((q) => ({
-        id: newId(),
-        kind: coerceQuestionKind(q.kind),
-        prompt: q.prompt,
-        options: q.options.map((o) => ({ id: o.id || newId(), label: o.label })),
-        fromAI: false,
-        dismissed: false,
-        accepted: true,
-      })))
-    } else {
-      setQuestions([])
-      setTemplateSeedName(null)
-    }
-    setEnergizerId(null)
-    setAnonymity('partial')
-    setVotePolicy('once')
-    setSessionMode('reflection')
-    setIsPublic(true)
-    setSessionId(null)
-    setGeneratedAiGroundingHash(null)
-    setCreatingSession(false)
-    setGenerating(false)
-    setLaunching(false)
-    setError(null)
-    setLaunchError(null)
+    dispatch({ type: 'RESET', template: initialTemplate })
   }, [open, initialTemplate])
 
   useEffect(() => {
@@ -144,34 +81,34 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
   async function handleNextFromStep1() {
     if (!step1Valid) return
-    setError(null)
+    dispatch({ type: 'SET_ERROR', value: null })
     if (!sessionId) {
-      setCreatingSession(true)
+      dispatch({ type: 'SET_CREATING_SESSION', value: true })
       const activeTeamId = localStorage.getItem('activeTeamId') ?? undefined
       const res = await api<{ session: { id: string }; questions: unknown[] }>('/api/sessions', {
         method: 'POST',
         body: { title: title.trim(), ...(activeTeamId ? { teamId: activeTeamId } : {}) },
         idempotencyKey: crypto.randomUUID(),
       })
-      setCreatingSession(false)
-      if (!res.ok) { setError(res.error.message); return }
-      setSessionId(res.data.session.id)
+      dispatch({ type: 'SET_CREATING_SESSION', value: false })
+      if (!res.ok) { dispatch({ type: 'SET_ERROR', value: res.error.message }); return }
+      dispatch({ type: 'SET_SESSION_ID', value: res.data.session.id })
     } else {
       const patchRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
         method: 'PATCH',
         body: { title: title.trim() },
       })
-      if (!patchRes.ok) { setError(patchRes.error.message); return }
+      if (!patchRes.ok) { dispatch({ type: 'SET_ERROR', value: patchRes.error.message }); return }
     }
-    if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else { setStep(2) }
+    dispatch({ type: 'ADVANCE_AFTER_JUMP_OR', next: 2 })
   }
 
   async function handleGenerate() {
     if (!sessionId) return
-    setGenerating(true)
-    setAiPhase('generating')
-    setError(null)
-    setGeneratedAiGroundingHash(null)
+    dispatch({ type: 'SET_GENERATING', value: true })
+    dispatch({ type: 'SET_AI_PHASE', value: 'generating' })
+    dispatch({ type: 'SET_ERROR', value: null })
+    dispatch({ type: 'SET_GROUNDING_HASH', value: null })
     try {
       const headers: Record<string, string> = {
         'content-type': 'application/json',
@@ -220,15 +157,22 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
           const parsed = parseSseEvent(chunk)
           if (parsed?.event === 'ready') {
             const readyData = parsed.data as { groundingHash?: unknown }
-            if (typeof readyData.groundingHash === 'string') setGeneratedAiGroundingHash(readyData.groundingHash)
+            if (typeof readyData.groundingHash === 'string') {
+              dispatch({ type: 'SET_GROUNDING_HASH', value: readyData.groundingHash })
+            }
           }
           if (parsed?.event === 'question') {
             const data = parsed.data as QuestionSsePayload
             if (data?.question) {
-              // Reveal the review list on the first card, then fill in card-by-card.
-              if (streamedCount === 0) { setQuestions([]); setAiPhase('review') }
+              if (streamedCount === 0) {
+                dispatch({ type: 'SET_QUESTIONS', value: [] })
+                dispatch({ type: 'SET_AI_PHASE', value: 'review' })
+              }
               streamedCount++
-              setQuestions((prev) => [...prev, toWizardQuestion(data.question)])
+              dispatch({
+                type: 'SET_QUESTIONS',
+                value: (prev) => [...prev, toWizardQuestion(data.question)],
+              })
             }
           }
           if (parsed?.event === 'questions') payload = parsed.data as GenerateQuestionsSsePayload
@@ -238,40 +182,37 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       }
 
       if (!payload) throw new Error(t('step2.ai_error'))
-      setGeneratedAiGroundingHash(payload.groundingHash)
-      // When questions streamed in incrementally, the list is already populated;
-      // the final payload only confirms the grounding hash. If nothing streamed
-      // (fallback path), apply the authoritative full list now.
+      dispatch({ type: 'SET_GROUNDING_HASH', value: payload.groundingHash })
       if (streamedCount === 0) {
-        setQuestions(payload.questions.map(toWizardQuestion))
+        dispatch({ type: 'SET_QUESTIONS', value: payload.questions.map(toWizardQuestion) })
       }
-      setAiPhase('review')
+      dispatch({ type: 'SET_AI_PHASE', value: 'review' })
     } catch {
-      setError(t('step2.ai_error'))
-      setAiPhase('chat')
+      dispatch({ type: 'SET_ERROR', value: t('step2.ai_error') })
+      dispatch({ type: 'SET_AI_PHASE', value: 'chat' })
     } finally {
-      setGenerating(false)
+      dispatch({ type: 'SET_GENERATING', value: false })
     }
   }
 
   function handleNextFromStep2() {
     if (!step2Valid) return
-    if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else { setStep(3) }
+    dispatch({ type: 'ADVANCE_AFTER_JUMP_OR', next: 3 })
   }
 
   function handleStep3Select(id: string) {
-    setEnergizerId(id)
-    if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else { setStep(4) }
+    dispatch({ type: 'SET_ENERGIZER_ID', value: id })
+    dispatch({ type: 'ADVANCE_AFTER_JUMP_OR', next: 4 })
   }
 
   function handleStep3Skip() {
-    if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else { setStep(4) }
+    dispatch({ type: 'ADVANCE_AFTER_JUMP_OR', next: 4 })
   }
 
   async function handleLaunch() {
     if (!sessionId) return
-    setLaunching(true)
-    setLaunchError(null)
+    dispatch({ type: 'SET_LAUNCHING', value: true })
+    dispatch({ type: 'SET_LAUNCH_ERROR', value: null })
 
     const usedAiQuestions = activeQuestions.some((q) => q.fromAI)
     const optionsBody: Record<string, unknown> = { anonymity, vote_policy: votePolicy, session_mode: sessionMode, is_public: isPublic ? 1 : 0 }
@@ -290,8 +231,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       body: optionsBody,
     })
     if (!optionsRes.ok) {
-      setLaunchError((optionsRes as { ok: false; error: { message: string } }).error.message)
-      setLaunching(false)
+      dispatch({ type: 'SET_LAUNCH_ERROR', value: (optionsRes as { ok: false; error: { message: string } }).error.message })
+      dispatch({ type: 'SET_LAUNCHING', value: false })
       return
     }
 
@@ -307,8 +248,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         body: { questions: questionsBody },
       })
       if (!res.ok) {
-        setLaunchError((res as { ok: false; error: { message: string } }).error.message)
-        setLaunching(false)
+        dispatch({ type: 'SET_LAUNCH_ERROR', value: (res as { ok: false; error: { message: string } }).error.message })
+        dispatch({ type: 'SET_LAUNCHING', value: false })
         return
       }
     }
@@ -321,8 +262,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
           body: { kind: backendKind, prompt: ENERGIZER_DEFAULT_PROMPT[energizerId] ?? energizerId },
         })
         if (!res.ok) {
-          setLaunchError((res as { ok: false; error: { message: string } }).error.message)
-          setLaunching(false)
+          dispatch({ type: 'SET_LAUNCH_ERROR', value: (res as { ok: false; error: { message: string } }).error.message })
+          dispatch({ type: 'SET_LAUNCHING', value: false })
           return
         }
       }
@@ -339,15 +280,14 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       })
     }
 
-    setLaunching(false)
+    dispatch({ type: 'SET_LAUNCHING', value: false })
     onSessionCreated?.()
     navigate(`/sessions/${sessionId}/launchpad`)
     onClose()
   }
 
   function jumpToStep(target: WizardStep) {
-    setJumpedFrom5(true)
-    setStep(target)
+    dispatch({ type: 'JUMP_TO_STEP', step: target })
   }
 
   const STEP_LABELS: Record<WizardStep, string> = {
@@ -368,15 +308,14 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
     >
       <div
         ref={dialogRef}
-        className="bg-white dark:bg-[#1C2540] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
+        className="bg-white dark:bg-[var(--color-surface-elevated)] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">
+        <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-pulse-200 dark:border-[var(--color-border)] flex-shrink-0">
           <div className="space-y-1">
-            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
+            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[var(--text-primary)]">
               {STEP_LABELS[step]}
             </h2>
-            <p className="text-caption text-pulse-500 dark:text-[#8A96B0]" aria-live="polite">
+            <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)]" aria-live="polite">
               {t('a11y.progress_label', { current: step, total: 5 })}
             </p>
           </div>
@@ -384,13 +323,12 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
             type="button"
             onClick={onClose}
             aria-label={t('a11y.close_label')}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[#F0F2F8] dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[var(--text-muted)] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[var(--text-primary)] dark:hover:bg-[var(--color-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <X size={18} aria-hidden="true" />
           </button>
         </div>
 
-        {/* Step indicator */}
         <div className="px-8 pt-3 pb-0 flex-shrink-0">
           <div className="flex gap-1" role="list" aria-label="Progress steps">
             {([1, 2, 3, 4, 5] as WizardStep[]).map((s) => (
@@ -399,7 +337,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                 role="listitem"
                 className={[
                   'h-1.5 flex-1 rounded-pill transition-colors',
-                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-[#1E2A45]',
+                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-[var(--color-border)]',
                 ].join(' ')}
                 aria-label={`Step ${s}${s === step ? ' (current)' : s < step ? ' (complete)' : ''}`}
               />
@@ -407,32 +345,31 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
           </div>
         </div>
 
-        {/* Step content */}
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
           {step === 1 && (
             <SessionWizardStep1
               title={title}
               goal={goal}
-              onTitleChange={setTitle}
-              onGoalChange={setGoal}
+              onTitleChange={(v) => dispatch({ type: 'SET_TITLE', value: v })}
+              onGoalChange={(v) => dispatch({ type: 'SET_GOAL', value: v })}
               error={error}
             />
           )}
           {step === 2 && (
             <SessionWizardStep2
               step2Mode={step2Mode}
-              onModeChange={setStep2Mode}
+              onModeChange={(v) => dispatch({ type: 'SET_STEP2_MODE', value: v })}
               aiPhase={aiPhase}
-              onAiPhaseChange={setAiPhase}
+              onAiPhaseChange={(v) => dispatch({ type: 'SET_AI_PHASE', value: v })}
               aiConsented={aiConsented}
-              onAiConsentChange={setAiConsented}
+              onAiConsentChange={(v) => dispatch({ type: 'SET_AI_CONSENTED', value: v })}
               aiPrompt={aiPrompt}
-              onAiPromptChange={setAiPrompt}
+              onAiPromptChange={(v) => dispatch({ type: 'SET_AI_PROMPT', value: v })}
               questions={questions}
-              onQuestionsChange={setQuestions}
+              onQuestionsChange={(v) => dispatch({ type: 'SET_QUESTIONS', value: v })}
               activeQuestions={activeQuestions}
               templateSeedName={templateSeedName}
-              onTemplateSeedNameChange={setTemplateSeedName}
+              onTemplateSeedNameChange={(v) => dispatch({ type: 'SET_TEMPLATE_SEED_NAME', value: v })}
               onGenerate={handleGenerate}
               error={error}
               title={title}
@@ -449,13 +386,13 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
           {step === 4 && (
             <SessionWizardStep4
               anonymity={anonymity}
-              onAnonymityChange={setAnonymity}
+              onAnonymityChange={(v) => dispatch({ type: 'SET_ANONYMITY', value: v })}
               votePolicy={votePolicy}
-              onVotePolicyChange={setVotePolicy}
+              onVotePolicyChange={(v) => dispatch({ type: 'SET_VOTE_POLICY', value: v })}
               sessionMode={sessionMode}
-              onSessionModeChange={setSessionMode}
+              onSessionModeChange={(v) => dispatch({ type: 'SET_SESSION_MODE', value: v })}
               isPublic={isPublic}
-              onIsPublicChange={setIsPublic}
+              onIsPublicChange={(v) => dispatch({ type: 'SET_IS_PUBLIC', value: v })}
             />
           )}
           {step === 5 && (
@@ -482,12 +419,13 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
           creatingSession={creatingSession}
           launching={launching}
           activeQuestionsCount={activeQuestions.length}
-          onBack={() => setStep((s) => (s - 1) as WizardStep)}
-          onBackToOverview={() => { setJumpedFrom5(false); setStep(5) }}
+          onBack={() => dispatch({ type: 'BACK_STEP' })}
+          onBackToOverview={() => dispatch({ type: 'BACK_TO_OVERVIEW' })}
           onNextStep1={handleNextFromStep1}
           onNextStep2={handleNextFromStep2}
           onNextStep34={() => {
-            if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else setStep((s) => (s + 1) as WizardStep)
+            const next = (step + 1) as WizardStep
+            dispatch({ type: 'ADVANCE_AFTER_JUMP_OR', next })
           }}
           onLaunch={handleLaunch}
         />

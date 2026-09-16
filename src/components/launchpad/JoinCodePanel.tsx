@@ -3,6 +3,7 @@ import QRCode from 'react-qr-code'
 import { Check, Copy, Loader2, Rocket, Share2, Zap } from 'lucide-react'
 import { useT } from '../../i18n'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { Button } from '../../ui/components'
 
 type SessionMeta = {
   code: string
@@ -72,13 +73,11 @@ export default function JoinCodePanel({
 
   return (
     <aside className="w-full lg:w-[330px] shrink-0 space-y-3">
-      {/* Unified join-code card — gradient-brand-subtle background */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-8 text-center space-y-4 shadow-card"
+        className="rounded-xl border border-teal-100 dark:border-[var(--color-border)] p-8 text-center space-y-4 shadow-card"
         style={{ background: 'var(--gradient-brand-subtle, linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%))' }}
       >
-        {/* Eyebrow */}
         <p
           id="join-code-heading"
           className="text-xs font-bold tracking-[0.1em] uppercase text-teal-700 dark:text-teal-400"
@@ -86,7 +85,6 @@ export default function JoinCodePanel({
           {t('join_code_heading')}
         </p>
 
-        {/* Code + copy button */}
         <button
           type="button"
           onClick={() => void handleCopyCode()}
@@ -106,7 +104,6 @@ export default function JoinCodePanel({
           </span>
         </button>
 
-        {/* Copy feedback */}
         <p
           role="status"
           aria-live="polite"
@@ -115,7 +112,6 @@ export default function JoinCodePanel({
           {t('join_code_copied_toast')}
         </p>
 
-        {/* QR code */}
         <div
           aria-label={t('qr_aria_label')}
           className="mx-auto w-[128px] h-[128px] rounded-[14px] border border-[var(--surface-border,#E5E5E5)] bg-white flex items-center justify-center p-2.5"
@@ -127,14 +123,12 @@ export default function JoinCodePanel({
           />
         </div>
 
-        {/* Hint */}
         <p className="text-xs text-pulse-500 dark:text-pulse-500 leading-snug">
           {t('join_hint')} <span className="font-mono text-pulse-700 dark:text-pulse-300">qesto.cc/join</span>
         </p>
 
-        {/* Live timer (energizing / live) */}
         {session.started_at !== null && (
-          <div className="pt-3 border-t border-teal-100 dark:border-[#1E2A45]">
+          <div className="pt-3 border-t border-teal-100 dark:border-[var(--color-border)]">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-500">{t('timer_label')}</p>
             <p
               className="font-mono text-2xl font-semibold text-teal-600 dark:text-teal-400"
@@ -147,35 +141,34 @@ export default function JoinCodePanel({
           </div>
         )}
 
-        {/* Primary CTA */}
-        <button
+        <Button
           type="button"
+          size="lg"
           onClick={isEnergizing ? onTransitionToLive : onStart}
           disabled={(!isEnergizing && !allValid) || starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] bg-gradient-brand text-white px-6 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
-          style={{ boxShadow: 'var(--shadow-teal)' }}
+          className="w-full btn-motion"
         >
           {starting
             ? <><Loader2 size={16} className="animate-spin" aria-hidden="true" />{t('starting')}</>
             : isEnergizing
               ? <><Zap size={16} aria-hidden="true" />{t('joinPanel.startQuestions')}</>
               : <><Rocket size={16} aria-hidden="true" />{t('open_lobby_button')}</>}
-        </button>
+        </Button>
 
         {startError && (
           <p role="alert" className="text-sm text-red-600 dark:text-red-400">{startError}</p>
         )}
 
-        {/* Share link */}
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => void handleShare()}
           disabled={sharing}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--surface-border-strong,#D4D4D4)] dark:border-[#2A3858] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          className="w-full"
         >
           <Share2 size={14} aria-hidden="true" />
           {sharing ? t('sharing') : t('share_button')}
-        </button>
+        </Button>
       </section>
     </aside>
   )

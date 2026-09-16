@@ -1,19 +1,19 @@
 const HINT_PSEUDO = 'place' + 'holder'
 
 /** Shared Tailwind classes for text inputs (centralizes input hint pseudo-variant). */
-export const INPUT_HINT_TEXT_CLASS = `${HINT_PSEUDO}:text-pulse-500 dark:${HINT_PSEUDO}:text-[#8A96B0]`
+export const INPUT_HINT_TEXT_CLASS = `${HINT_PSEUDO}:text-pulse-500 dark:${HINT_PSEUDO}:text-[var(--text-muted)]`
 
 export const INPUT_HINT_TEXT_CENTER_CLASS =
-  `${HINT_PSEUDO}:text-pulse-500 dark:${HINT_PSEUDO}:text-[#8A96B0] ${HINT_PSEUDO}:tracking-normal ${HINT_PSEUDO}:font-normal ${HINT_PSEUDO}:text-lg`
+  `${HINT_PSEUDO}:text-pulse-500 dark:${HINT_PSEUDO}:text-[var(--text-muted)] ${HINT_PSEUDO}:tracking-normal ${HINT_PSEUDO}:font-normal ${HINT_PSEUDO}:text-lg`
 
 export const INPUT_HINT_TEXT_SUBTLE_CLASS =
   `${HINT_PSEUDO}:text-pulse-500 ${HINT_PSEUDO}:tracking-normal ${HINT_PSEUDO}:font-normal`
 
 export const LOGIN_FIELD_CLASS =
-  `w-full rounded-lg border border-pulse-300 bg-white dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8] dark:${HINT_PSEUDO}:text-[#8A96B0] px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400`
+  `w-full rounded-lg border border-pulse-300 bg-white dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)] dark:${HINT_PSEUDO}:text-[var(--text-muted)] px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400`
 
 export const ENTRY_CODE_FIELD_CLASS =
-  `w-full rounded-xl border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 ${INPUT_HINT_TEXT_CENTER_CLASS}`
+  `w-full rounded-xl border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 ${INPUT_HINT_TEXT_CENTER_CLASS}`
 
 /* LAYOUT-004: inputs are ≥16px below the sm breakpoint — iOS Safari zooms the whole
    viewport on focus when an input's font-size is smaller than 16px. `text-base

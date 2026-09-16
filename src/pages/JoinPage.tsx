@@ -4,6 +4,7 @@
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingCssVars, tryCacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
@@ -24,6 +25,8 @@ import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOve
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import type { XrAvatarSync } from '../hooks/useLiveSession'
 import { useWebXrSupport } from '../xr/useWebXrSupport'
+import ParticipantShell from '../layouts/ParticipantShell'
+import { Button } from '../ui/components'
 
 // XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-loaded so the immersive beta
 // module never lands in the critical bundle. Mounted only when the user
@@ -102,18 +105,12 @@ export default function JoinPage() {
 
   if (lookup.status === 'loading') {
     return (
-      <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-12 text-pulse-500 focus:outline-none">
-        <svg
-          aria-hidden="true"
-          className="animate-spin w-8 h-8 text-teal-500"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-        <span className="text-sm">{t('looking_up')}</span>
-      </main>
+      <ParticipantShell title={t('looking_up')} maxWidth="sm">
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-pulse-500 dark:text-[var(--text-muted)]">
+          <Loader2 size={32} className="animate-spin text-teal-500" aria-hidden="true" />
+          <span className="text-sm" role="status">{t('looking_up')}</span>
+        </div>
+      </ParticipantShell>
     )
   }
 
@@ -123,34 +120,27 @@ export default function JoinPage() {
 
   if (lookup.status === 'error') {
     return (
-      <main id="main" className="min-h-screen flex flex-col items-center justify-center p-12 text-center space-y-4">
-        <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+      <ParticipantShell title={t('not_found_title')} subtitle={t('not_found_help')} maxWidth="sm">
+        <div className="flex flex-col items-center text-center space-y-4 py-8">
+          <div className="w-24 h-24 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+            <AlertCircle size={20} className="text-red-500" aria-hidden="true" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              onClick={() => { setLookup({ status: 'loading' }); lookupCode(code) }}
+            >
+              {t('try_again')}
+            </Button>
+            <a
+              href="/"
+              className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+            >
+              {t('back_to_home')}
+            </a>
+          </div>
         </div>
-        <div className="space-y-1">
-          <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
-          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => { setLookup({ status: 'loading' }); lookupCode(code) }}
-            className="inline-flex items-center rounded-lg bg-teal-600 text-white text-sm font-semibold px-4 py-2 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
-          >
-            {t('try_again')}
-          </button>
-          <a
-            href="/"
-            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
-          >
-            {t('back_to_home')}
-          </a>
-        </div>
-      </main>
+      </ParticipantShell>
     )
   }
 
@@ -271,18 +261,18 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="relative min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
+    <main id="main" className="relative min-h-screen bg-white dark:bg-[var(--color-bg)] flex flex-col">
       <ReactionsOverlay
         particles={reactionsState.particles}
         total={reactionsState.total}
         active={reactionsState.total > 0 || questionKind === 'reaction'}
       />
-      {/* Top brand bar */}
+      {/* Live voter chrome — shell migration deferred (Days 61+); tokens aligned Day 60 */}
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-6 py-3 flex items-center justify-between">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
+      <div className="border-b border-pulse-100 dark:border-[var(--color-border)] px-6 py-3 flex items-center justify-between">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[var(--text-primary)]">Qesto</span>
         {state.connection === 'open' ? (
-          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[#A8B3CC]">
+          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('participants_label', { count: state.participants })}
           </span>
@@ -303,7 +293,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       </div>
 
       <div className="flex-1 max-w-lg w-full mx-auto px-6 py-12 flex flex-col gap-8">
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
+        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
           {title}
         </h1>
 
@@ -334,9 +324,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Inter-question countdown */}
         {countdown !== null && (
           <div className="flex flex-col items-center justify-center gap-3 py-12" aria-live="polite" aria-atomic="true">
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
-            <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('next_question_countdown', { seconds: countdown })}</p>
+            <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">{t('next_question_countdown', { seconds: countdown })}</p>
           </div>
         )}
 
@@ -344,8 +334,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {state.allDone && !isEnded && countdown === null && (
           <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
             <div className="text-6xl" aria-hidden="true">🎉</div>
-            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('allDone.heading')}</h2>
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{title}</p>
+            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)]">{t('allDone.heading')}</h2>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{title}</p>
           </div>
         )}
 
@@ -390,7 +380,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (
           <section className="space-y-4" aria-labelledby="question-heading">
-            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[#F0F2F8]">
+            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[var(--text-primary)]">
               {state.question.prompt}
             </h2>
 
@@ -453,7 +443,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             <div
               role="status"
               aria-live="polite"
-              className="fixed inset-0 z-[60] flex items-center justify-center bg-[#04060C]/95 text-white text-sm"
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--surface-stage)]/95 text-white text-sm"
             >
               {tXr('connecting')}
             </div>

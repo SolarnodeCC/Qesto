@@ -5,6 +5,8 @@ import { useT } from '../i18n'
 import { apiUrl } from '../config/api'
 import { LOGIN_FIELD_CLASS } from '../ui/input-field-class'
 import { inputHint } from '../ui/input-hint'
+import { FormField } from '../ui/FormField'
+import { Button } from '../ui/components'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
@@ -105,14 +107,11 @@ export default function Login() {
 
   const inputClass = LOGIN_FIELD_CLASS
 
-  const primaryBtn =
-    'w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
-
   return (
     <main id="main" className="min-h-screen flex items-center justify-center p-8">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-12 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-12 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1
@@ -168,7 +167,7 @@ export default function Login() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0A0F1E] p-1" role="tablist" aria-label={t('orViaEmail')} onKeyDown={onTabKeyDown}>
+        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[var(--color-bg)] p-1" role="tablist" aria-label={t('orViaEmail')} onKeyDown={onTabKeyDown}>
           <button type="button" id="tab-magic" role="tab" aria-selected={tab === 'magic'} aria-controls="tabpanel-magic" tabIndex={tab === 'magic' ? 0 : -1} className={tabClass(tab === 'magic')} onClick={() => setTab('magic')}>
             {t('magicLinkTab')}
           </button>
@@ -197,28 +196,26 @@ export default function Login() {
               </div>
             ) : (
               <form onSubmit={onMagicSubmit} className="space-y-4" noValidate>
-                <div className="space-y-1.5">
-                  <label htmlFor="magic-email" className="block text-sm font-medium">
-                    {t('emailLabel')}
-                  </label>
-                  <input
-                    id="magic-email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={magicEmail}
-                    onChange={(e) => setMagicEmail(e.target.value)}
-                    aria-invalid={magicStatus === 'invalid'}
-                    className={inputClass}
-                    {...inputHint(t('emailPlaceholder'))}
-                  />
-                  {magicStatus === 'invalid' && (
-                    <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('errorInvalidEmail')}</p>
+                <FormField
+                  label={t('emailLabel')}
+                  error={magicStatus === 'invalid' ? t('errorInvalidEmail') : null}
+                  controlClassName={inputClass}
+                >
+                  {(field) => (
+                    <input
+                      {...field}
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={magicEmail}
+                      onChange={(e) => setMagicEmail(e.target.value)}
+                      {...inputHint(t('emailPlaceholder'))}
+                    />
                   )}
-                </div>
-                <button type="submit" disabled={magicStatus === 'sending'} className={primaryBtn}>
+                </FormField>
+                <Button type="submit" disabled={magicStatus === 'sending'} className="w-full">
                   {magicStatus === 'sending' ? t('sending') : t('sendLink')}
-                </button>
+                </Button>
                 {magicStatus === 'error' && (
                   <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
                 )}
@@ -260,9 +257,9 @@ export default function Login() {
                     {resetStatus === 'error' && (
                       <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
                     )}
-                    <button type="submit" disabled={resetStatus === 'submitting'} className={primaryBtn}>
+                    <Button type="submit" disabled={resetStatus === 'submitting'} className="w-full">
                       {resetStatus === 'submitting' ? t('sending') : t('requestNewLink')}
-                    </button>
+                    </Button>
                   </>
                 )}
                 <button
@@ -325,9 +322,9 @@ export default function Login() {
                 {loginStatus === 'error' && (
                   <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
                 )}
-                <button type="submit" disabled={loginStatus === 'submitting'} className={primaryBtn}>
+                <Button type="submit" disabled={loginStatus === 'submitting'} className="w-full">
                   {loginStatus === 'submitting' ? t('loggingIn') : t('login')}
-                </button>
+                </Button>
                 <p className="text-center text-sm text-pulse-500">
                   {t('noPassword')}{' '}
                   <button
@@ -401,9 +398,9 @@ export default function Login() {
               {signupStatus === 'error' && (
                 <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
               )}
-              <button type="submit" disabled={signupStatus === 'submitting'} className={primaryBtn}>
+              <Button type="submit" disabled={signupStatus === 'submitting'} className="w-full">
                 {signupStatus === 'submitting' ? t('loggingIn') : t('createAccount')}
-              </button>
+              </Button>
               <p className="text-center text-sm text-pulse-500">
                 {t('alreadyHaveAccount')}{' '}
                 <button

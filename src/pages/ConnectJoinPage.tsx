@@ -4,10 +4,14 @@
 // guarantee). See functions/api/routes/federation.ts `POST /connect/join`.
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
+import { FormField } from '../ui/FormField'
+import { Button } from '../ui/components'
+import { inputHint } from '../ui/input-hint'
 
 type FederationMember = {
   teamId: string
@@ -86,18 +90,16 @@ export default function ConnectJoinPage() {
 
   return (
     <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12">
-      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
+      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
         {t('join.title')}
       </h1>
-      <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{t('join.subtitle')}</p>
+      <p className="mt-2 text-sm text-pulse-600 dark:text-[var(--text-muted)]">{t('join.subtitle')}</p>
 
       {state.status === 'success' ? (
         <div className="mt-8 rounded-lg border border-teal-200 bg-teal-50 p-6 dark:border-teal-800 dark:bg-teal-900/20" aria-live="polite">
           <div className="flex items-center gap-3">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-800" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-teal-600 dark:text-teal-300" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Check size={24} className="text-teal-600 dark:text-teal-300" aria-hidden="true" />
             </div>
             <h2 className="font-semibold text-teal-800 dark:text-teal-200">{t('join.successTitle')}</h2>
           </div>
@@ -110,73 +112,61 @@ export default function ConnectJoinPage() {
 
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-pulse-500 dark:text-[#9AA8C7]">{t('join.scopeLabel')}</dt>
-              <dd className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{state.data.member.scope}</dd>
+              <dt className="text-pulse-500 dark:text-[var(--text-muted)]">{t('join.scopeLabel')}</dt>
+              <dd className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{state.data.member.scope}</dd>
             </div>
             <div>
-              <dt className="text-pulse-500 dark:text-[#9AA8C7]">{t('join.regionLabel')}</dt>
-              <dd className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{state.data.member.regionId}</dd>
+              <dt className="text-pulse-500 dark:text-[var(--text-muted)]">{t('join.regionLabel')}</dt>
+              <dd className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{state.data.member.regionId}</dd>
             </div>
           </dl>
 
-          <p className="mt-4 text-xs text-pulse-500 dark:text-[#9AA8C7]">{t('join.privacyNote')}</p>
+          <p className="mt-4 text-xs text-pulse-500 dark:text-[var(--text-muted)]">{t('join.privacyNote')}</p>
 
-          <button
-            type="button"
-            onClick={handleReset}
-            className="mt-6 min-h-[44px] rounded-lg border border-teal-300 px-6 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:border-teal-700 dark:text-teal-200 dark:hover:bg-teal-900/40"
-          >
+          <Button type="button" variant="secondary" onClick={handleReset} className="mt-6">
             {t('join.joinAnother')}
-          </button>
+          </Button>
         </div>
       ) : (
         <form className="mt-8 space-y-6" onSubmit={(e) => void handleSubmit(e)}>
-          <div>
-            <label htmlFor="connect-token" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
-              {t('join.tokenLabel')}
-            </label>
-            <textarea
-              id="connect-token"
-              className="mt-1 w-full rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-              rows={3}
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder={t('join.tokenPlaceholder')}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="connect-team-id" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
-              {t('join.teamIdLabel')}
-            </label>
-            <input
-              id="connect-team-id"
-              type="text"
-              className="mt-1 w-full min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-              value={joiningTeamId}
-              onChange={(e) => setJoiningTeamId(e.target.value)}
-              placeholder={t('join.teamIdPlaceholder')}
-              required
-            />
-          </div>
-
-          {state.status === 'error' && (
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-              {state.message}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-8 py-3 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+          <FormField
+            label={t('join.tokenLabel')}
+            error={state.status === 'error' ? state.message : null}
+            controlClassName="mt-1 w-full rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
+            {(field) => (
+              <textarea
+                {...field}
+                rows={3}
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                {...inputHint(t('join.tokenPlaceholder'))}
+                required
+              />
+            )}
+          </FormField>
+
+          <FormField
+            label={t('join.teamIdLabel')}
+            controlClassName="mt-1 w-full min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            {(field) => (
+              <input
+                {...field}
+                type="text"
+                value={joiningTeamId}
+                onChange={(e) => setJoiningTeamId(e.target.value)}
+                {...inputHint(t('join.teamIdPlaceholder'))}
+                required
+              />
+            )}
+          </FormField>
+
+          <Button type="submit" disabled={!canSubmit}>
             {state.status === 'submitting' ? t('join.submitting') : t('join.submit')}
-          </button>
+          </Button>
         </form>
       )}
-
     </MainLayout>
   )
 }
