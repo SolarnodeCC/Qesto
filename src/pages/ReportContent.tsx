@@ -154,7 +154,7 @@ export default function ReportContent() {
                     value={contentLocation}
                     onChange={(e) => setContentLocation(e.target.value)}
                     placeholder="e.g. session ID, URL, or description of where the content appears"
-                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-400 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-500 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   />
                 </div>
 
@@ -185,7 +185,7 @@ export default function ReportContent() {
                     className="block text-[14px] font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-1.5"
                   >
                     Description{' '}
-                    <span className="font-normal text-pulse-400 dark:text-[#5A6380]">(optional)</span>
+                    <span className="font-normal text-pulse-500 text-[var(--text-muted)]">(optional)</span>
                   </label>
                   <textarea
                     id="description"
@@ -193,7 +193,7 @@ export default function ReportContent() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Provide additional details about the alleged illegal content and why you believe it is illegal."
-                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-400 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 resize-y"
+                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-500 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 resize-y"
                   />
                 </div>
 
@@ -211,7 +211,7 @@ export default function ReportContent() {
                     value={notifierEmail}
                     onChange={(e) => setNotifierEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-400 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="w-full px-3 py-2 text-[14px] rounded-lg border border-pulse-300 dark:border-white/15 bg-white dark:bg-white/5 text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-500 dark:placeholder:text-[#5A6380] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   />
                   <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mt-1.5">
                     Required so we can send you the acknowledgement and our decision (Art. 16(3) DSA).

@@ -121,7 +121,7 @@ function QuestionResult({
   const winner = rows.length > 0 ? rows.reduce((best, r) => (r.count > best.count ? r : best), rows[0]) : null
 
   const heading = (
-    <p className="text-xs font-medium uppercase tracking-wide text-pulse-400">{t('question', { number })}</p>
+    <p className="text-xs font-medium uppercase tracking-wide text-pulse-500">{t('question', { number })}</p>
   )
 
   if (question.total === 0) {

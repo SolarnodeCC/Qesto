@@ -126,5 +126,11 @@
   "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes.",
   "removeFailed": "No se pudo eliminar la sesión. Inténtalo de nuevo.",
   "savedAsTemplate": "¡Guardado como plantilla!",
-  "importComingSoon": "Próximamente"
+  "importComingSoon": "Próximamente",
+  "statusLive": "EN VIVO",
+  "statusEnergizing": "Calentamiento",
+  "statusClosed": "Cerrado",
+  "statusArchived": "Archivado",
+  "statusDraft": "Borrador",
+  "closed": "Cerrado"
 }

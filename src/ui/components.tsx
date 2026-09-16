@@ -1,9 +1,10 @@
 // jankurai:allow HLT-001-DEAD-MARKER reason=tailwind-pseudo-variant-and-central-input-hint expires=2027-06-01
-// Semantic component library — Design spec compliance (Phase 6+)
+// Semantic component library — Design spec compliance (Phase 6+ / DS Day 1–30)
 // All components pre-apply design tokens for consistency
 // Usage: <Heading level="l">Page Title</Heading>
 
 import { ReactNode } from 'react'
+import { TrendingDown, TrendingUp, type LucideIcon } from 'lucide-react'
 import { inputHint } from './input-hint'
 import { DEFAULT_TEXT_INPUT_CLASS } from './input-field-class'
 
@@ -52,7 +53,11 @@ export function Body({
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#8A96B0] ${className}`}>{children}</span>
+  return (
+    <span className={`text-caption font-medium text-[var(--text-secondary)] ${className}`}>
+      {children}
+    </span>
+  )
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -69,7 +74,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
+        rounded-xl border border-pulse-200 border-[color:var(--color-border)] bg-[var(--color-surface)] p-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
@@ -108,7 +113,8 @@ export function Button({
   className?: string
   type?: 'button' | 'submit' | 'reset'
 }) {
-  const baseStyles = 'rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
+  // ADR-0071: controls use rounded-lg (16px via --radius-lg).
+  const baseStyles = 'rounded-lg font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
 
   // min-h keeps every Button a ≥44px touch target on phone viewports (WCAG
   // 2.5.5); sm relaxes to its compact desktop height from the sm breakpoint.
@@ -121,18 +127,18 @@ export function Button({
   const variantStyles = {
     primary: `
       bg-gradient-brand text-white
-      hover:shadow-teal dark:hover:shadow-[0_4px_24px_rgba(45,212,191,0.35)] ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      hover:shadow-teal ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     secondary: `
-      border border-teal-500 dark:border-teal-400 text-teal-700 dark:text-teal-400 bg-white dark:bg-[#1C2540]
+      border border-teal-500 text-teal-700 dark:text-teal-400 bg-[var(--color-surface)]
       hover:bg-teal-50 dark:hover:bg-teal-500/10 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     ghost: `
-      text-pulse-700 dark:text-[#A8B3CC] bg-transparent
+      text-[var(--text-secondary)] bg-transparent
       hover:bg-pulse-100 dark:hover:bg-white/8 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     danger: `
-      bg-signal-error dark:bg-red-500 text-white
+      bg-signal-error text-white
       hover:shadow-error ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
   }
@@ -238,17 +244,36 @@ export function Badge({
   )
 }
 
+export type MetricTrend = {
+  /** Absolute change magnitude (e.g. 4.2 for ±4.2%) */
+  value: number
+  direction: 'up' | 'down'
+  /** When true, "up" is bad (e.g. latency going up). Inverts the colour. */
+  inverted?: boolean
+}
+
+/**
+ * Unified MetricCard (DS Day 1–30). Merges admin (label/value/alert) and
+ * dashboard (icon well + loading skeleton) APIs. Prefer this over
+ * `components/MetricCard.tsx` (thin re-export).
+ */
 export function MetricCard({
   label,
   value,
   alert = false,
   trend,
+  icon: Icon,
+  iconClassName,
+  loading = false,
   className = '',
 }: {
   label: string
   value: string | number
   alert?: boolean
-  trend?: { value: number; direction: 'up' | 'down'; inverted?: boolean }
+  trend?: MetricTrend
+  icon?: LucideIcon
+  iconClassName?: string
+  loading?: boolean
   className?: string
 }) {
   const trendGood = trend
@@ -256,15 +281,58 @@ export function MetricCard({
     : null
 
   return (
-    <Card className={`${alert ? 'border-signal-error bg-red-50' : ''} ${className}`}>
-      <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
-      <div className={`text-2xl font-bold mt-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
-        {value}
-      </div>
-      {trend && (
-        <div className={`mt-1 flex items-center gap-0.5 text-caption font-medium ${trendGood ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
-          {trend.direction === 'up' ? '▲' : '▼'}
-          {Math.abs(trend.value).toFixed(1)}%
+    <Card className={`${alert ? 'border-signal-error bg-red-50 dark:bg-red-950/30' : ''} ${Icon ? 'p-6' : ''} ${className}`}>
+      {Icon ? (
+        <div className="flex items-center justify-between mb-3">
+          <Caption className={alert ? 'text-signal-error uppercase tracking-widest text-[11px] font-semibold' : 'uppercase tracking-widest text-[11px] font-semibold text-[var(--text-muted)]'}>
+            {label}
+          </Caption>
+          <span
+            className={`flex items-center justify-center w-12 h-12 rounded-lg bg-pulse-50 dark:bg-[var(--color-surface-elevated)] ${iconClassName ?? 'text-teal-600 dark:text-teal-400'}`}
+            aria-hidden="true"
+          >
+            <Icon size={16} />
+          </span>
+        </div>
+      ) : (
+        <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
+      )}
+
+      {loading ? (
+        <div className="h-12 w-20 rounded-lg skeleton-shimmer bg-pulse-200 dark:bg-pulse-800 mt-2" aria-hidden="true" />
+      ) : (
+        <div
+          className={`font-bold mt-2 text-[var(--text-primary)] ${
+            alert ? 'text-signal-error dark:text-red-400' : ''
+          } ${Icon ? 'text-[28px] leading-none tracking-tight' : 'text-2xl'}`}
+        >
+          {value}
+        </div>
+      )}
+
+      {trend && !loading && (
+        <div
+          className={`mt-2 flex items-center gap-1 text-xs font-medium ${
+            trendGood ? 'text-teal-600 dark:text-teal-400' : 'text-red-500 dark:text-red-400'
+          }`}
+        >
+          {Icon ? (
+            trend.direction === 'up' ? (
+              <TrendingUp size={12} aria-hidden="true" />
+            ) : (
+              <TrendingDown size={12} aria-hidden="true" />
+            )
+          ) : (
+            <span aria-hidden="true">{trend.direction === 'up' ? '▲' : '▼'}</span>
+          )}
+          {Icon ? (
+            <>
+              {trend.direction === 'up' ? '+' : '−'}
+              {Math.abs(trend.value)}%
+            </>
+          ) : (
+            <>{Math.abs(trend.value).toFixed(1)}%</>
+          )}
         </div>
       )}
     </Card>
@@ -284,10 +352,10 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
+      <Heading level="m" className="text-[var(--text-secondary)]">
         {title}
       </Heading>
-      {description && <Body className="text-pulse-600 dark:text-[#8A96B0] mt-2">{description}</Body>}
+      {description && <Body className="text-[var(--text-muted)] mt-2">{description}</Body>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )
@@ -308,7 +376,7 @@ export function StatCard({
   return (
     <Card className={`text-center space-y-1 ${className}`}>
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{label}</Body>
+      <Body size="s" className="text-[var(--text-muted)]">{label}</Body>
     </Card>
   )
 }
@@ -317,10 +385,12 @@ export function StatCard({
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
+    <div
+      className={`rounded-xl border border-pulse-200 border-[color:var(--color-border)] p-4 h-24 bg-pulse-100 dark:bg-[var(--color-surface)] animate-pulse ${className}`}
+    />
   )
 }
 
 export function SkeletonLine({ className = '' }: { className?: string }) {
-  return <div className={`h-4 bg-pulse-200 dark:bg-[#1C2540] rounded-md animate-pulse ${className}`} />
+  return <div className={`h-4 bg-pulse-200 dark:bg-[var(--color-surface-elevated)] rounded-md animate-pulse ${className}`} />
 }

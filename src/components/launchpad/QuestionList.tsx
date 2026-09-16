@@ -218,7 +218,7 @@ export default function QuestionList({
               ) : (
                 <div className="flex items-center gap-3 px-[18px] py-[13px] cursor-grab active:cursor-grabbing">
                   <span title={t('drag_handle_label')} className="shrink-0">
-                    <GripVertical size={16} className="text-pulse-300 dark:text-pulse-600" aria-hidden="true" />
+                    <GripVertical size={16} className="text-pulse-500 dark:text-pulse-600" aria-hidden="true" />
                   </span>
                   <span className="font-mono text-xs text-[var(--text-muted,#737373)] dark:text-[#6B7A99] w-4 shrink-0">{index + 1}</span>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold capitalize ${KIND_BADGE[q.kind] ?? KIND_BADGE.poll}`}>
@@ -227,16 +227,16 @@ export default function QuestionList({
                   <span className="flex-1 text-sm text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8] truncate">{q.prompt}</span>
                   <button type="button" onClick={() => onMove(index, -1)} disabled={index === 0}
                     aria-label={`${t('move_up')}: ${q.prompt}`}
-                    className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
+                    className="shrink-0 text-pulse-500 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
                     <ChevronUp size={15} aria-hidden="true" />
                   </button>
                   <button type="button" onClick={() => onMove(index, 1)} disabled={index === orderedQuestions.length - 1}
                     aria-label={`${t('move_down')}: ${q.prompt}`}
-                    className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
+                    className="shrink-0 text-pulse-500 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 disabled:opacity-30 disabled:hover:text-pulse-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
                     <ChevronDown size={15} aria-hidden="true" />
                   </button>
                   <button type="button" onClick={() => startEdit(q)} aria-label={t('edit_question')}
-                    className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
+                    className="shrink-0 text-pulse-500 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
                     <Pencil size={15} aria-hidden="true" />
                   </button>
                 </div>

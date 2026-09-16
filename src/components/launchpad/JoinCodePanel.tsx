@@ -99,7 +99,7 @@ export default function JoinCodePanel({
           >
             {session.code}
           </code>
-          <span className={`transition-colors ${codeCopied ? 'text-teal-500' : 'text-pulse-400 hover:text-pulse-600'}`}>
+          <span className={`transition-colors ${codeCopied ? 'text-teal-500' : 'text-pulse-500 hover:text-pulse-600'}`}>
             {codeCopied
               ? <Check size={18} aria-hidden="true" />
               : <Copy size={18} aria-hidden="true" />}
@@ -128,14 +128,14 @@ export default function JoinCodePanel({
         </div>
 
         {/* Hint */}
-        <p className="text-xs text-pulse-500 dark:text-pulse-400 leading-snug">
+        <p className="text-xs text-pulse-500 dark:text-pulse-500 leading-snug">
           {t('join_hint')} <span className="font-mono text-pulse-700 dark:text-pulse-300">qesto.cc/join</span>
         </p>
 
         {/* Live timer (energizing / live) */}
         {session.started_at !== null && (
           <div className="pt-3 border-t border-teal-100 dark:border-[#1E2A45]">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-400">{t('timer_label')}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-500">{t('timer_label')}</p>
             <p
               className="font-mono text-2xl font-semibold text-teal-600 dark:text-teal-400"
               aria-live="polite"

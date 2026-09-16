@@ -5,7 +5,8 @@ import type { SessionSummary } from '../../hooks/useSessions'
 import type { SessionsListState } from '../../hooks/useSessions'
 import type { AggregatedTheme } from '../../hooks/useInsights'
 import type { DashboardSection } from '../../layouts/AppShellLayout'
-import { StatusBadge } from './SessionCard'
+import { StatusBadge } from '../../ui/StatusBadge'
+import { sessionStatusLabel } from '../../lib/session-status-label'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
                   <Sparkles size={10} aria-hidden="true" />
                   AI recap
                 </span>
-                <span className="font-mono text-[11px] text-pulse-400 dark:text-[#8A96B0]">
+                <span className="font-mono text-[11px] text-pulse-500 text-[var(--text-muted)]">
                   {themes.length} theme{themes.length !== 1 ? 's' : ''}
                 </span>
               </div>
@@ -259,7 +260,7 @@ export function RecentSessionsSection({
                       </div>
 
                       {/* Status badge */}
-                      <StatusBadge status={s.status} />
+                      <StatusBadge status={s.status} label={sessionStatusLabel(s.status, t)} />
 
                       {/* Recap shortcut (only for closed/archived) */}
                       {(s.status === 'closed' || s.status === 'archived') && (

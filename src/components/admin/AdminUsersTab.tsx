@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
 import { useT } from '../../i18n'
-import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
+import { Heading, Body, Button, Card, TextInput, Badge } from '../../ui/components'
 import { inputHint } from '../../ui/input-hint'
 import { PLAN_BRAND_NAMES } from '../../config/plans'
 import UserDetailDrawer from './UserDetailDrawer'
@@ -9,39 +9,32 @@ import UserDetailDrawer from './UserDetailDrawer'
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
 function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
-  const variant: Record<AdminUser['plan'], string> = {
-    free: 'bg-pulse-100 text-pulse-600',
-    starter: 'bg-teal-100 text-teal-700',
-    team: 'bg-purple-100 text-purple-700',
+  const tone: Record<AdminUser['plan'], 'neutral' | 'brand' | 'ai'> = {
+    free: 'neutral',
+    starter: 'brand',
+    team: 'ai',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wide ${variant[plan]}`}>
+    <Badge tone={tone[plan]} className="uppercase tracking-wide">
       {PLAN_BRAND_NAMES[plan]}
-    </span>
+    </Badge>
   )
 }
 
-function StatusBadge({ suspended }: { suspended: boolean }) {
+function UserStatusBadge({ suspended }: { suspended: boolean }) {
   return suspended ? (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
-      Suspended
-    </span>
+    <Badge tone="danger">Suspended</Badge>
   ) : (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-600">
-      Active
-    </span>
+    <Badge tone="success">Active</Badge>
   )
 }
 
 function RoleBadge({ role }: { role: 'owner' | 'admin' | null }) {
   if (!role) return <span className="text-pulse-500">—</span>
-  const styles = role === 'owner'
-    ? 'bg-purple-100 text-purple-700'
-    : 'bg-blue-100 text-blue-700'
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${styles}`}>
+    <Badge tone={role === 'owner' ? 'ai' : 'info'}>
       {role === 'owner' ? 'Super Admin' : 'Admin'}
-    </span>
+    </Badge>
   )
 }
 
@@ -294,7 +287,7 @@ export default function AdminUsersTab() {
                   <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
                   <td className="px-4 py-3 text-pulse-500 dark:text-[#8A96B0] text-sm">{formatDate(user.last_login_at)}</td>
                   <td className="px-4 py-3"><RoleBadge role={user.admin_role} /></td>
-                  <td className="px-4 py-3"><StatusBadge suspended={!!user.suspended_at} /></td>
+                  <td className="px-4 py-3"><UserStatusBadge suspended={!!user.suspended_at} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
                       <Button

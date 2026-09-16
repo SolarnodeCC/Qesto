@@ -210,7 +210,8 @@
   --color-border-strong:    #2A3858;
   --text-primary:           #F0F2F8;
   --text-secondary:         #A8B3CC;
-  --text-muted:             #6B7A99;
+  /* Aligned to Caption / shell muted hex (#8A96B0) — see DS Day 1–30. */
+  --text-muted:             #8A96B0;
   --color-ink:              #F0F2F8;
   --shadow-card:            0 0 0 1px rgba(255,255,255,0.06);
   --shadow-elevated:        0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
@@ -232,7 +233,7 @@
     --color-border-strong:    #2A3858;
     --text-primary:           #F0F2F8;
     --text-secondary:         #A8B3CC;
-    --text-muted:             #6B7A99;
+    --text-muted:             #8A96B0;
     --color-ink:              #F0F2F8;
     --shadow-card:            0 0 0 1px rgba(255,255,255,0.06);
     --shadow-elevated:        0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
@@ -254,6 +255,39 @@ html, body {
  * behind a sticky header. Adjust --header-height if the header grows. */
 :root {
   --header-height: 56px;
+
+  /* Content max-widths (shell matrix). Prefer these over ad-hoc max-w-[1120px]. */
+  --container-marketing: 70rem; /* 1120px */
+  --container-app: 75rem;       /* 1200px */
+  --container-form: 42rem;      /* 672px — settings / auth forms */
+  --container-reading: 48rem;   /* 768px — results / long-form */
+
+  /* Overlay stack (ImpersonationBanner owns the top band). */
+  --z-base: 0;
+  --z-sticky: 20;
+  --z-sidebar: 30;
+  --z-dropdown: 40;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-banner: 100;
+}
+
+@utility container-marketing {
+  max-width: var(--container-marketing);
+  margin-inline: auto;
+}
+@utility container-app {
+  max-width: var(--container-app);
+  margin-inline: auto;
+}
+@utility container-form {
+  max-width: var(--container-form);
+  margin-inline: auto;
+}
+@utility container-reading {
+  max-width: var(--container-reading);
+  margin-inline: auto;
 }
 
 html {

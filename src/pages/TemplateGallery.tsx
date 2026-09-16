@@ -6,6 +6,8 @@ import PageSeo from '../components/PageSeo'
 import { api } from '../api/client'
 import { useT } from '../i18n'
 import { generateOgImageUrl } from '../utils/og-image-generator'
+import type { GalleryLang, TemplateGalleryRecord, TemplateGalleryListResponse } from '../types/template-gallery'
+import { GALLERY_PIPELINE_LANGS } from '../types/template-gallery'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -29,34 +31,14 @@ type Theme =
   | 'strategy-alignment'
   | 'innovation-ideation'
 
-type Lang = 'nl' | 'en' | 'de' | 'fr'
-
-interface TemplateRecord {
-  id: string
-  title: Record<Lang, string>
-  purpose: Record<Lang, string>
-  bestUsedFor: Record<Lang, string[]>
-  estimatedMinutes: number
-  questions: { id: string; text: Record<Lang, string>; type: string }[]
-  industry: Industry
-  theme: Theme
-  topic: string
-  usageCount: number
-  createdAt: string
-}
-
-interface TemplateListResponse {
-  templates: TemplateRecord[]
-  total: number
-  limit: number
-  offset: number
-}
-
+type Lang = GalleryLang
+type TemplateRecord = TemplateGalleryRecord
+type TemplateListResponse = TemplateGalleryListResponse
+const PIPELINE_LANGS = GALLERY_PIPELINE_LANGS
 const PAGE_SIZE = 24
 // The template pipeline only carries content for these languages; the app
 // supports more locales (e.g. 'es'), so clamp before sending `lang` or the
 // gallery would 400 for unsupported locales (MKTP-006).
-const PIPELINE_LANGS: Lang[] = ['nl', 'en', 'de', 'fr']
 
 const INDUSTRY_LABELS: Record<Industry, string> = {
   'hr-people': 'HR & People',
@@ -96,7 +78,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
       <div className="p-6">
         {/* Industry badge */}
         <span className="inline-block mb-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300">
-          {INDUSTRY_LABELS[template.industry]}
+          {INDUSTRY_LABELS[template.industry as Industry] ?? template.industry}
         </span>
 
         {/* Title */}

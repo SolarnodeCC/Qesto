@@ -3,28 +3,28 @@
 
 import { useState } from 'react'
 import { useContentItems, type ContentItem } from '../../hooks/useMarketingApi'
-import { Heading, Body, Card, Button, EmptyState, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Card, Button, EmptyState, SkeletonCard, Badge, type BadgeTone } from '../../ui/components'
 
-function StatusBadge({ status }: { status: ContentItem['status'] }) {
-  const styles: Record<ContentItem['status'], string> = {
-    draft: 'bg-pulse-100 text-pulse-600',
-    approved: 'bg-blue-100 text-blue-700',
-    rejected: 'bg-red-100 text-red-600',
-    published: 'bg-green-100 text-green-600',
-    failed: 'bg-red-100 text-red-700',
+function ContentStatusBadge({ status }: { status: ContentItem['status'] }) {
+  const tone: Record<ContentItem['status'], BadgeTone> = {
+    draft: 'neutral',
+    approved: 'info',
+    rejected: 'danger',
+    published: 'success',
+    failed: 'danger',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${styles[status]}`}>
+    <Badge tone={tone[status]} className="capitalize">
       {status}
-    </span>
+    </Badge>
   )
 }
 
 function PlatformBadge({ platform }: { platform: ContentItem['platform'] }) {
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 capitalize">
+    <Badge tone="ai" className="capitalize">
       {platform}
-    </span>
+    </Badge>
   )
 }
 
@@ -66,7 +66,7 @@ function ContentItemCard({
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <PlatformBadge platform={item.platform} />
-          <StatusBadge status={item.status} />
+          <ContentStatusBadge status={item.status} />
         </div>
         <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {new Date(item.generated_at).toLocaleString()}

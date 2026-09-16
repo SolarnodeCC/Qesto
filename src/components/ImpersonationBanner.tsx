@@ -23,7 +23,7 @@ export default function ImpersonationBanner() {
   return (
     <div
       role="status"
-      className="fixed top-0 inset-x-0 z-[100] flex items-center justify-center gap-3 bg-amber-500 text-black px-4 py-2 text-sm font-medium shadow-md"
+      className="fixed top-0 inset-x-0 z-[var(--z-banner)] flex items-center justify-center gap-3 bg-amber-500 text-black px-4 py-2 text-sm font-medium shadow-md"
     >
       <span>
         👤 Viewing as <strong>{impersonating.email}</strong> — actions are performed as this user.

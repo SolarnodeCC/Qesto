@@ -1,3 +1,6 @@
+/**
+ * Requirement: ADR-0050 §Origin validation — local-dev host detection and expected origin resolution for CSRF.
+ */
 import { describe, expect, it } from 'vitest'
 import { isLocalDevHost, resolveExpectedOrigin } from '../../functions/api/lib/origin'
 

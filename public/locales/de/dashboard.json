@@ -126,5 +126,11 @@
   "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes.",
   "removeFailed": "Sitzung konnte nicht entfernt werden. Bitte versuche es erneut.",
   "savedAsTemplate": "Als Vorlage gespeichert!",
-  "importComingSoon": "Demnächst verfügbar"
+  "importComingSoon": "Demnächst verfügbar",
+  "statusLive": "LIVE",
+  "statusEnergizing": "Aufwärmen",
+  "statusClosed": "Geschlossen",
+  "statusArchived": "Archiviert",
+  "statusDraft": "Entwurf",
+  "closed": "Geschlossen"
 }

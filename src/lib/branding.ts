@@ -1,10 +1,7 @@
+import type { SessionBranding } from '../types/session'
 import { z } from 'zod'
 
-export type SessionBranding = {
-  logoUrl?: string | null
-  primaryColor?: string
-  secondaryColor?: string
-}
+export type { SessionBranding }
 
 // localStorage is a trust boundary — narrow the parsed JSON instead of casting.
 const JoinCacheMapSchema = z.record(z.string(), z.record(z.string(), z.unknown()))
