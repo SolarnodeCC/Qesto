@@ -61,7 +61,12 @@ export function Modal({
   const generatedId = useId()
   const labelledBy = titleId ?? (title != null ? generatedId : undefined)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+
+  // Keep the latest onClose without re-binding the keydown listener every render.
+  // Assignment must not happen during render (react-hooks/refs).
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
