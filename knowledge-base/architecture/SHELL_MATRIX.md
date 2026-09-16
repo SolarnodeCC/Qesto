@@ -14,12 +14,19 @@ Every routed page must declare exactly one shell. Do not hand-roll chrome (heade
 | `BigScreenShell` | `src/layouts/BigScreenShell.tsx` | Audience/projector displays (`*Display`) | full viewport `--surface-stage` |
 | *(exception)* Auth chrome | `Login.tsx`, `ResetPassword.tsx` | Auth-only surfaces | centered form; do not invent a sixth shell without ADR |
 
-## Known debt (tracked for Days 31–60)
+## Days 31–60 adoption (2026-09-16)
+
+| Route | Status |
+|---|---|
+| `join/JoinLanding`, `join/WaitingScreen`, Join loading/error | `ParticipantShell` |
+| `Present.tsx` outer stage | `bg-[var(--surface-stage)]` (stage scale kept) |
+| Live voter chrome (`JoinPage` Voter) | Tokens only — shell migration deferred to Days 61+ |
+
+## Remaining debt (Days 61+)
 
 | Route | Current | Target |
 |---|---|---|
-| `JoinPage` / `join/JoinLanding` | Custom chrome | `ParticipantShell` |
-| `Present.tsx` | Custom 1920×1080 stage | Align tokens with `BigScreenShell`; keep stage scale |
+| `JoinPage` live Voter | Custom chrome | `ParticipantShell` or dedicated live participant shell |
 | `Display.tsx` (classic) | Custom | `BigScreenShell` |
 | `EventStagePresent.tsx` | Partial | `HostConsoleShell` |
 

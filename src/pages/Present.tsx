@@ -349,7 +349,7 @@ function PresentInner({
           : null
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
+    <div className="fixed inset-0 flex flex-col bg-[var(--surface-stage)] animate-page-enter">
       {/* COPILOT-05 — presenter-only live facilitator copilot (ADR-0046) */}
       <CopilotPanel sessionId={id} enabled={state.role === 'presenter' && isLive} onAddQuestion={sendAddQuestion} />
       {/* ── 1920×1080 letterboxed stage ────────────────────────────────────── */}

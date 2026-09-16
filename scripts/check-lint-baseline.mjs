@@ -27,7 +27,7 @@ import { ESLint } from 'eslint'
 // on re-render, and `refs`/`purity` flag reads during render in
 // src/hooks/useLiveSession.ts and useInsights.ts — the live WebSocket path.
 const BASELINE = {
-  'react-hooks/set-state-in-effect': 60,
+  'react-hooks/set-state-in-effect': 59,
   'no-useless-assignment': 15,
   '@typescript-eslint/no-unused-vars': 14,
   'no-control-regex': 6,
