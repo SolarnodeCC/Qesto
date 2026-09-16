@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest'
 const joinLanding = readFileSync('src/pages/join/JoinLanding.tsx', 'utf8')
 const waiting = readFileSync('src/pages/join/WaitingScreen.tsx', 'utf8')
 const joinPage = readFileSync('src/pages/JoinPage.tsx', 'utf8')
+const login = readFileSync('src/pages/Login.tsx', 'utf8')
+const formField = readFileSync('src/ui/FormField.tsx', 'utf8')
 const hero = readFileSync('src/pages/dashboard/HeroSection.tsx', 'utf8')
 const joinCode = readFileSync('src/components/launchpad/JoinCodePanel.tsx', 'utf8')
 const present = readFileSync('src/pages/Present.tsx', 'utf8')
@@ -14,6 +16,11 @@ const wizard = readFileSync('src/components/SessionWizard.tsx', 'utf8')
 const recent = readFileSync('src/pages/dashboard/RecentSessionsSection.tsx', 'utf8')
 
 describe('DS Day 60 adoption contracts', () => {
+  it('Login magic-link field keeps a stable #magic-email id via FormField', () => {
+    expect(formField).toContain('id?: string')
+    expect(login).toContain('id="magic-email"')
+  })
+
   it('Join landing/waiting/loading/error use ParticipantShell', () => {
     expect(joinLanding).toContain('ParticipantShell')
     expect(waiting).toContain('ParticipantShell')
