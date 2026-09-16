@@ -6,31 +6,19 @@ import PageSeo from '../components/PageSeo'
 import { api } from '../api/client'
 import { useT } from '../i18n'
 import { generateOgImageUrl } from '../utils/og-image-generator'
+import type { GalleryLang, TemplateGalleryRecord } from '../types/template-gallery'
+import { GALLERY_PIPELINE_LANGS } from '../types/template-gallery'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
 const shadowCard = { boxShadow: 'var(--shadow-card)' }
 
-type Lang = 'nl' | 'en' | 'de' | 'fr'
-const PIPELINE_LANGS: Lang[] = ['nl', 'en', 'de', 'fr']
+type Lang = GalleryLang
+const PIPELINE_LANGS = GALLERY_PIPELINE_LANGS
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-interface TemplateRecord {
-  id: string
-  title: Record<Lang, string>
-  purpose: Record<Lang, string>
-  bestUsedFor: Record<Lang, string[]>
-  estimatedMinutes: number
-  whatYoullLearn: Record<Lang, string[]>
-  questions: { id: string; text: Record<Lang, string>; type: string }[]
-  industry: string
-  theme: string
-  topic: string
-  usageCount: number
-  createdAt: string
-  updatedAt: string
-}
+type TemplateRecord = TemplateGalleryRecord
 
 type UseState =
   | { status: 'idle' | 'sending' }
@@ -183,7 +171,7 @@ export default function TemplateDetail() {
   const title = template.title[lang] || template.title.en
   const purpose = template.purpose[lang] || template.purpose.en
   const bestUsedFor = template.bestUsedFor[lang] || template.bestUsedFor.en || []
-  const whatYoullLearn = template.whatYoullLearn[lang] || template.whatYoullLearn.en || []
+  const whatYoullLearn = template.whatYoullLearn?.[lang] || template.whatYoullLearn?.en || []
 
   // SEO: Structured data
   const breadcrumb = {

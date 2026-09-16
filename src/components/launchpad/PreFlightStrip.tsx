@@ -26,10 +26,10 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
       {/* Card header */}
       <div className="flex items-center gap-2 px-6 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
         {loading
-          ? <Loader2 size={17} className="text-pulse-400 animate-spin shrink-0" aria-hidden="true" />
+          ? <Loader2 size={17} className="text-pulse-500 animate-spin shrink-0" aria-hidden="true" />
           : <CircleCheckBig
               size={17}
-              className={`shrink-0 ${allValid ? 'text-green-500' : 'text-pulse-400'}`}
+              className={`shrink-0 ${allValid ? 'text-green-500' : 'text-pulse-500'}`}
               aria-hidden="true"
             />}
         <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8]">

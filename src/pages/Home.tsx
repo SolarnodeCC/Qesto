@@ -246,7 +246,7 @@ export default function Home() {
                     <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-[#1C2540] dark:text-teal-400">
                       <Icon size={20} aria-hidden="true" />
                     </span>
-                    <span className="text-xs font-bold tracking-widest uppercase text-pulse-400 dark:text-[#8A96B0]">
+                    <span className="text-xs font-bold tracking-widest uppercase text-pulse-500 text-[var(--text-muted)]">
                       Step {i + 1}
                     </span>
                   </div>

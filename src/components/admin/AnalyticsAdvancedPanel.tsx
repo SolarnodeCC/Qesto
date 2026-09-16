@@ -55,7 +55,7 @@ export default function AnalyticsAdvancedPanel() {
                 <span className="text-pulse-800 dark:text-[#A8B3CC]">{step.label}</span>
                 <span className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
                   {step.count}
-                  {i > 0 && <span className="text-pulse-400 font-normal"> · {step.conversion_from_prev_pct}% from prev · {step.drop_off_pct}% drop</span>}
+                  {i > 0 && <span className="text-pulse-500 font-normal"> · {step.conversion_from_prev_pct}% from prev · {step.drop_off_pct}% drop</span>}
                 </span>
               </div>
               <div className="h-2 rounded bg-pulse-100 dark:bg-[#0F1526] overflow-hidden">
@@ -79,7 +79,7 @@ export default function AnalyticsAdvancedPanel() {
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Workers AI requests</span><span>{costs.workers_ai.requests}</span></div>
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Est. tokens</span><span>{costs.workers_ai.est_tokens.toLocaleString()}</span></div>
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Est. AI cost</span><span className="font-semibold">{fmtCents(costs.workers_ai.est_cost_cents)}{costs.workers_ai.is_estimate ? ' (est.)' : ''}</span></div>
-              <Caption className="text-pulse-400 dark:text-[#5A6788]">{costs.cloudflare_billing.note}</Caption>
+              <Caption className="text-pulse-500 text-[var(--text-muted)]">{costs.cloudflare_billing.note}</Caption>
             </>
           ) : (
             <Body size="s" className="text-pulse-500">Loading…</Body>
@@ -119,7 +119,7 @@ export default function AnalyticsAdvancedPanel() {
             </table>
           )}
         </Card>
-        <Caption className="text-pulse-400 dark:text-[#5A6788]">
+        <Caption className="text-pulse-500 text-[var(--text-muted)]">
           SEO (Search Console) and LinkedIn reach/engagement require external-API importers — surfaced as deferred in their endpoints.
         </Caption>
       </section>

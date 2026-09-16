@@ -59,15 +59,16 @@ import { Check, Loader2, Sparkles, X } from 'lucide-react'
 
 ### 3. Component border-radius convention
 
-**Decision:** Strict two-tier radius rule:
+**Decision:** Strict role → class rule. **Resolved px values come from live `@theme`**
+(see 2026-09-16 amendment — supersedes the original 12/8 px prose):
 
-| Element type | Tailwind class | CSS value |
+| Element type | Tailwind class | Resolved px |
 |---|---|---|
-| Cards, panels, modals, info boxes | `rounded-xl` | 12 px |
-| Buttons, inputs, dropdown menus, small badges | `rounded-lg` | 8 px |
+| Cards, panels, modals, info boxes | `rounded-xl` | 24px (`--radius-xl`) |
+| Buttons, inputs, dropdown menus | `rounded-lg` | 16px (`--radius-lg`) |
 | Pills / status badges | `rounded-full` | — |
 
-**Files updated:** `src/pages/dashboard/SessionCard.tsx` (card + skeleton: `rounded-lg` → `rounded-xl`), `src/pages/join/QuestionVoteInput.tsx` (primary CTA submit: `rounded-lg` → `rounded-xl`).
+**Files updated (original pass):** `src/pages/dashboard/SessionCard.tsx` (card + skeleton: `rounded-lg` → `rounded-xl`), `src/pages/join/QuestionVoteInput.tsx` (primary CTA).
 
 ---
 
@@ -118,3 +119,46 @@ production CSS build.
    governance `colors_and_type.css` is a reference mirror and must be kept in sync when tokens change.
 
 The Hard Rules 9 & 10 in `CLAUDE.md` are unaffected (icon policy and radius conventions still hold).
+
+---
+
+## Amendment (2026-09-16) — radius SoT aligned to live `@theme`
+
+**Problem:** Section 3 claimed `rounded-xl` = 12px and `rounded-lg` = 8px, but production
+`src/styles.css` `@theme` (the hand-authored SoT per `src/AGENTS.md`) maps:
+
+| Token | Value |
+|---|---|
+| `--radius-md` | 10px |
+| `--radius-lg` | 16px |
+| `--radius-xl` | 24px |
+
+Reviewers could not enforce a single truth; shared `Card` used `rounded-lg` while ADR
+required `rounded-xl` for cards.
+
+**Decision (supersedes §3 px claims):** keep the live `@theme` values. Role → class mapping:
+
+| Element type | Tailwind class | Resolved px |
+|---|---|---|
+| Cards, panels, modals, info boxes | `rounded-xl` | 24px (`--radius-xl`) |
+| Buttons, inputs, dropdown menus | `rounded-lg` | 16px (`--radius-lg`) |
+| Compact chips / skeleton lines | `rounded-md` | 10px (`--radius-md`) |
+| Pills / status badges | `rounded-full` | — |
+
+**Primitives:** `src/ui/components.tsx` `Card` / `SkeletonCard` → `rounded-xl`; `Button` → `rounded-lg`.
+
+**Do not remap `@theme` radius numbers** to the old 8/12 ADR prose — that would silently
+shrink ~360 `rounded-lg` call sites. Spec prose follows code.
+
+---
+
+## Amendment (2026-09-16) — Day 1–30 DS foundations
+
+Companion plan: [`DS_DAY30_FOUNDATIONS_2026-09-16.md`](../quality/audits/DS_DAY30_FOUNDATIONS_2026-09-16.md).
+
+Shipped with this amendment:
+
+1. Semantic surface/text CSS vars are the dark-mode API (no new `dark:[#…]` in shells/primitives).
+2. Shared `Modal` with focus trap + Escape + restore focus.
+3. Canonical `StatusBadge` / unified `MetricCard`; Lucide-only in layout shells; CI SVG gate for layouts.
+4. Container width tokens + shell matrix doc.

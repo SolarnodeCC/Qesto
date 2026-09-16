@@ -74,7 +74,7 @@ function IncidentRow({ incident, onClose }: { incident: Incident; onClose: (id: 
       <div className="flex items-center gap-2">
         <span className={`text-xs font-semibold px-2 py-0.5 rounded ${SEV_CHIP[incident.severity]}`}>SEV{incident.severity}</span>
         <span className="flex-1 text-sm text-pulse-800 dark:text-[#A8B3CC]">{incident.title}</span>
-        <span className="text-xs text-pulse-400">{incident.status}</span>
+        <span className="text-xs text-pulse-500">{incident.status}</span>
       </div>
       {incident.status === 'open' && (
         <div className="flex flex-wrap items-center gap-2">
@@ -129,7 +129,7 @@ export default function OpsControlPanel() {
           ) : ops.deploys.map((d) => (
             <div key={d.id} className="flex items-center gap-3 px-4 py-3">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{d.version} <span className="text-xs text-pulse-400">({d.environment})</span></div>
+                <div className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{d.version} <span className="text-xs text-pulse-500">({d.environment})</span></div>
                 <div className="text-xs text-pulse-500 font-mono">{d.sha ?? ''} · {d.status} · {fmt(d.created_at)}</div>
               </div>
               {d.status === 'deployed' && (

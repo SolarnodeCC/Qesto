@@ -3,18 +3,18 @@
 
 import { useState } from 'react'
 import { useCalendar, type CalendarItem, type ContentItemPlatform } from '../../hooks/useMarketingApi'
-import { Heading, Body, Card, Button, TextInput, EmptyState, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Card, Button, TextInput, EmptyState, SkeletonCard, Badge, type BadgeTone } from '../../ui/components'
 
-function StatusBadge({ status }: { status: CalendarItem['status'] }) {
-  const styles: Record<CalendarItem['status'], string> = {
-    planned: 'bg-pulse-100 text-pulse-600',
-    generated: 'bg-blue-100 text-blue-700',
-    skipped: 'bg-amber-100 text-amber-700',
+function CalendarStatusBadge({ status }: { status: CalendarItem['status'] }) {
+  const tone: Record<CalendarItem['status'], BadgeTone> = {
+    planned: 'neutral',
+    generated: 'info',
+    skipped: 'warning',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${styles[status]}`}>
+    <Badge tone={tone[status]} className="capitalize">
       {status}
-    </span>
+    </Badge>
   )
 }
 
@@ -124,7 +124,7 @@ function CalendarItemRow({
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 capitalize">
             {item.platform}
           </span>
-          <StatusBadge status={item.status} />
+          <CalendarStatusBadge status={item.status} />
         </div>
         <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {new Date(item.scheduled_for).toLocaleString()}

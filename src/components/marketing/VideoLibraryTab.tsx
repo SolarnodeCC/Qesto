@@ -96,7 +96,7 @@ function GenerateVideoPanel({ onDone }: { onDone: () => void }) {
         placeholder="Describe the clip to generate"
         rows={3}
         disabled={busy}
-        className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-400"
+        className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-500"
       />
       <Button
         size="sm"

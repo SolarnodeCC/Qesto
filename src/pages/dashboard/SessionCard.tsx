@@ -4,33 +4,8 @@ import { Link } from 'react-router-dom'
 import { useT } from '../../i18n'
 import type { SessionSummary } from '../../types/session'
 import { sessionGradient } from '../../utils/sessionGradient'
-
-// Session card, its status badge, and loading skeleton — extracted verbatim
-// from Dashboard.tsx (R-05). Already-standalone components; relocating them does
-// not change behaviour.
-
-export function StatusBadge({ status }: { status: string }) {
-  if (status === 'live') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-teal-500 text-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow-sm">
-        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse shrink-0" aria-hidden="true" />
-        LIVE
-      </span>
-    )
-  }
-  if (status === 'closed' || status === 'archived') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-        Gesloten
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-pulse-100 dark:bg-pulse-800 text-pulse-600 dark:text-[#A8B3CC] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-      Concept
-    </span>
-  )
-}
+import { StatusBadge } from '../../ui/StatusBadge'
+import { sessionStatusLabel } from '../../lib/session-status-label'
 
 export interface SessionCardProps {
   session: SessionSummary
@@ -111,7 +86,7 @@ export function SessionCard({
 
       {/* Overlay: status badge + three-dots menu */}
       <div className="absolute top-2 left-2">
-        <StatusBadge status={s.status} />
+        <StatusBadge status={s.status} label={sessionStatusLabel(s.status, t)} />
       </div>
       <div ref={menuRef} className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
