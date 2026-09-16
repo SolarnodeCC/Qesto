@@ -2,7 +2,7 @@ import { type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 
-type MaxWidth = 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl'
+type MaxWidth = 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl'
 
 const MAX_WIDTH_CLASS: Record<MaxWidth, string> = {
   xl: 'max-w-xl',
@@ -11,6 +11,7 @@ const MAX_WIDTH_CLASS: Record<MaxWidth, string> = {
   '4xl': 'max-w-4xl',
   '5xl': 'max-w-5xl',
   '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
 }
 
 interface HostConsoleShellProps {
@@ -27,6 +28,8 @@ interface HostConsoleShellProps {
   maxWidth?: MaxWidth
   /** Where the brand mark links back to. Defaults to the host dashboard. */
   backHref?: string
+  /** Optional trailing header slot (e.g. attendee URL). */
+  headerTrailing?: ReactNode
   children: ReactNode
 }
 
@@ -46,6 +49,7 @@ export default function HostConsoleShell({
   connectionLabel = null,
   maxWidth = '2xl',
   backHref = '/dashboard',
+  headerTrailing,
   children,
 }: HostConsoleShellProps) {
   return (
@@ -70,11 +74,14 @@ export default function HostConsoleShell({
               {subtitle && <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{subtitle}</p>}
             </div>
           </div>
-          {connectionLabel && (
-            <span className="text-xs text-amber-600" role="status">
-              {connectionLabel}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {headerTrailing}
+            {connectionLabel && (
+              <span className="text-xs text-amber-600" role="status">
+                {connectionLabel}
+              </span>
+            )}
+          </div>
         </header>
 
         <main id="main" tabIndex={-1} className="space-y-6 focus:outline-none">

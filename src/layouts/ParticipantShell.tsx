@@ -27,6 +27,8 @@ interface ParticipantShellProps {
   subtitle?: string
   /** Content container width. Defaults to `xl`. */
   maxWidth?: MaxWidth
+  /** Optional trailing header slot (e.g. live XR control, participant count). */
+  headerTrailing?: ReactNode
   children: ReactNode
 }
 
@@ -48,6 +50,7 @@ export default function ParticipantShell({
   connectionLabel = null,
   subtitle,
   maxWidth = 'xl',
+  headerTrailing,
   children,
 }: ParticipantShellProps) {
   const t = useT('solutions')
@@ -63,11 +66,14 @@ export default function ParticipantShell({
               {subtitle && <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{subtitle}</p>}
             </div>
           </div>
-          {connectionLabel && (
-            <span className="text-xs text-amber-600" role="status">
-              {connectionLabel}
-            </span>
-          )}
+          <div className="flex items-center gap-3 shrink-0">
+            {headerTrailing}
+            {connectionLabel && (
+              <span className="text-xs text-amber-600" role="status">
+                {connectionLabel}
+              </span>
+            )}
+          </div>
         </header>
 
         <main id="main" tabIndex={-1} className="flex-1 space-y-8 focus:outline-none">

@@ -1,6 +1,7 @@
-import { Loader2 } from 'lucide-react'
+import { Loader2, Play } from 'lucide-react'
 import { useT } from '../../i18n'
 import type { WizardStep } from '../sessionWizard.helpers'
+import { Button } from '../../ui/components'
 
 export interface WizardFooterProps {
   step: WizardStep
@@ -35,63 +36,51 @@ export function SessionWizardFooter({
 }: WizardFooterProps) {
   const t = useT('wizard')
   return (
-    <div className="flex items-center justify-between px-8 py-4 border-t border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] flex-shrink-0 gap-3">
+    <div className="flex items-center justify-between px-8 py-4 border-t border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] flex-shrink-0 gap-3">
       {step > 1 && !jumpedFrom5 ? (
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-        >
+        <Button type="button" variant="secondary" onClick={onBack}>
           {t('nav.back')}
-        </button>
+        </Button>
       ) : jumpedFrom5 ? (
-        <button
-          type="button"
-          onClick={onBackToOverview}
-          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-        >
+        <Button type="button" variant="secondary" onClick={onBackToOverview}>
           ← Overview
-        </button>
+        </Button>
       ) : (
         <div />
       )}
 
       <div>
         {step === 1 && (
-          <button
+          <Button
             type="button"
             onClick={onNextStep1}
             disabled={!step1Valid || creatingSession}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
+            className="btn-motion"
           >
             {creatingSession ? 'Creating…' : jumpedFrom5 ? '← Overview' : t('nav.next')}
-          </button>
+          </Button>
         )}
         {step === 2 && (
-          <button
+          <Button
             type="button"
             onClick={onNextStep2}
             disabled={!step2Valid}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
+            className="btn-motion"
           >
             {jumpedFrom5 ? '← Overview' : t('nav.next')}
-          </button>
+          </Button>
         )}
         {(step === 3 || step === 4) && (
-          <button
-            type="button"
-            onClick={onNextStep34}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 btn-motion"
-          >
+          <Button type="button" onClick={onNextStep34} className="btn-motion">
             {jumpedFrom5 ? '← Overview' : t('nav.next')}
-          </button>
+          </Button>
         )}
         {step === 5 && (
-          <button
+          <Button
             type="button"
             onClick={onLaunch}
             disabled={launching || activeQuestionsCount === 0}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 shadow-teal btn-motion"
+            className="btn-motion shadow-teal"
           >
             {launching ? (
               <>
@@ -100,13 +89,11 @@ export function SessionWizardFooter({
               </>
             ) : (
               <>
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8l7 4-7 4z" />
-                </svg>
+                <Play size={16} aria-hidden="true" />
                 {t('nav.launch')}
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
     </div>
