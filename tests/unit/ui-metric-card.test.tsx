@@ -1,5 +1,5 @@
 /**
- * DS Day 1–30 — unified MetricCard API (icon + loading + alert).
+ * Requirement: knowledge-base/adr/ADR-0071-design-system-v1.md — unified MetricCard API (icon + loading + alert).
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach } from 'vitest'

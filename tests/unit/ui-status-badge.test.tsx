@@ -1,5 +1,5 @@
 /**
- * DS Day 1–30 — canonical StatusBadge tone map.
+ * Requirement: knowledge-base/adr/ADR-0071-design-system-v1.md — canonical StatusBadge tone map.
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach } from 'vitest'

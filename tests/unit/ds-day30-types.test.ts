@@ -1,5 +1,5 @@
 /**
- * DS Day 1–30 — session status label helper + branding type re-export.
+ * Requirement: knowledge-base/quality/audits/DS_DAY30_FOUNDATIONS_2026-09-16.md — session status label + branding type re-export.
  */
 import { describe, it, expect } from 'vitest'
 import { sessionStatusLabel } from '../../src/lib/session-status-label'
