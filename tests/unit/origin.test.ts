@@ -1,3 +1,11 @@
+/**
+ * Requirement: ADR-0073 — in-route auth IP gates skip wrangler --local /
+ * Playwright loopback so the suite does not share one 20/15min signup bucket.
+ *
+ * Also locks resolveExpectedOrigin (PAGES_URL → API_URL → request URL) used
+ * by CSRF origin checks in knowledge-base/specifications/domain/SPEC_BACKEND.md
+ * §Middleware stack.
+ */
 import { describe, expect, it } from 'vitest'
 import { isLocalDevHost, resolveExpectedOrigin } from '../../functions/api/lib/origin'
 
