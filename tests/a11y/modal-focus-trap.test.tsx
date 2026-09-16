@@ -1,5 +1,5 @@
 /**
- * DS Day 1–30 — Modal keyboard + axe semantics.
+ * Requirement: knowledge-base/adr/ADR-0071-design-system-v1.md — Modal keyboard trap + axe semantics (DS Day 1–30).
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from 'vitest'

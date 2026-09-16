@@ -1,5 +1,5 @@
 /**
- * DS Day 1–30 — shared Modal focus trap + Escape + restore focus.
+ * Requirement: knowledge-base/adr/ADR-0071-design-system-v1.md — shared Modal focus trap + Escape + restore focus.
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from 'vitest'
