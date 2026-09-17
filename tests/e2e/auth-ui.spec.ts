@@ -16,6 +16,7 @@ test.describe('Auth UI and validation flows', () => {
 
   test('magic link form validates bad email', async ({ page }) => {
     await page.goto('/login')
+    await expect(page.getByRole('tab', { name: /magic link/i })).toHaveAttribute('aria-selected', 'true')
     await page.locator('#magic-email').fill('not-an-email')
     await page.getByRole('button', { name: /send login link/i }).click()
     await expect(page.locator('#magic-email')).toBeVisible()
