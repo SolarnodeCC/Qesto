@@ -80,7 +80,7 @@
   },
   "dependencies": {
     "hono": "^4.13.1",
-    "lucide-react": "^1.28.0",
+    "lucide-react": "^1.45.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-qr-code": "^2.2.0",
