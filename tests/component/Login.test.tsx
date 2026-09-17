@@ -55,6 +55,7 @@ describe('Login — tab selection', () => {
   it('opens on the magic-link tab by default', () => {
     renderLogin()
     expect(screen.getByRole('tab', { name: /^magic link$/i })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByLabelText(/email address/i)).toHaveAttribute('id', 'magic-email')
   })
 
   it('opens directly on signup when an acquisition CTA links to ?tab=signup', () => {
