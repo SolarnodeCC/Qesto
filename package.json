@@ -79,7 +79,7 @@
     "check:circular": "node scripts/check-circular-deps.mjs"
   },
   "dependencies": {
-    "hono": "^4.13.1",
+    "hono": "^4.13.7",
     "lucide-react": "^1.45.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
