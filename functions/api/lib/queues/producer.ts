@@ -7,13 +7,18 @@
  * - Provides retry + DLQ semantics (improves reliability)
  * - Allows parallel processing via multiple consumers
  *
+ * When INSIGHTS_QUEUE is not bound (local/dev or misconfigured deploy), falls back
+ * to `executionCtx.waitUntil(processPostSessionWork(...))` so close still triggers
+ * post-session work. Missing binding is logged as an error (not a silent warn).
+ *
  * Queue: qesto-insights (max 10 messages per batch, 30s timeout, 3 retries, DLQ)
  *
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md (Phase 2.1)
- * @see functions/api/routes/sessions/lifecycle.ts (where work is enqueued)
+ * @see functions/api/routes/sessions/lifecycle-close.ts (where work is enqueued)
  */
 
 import type { Env } from '../../types'
+import { safeLogContext } from '../log'
 
 export type PostSessionWorkMessage = {
   /**
@@ -82,45 +87,97 @@ export type PostSessionWorkMessage = {
   }
 }
 
+export type EnqueueResult = 'queued' | 'fallback' | 'dropped'
+
+export type EnqueueOptions = {
+  /** When set and the queue binding is missing, run the consumer via waitUntil. */
+  executionCtx?: ExecutionContext
+}
+
 /**
- * Enqueue a post-session work task.
+ * Enqueue a post-session work task, or fall back to waitUntil when unbound.
  *
- * @param env Cloudflare Env (must have INSIGHTS_QUEUE binding)
- * @param message PostSessionWorkMessage
- * @returns Promise that resolves when message is enqueued (not when processed)
- *
- * @example
- * await enqueuePostSessionWork(c.env, {
- *   idempotencyKey: `${id}:precompute_insights:${hash}`,
- *   sessionId: id,
- *   userId: user.sub,
- *   taskType: 'precompute_insights',
- *   payload: { sessionTitle: session.title, plan: c.get('plan') },
- *   meta: { enqueuedAt: Date.now() },
- * });
+ * @returns `'queued'` when sent to Cloudflare Queues; `'fallback'` when the
+ *   waitUntil consumer path ran; `'dropped'` when neither path is available.
  */
 export async function enqueuePostSessionWork(
   env: Env,
   message: PostSessionWorkMessage,
-): Promise<void> {
+  opts: EnqueueOptions = {},
+): Promise<EnqueueResult> {
+  const traceId =
+    (typeof message.payload.traceId === 'string' && message.payload.traceId) ||
+    message.idempotencyKey
+
   if (!env.INSIGHTS_QUEUE) {
-    console.warn('[2.1 Queues] INSIGHTS_QUEUE not bound; falling back to no-op')
-    return
+    safeLogContext(new Error('INSIGHTS_QUEUE binding missing — post-session work using waitUntil fallback or dropping'), {
+      traceId,
+      route: 'queues/producer',
+      errorClass: 'QueueBindingMissing',
+      statusCode: 500,
+    })
+
+    if (opts.executionCtx) {
+      opts.executionCtx.waitUntil(
+        (async () => {
+          const { processPostSessionWork } = await import('./consumer')
+          try {
+            await processPostSessionWork(env, message)
+          } catch (err) {
+            safeLogContext(err, {
+              traceId,
+              route: 'queues/producer.waitUntil',
+              errorClass: err instanceof Error ? err.name : 'UnknownError',
+              statusCode: 500,
+            })
+          }
+        })(),
+      )
+      return 'fallback'
+    }
+
+    console.error(
+      JSON.stringify({
+        event: 'queue.enqueue.dropped',
+        taskType: message.taskType,
+        sessionId: message.sessionId,
+        reason: 'INSIGHTS_QUEUE_unbound_no_executionCtx',
+      }),
+    )
+    return 'dropped'
   }
 
   try {
     await env.INSIGHTS_QUEUE.send(message)
+    return 'queued'
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
-    console.error(
-      JSON.stringify({
-        event: 'queue.enqueue.error',
-        taskType: message.taskType,
-        sessionId: message.sessionId,
-        error: errorMsg,
-      }),
-    )
-    // Don't throw: enqueue failures are non-fatal. Work can be retried later.
+    safeLogContext(err, {
+      traceId,
+      route: 'queues/producer',
+      errorClass: err instanceof Error ? err.name : 'QueueEnqueueError',
+      statusCode: 500,
+    })
+    // Enqueue failures are non-fatal for the HTTP close path. Prefer waitUntil
+    // so the work still runs when the queue briefly rejects.
+    if (opts.executionCtx) {
+      opts.executionCtx.waitUntil(
+        (async () => {
+          const { processPostSessionWork } = await import('./consumer')
+          try {
+            await processPostSessionWork(env, message)
+          } catch (fallbackErr) {
+            safeLogContext(fallbackErr, {
+              traceId,
+              route: 'queues/producer.waitUntil',
+              errorClass: fallbackErr instanceof Error ? fallbackErr.name : 'UnknownError',
+              statusCode: 500,
+            })
+          }
+        })(),
+      )
+      return 'fallback'
+    }
+    return 'dropped'
   }
 }
 

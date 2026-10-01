@@ -52,7 +52,7 @@ Pre-push: `git config core.hooksPath ops/git-hooks` (runs quality gates).
 |---------|----------|---------------|
 | Security scan | `ops/ci/secret-scan.sh`, `ops/ci/supply-chain.sh` CI artifacts | `just security` |
 | Backups | D1 export runbook in `knowledge-base/operations/` | `npm test -- --run tests/unit/migrations` |
-| Monitoring | Analytics Engine + `writeEvent` traces (`functions/api/lib/observability.ts`) | `just fast` |
+| Monitoring | Analytics Engine + `writeEvent` + `lib/alerts.ts` paging ([ALERTING_SETUP](../knowledge-base/operations/monitoring/ALERTING_SETUP.md)) | `just fast` |
 | Rollback | Cloudflare Pages deploy previous commit (`wrangler pages deploy`) | `just verify` |
 | Abuse controls | Rate limits (`functions/api/middleware/rate-limit.ts`), CSRF middleware | `npm test -- --run tests/unit/rate-limit` |
 

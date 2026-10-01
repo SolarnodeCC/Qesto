@@ -1,5 +1,4 @@
 /**
-import { logEvent } from './log'
  * GDPR-compliant error logging helper.
  *
  * This is the ONLY permitted way to log errors in Qesto.
@@ -17,6 +16,12 @@ export interface SafeLogContext {
   errorClass: string
   /** Sanitized error message (optional, stripped in production) */
   errorMessage?: string
+  /**
+   * Sanitized stack trace (optional). Redacted and truncated; never include
+   * request bodies or secrets. Prefer passing `err.stack` and letting this
+   * helper sanitize it.
+   */
+  stack?: string
   /** Hashed user ID or null for public endpoints */
   userId?: string
   /** Team context for audit */
@@ -107,9 +112,16 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
     err instanceof Error ? err.message : ''
   )
   const errorName = err instanceof Error ? err.name : 'UnknownError'
+  const rawStack =
+    ctx.stack ??
+    (err instanceof Error && typeof err.stack === 'string' ? err.stack : undefined)
+  // Cap stack length; redact PII patterns the same way as messages.
+  const stack = rawStack
+    ? sanitizeErrorMessage(rawStack).substring(0, 2048)
+    : undefined
 
   // Build safe log entry
-  const logEntry = {
+  const logEntry: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     level: 'error',
     traceId: ctx.traceId,
@@ -121,8 +133,9 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
     statusCode: ctx.statusCode || null,
     duration: ctx.duration || null,
   }
+  if (stack) logEntry.stack = stack
 
-  // Production: strip errorMessage, keep only class + traceId
+  // Production: strip errorMessage, keep class + traceId + sanitized stack.
   // Staging/dev: include message for debugging.
   // Guard `process`: it is undefined in the Workers/Pages runtime without
   // nodejs_compat, and referencing it directly throws ReferenceError — which
@@ -132,7 +145,7 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
   const isProduction =
     typeof process !== 'undefined' && process.env?.ENV === 'production'
   if (isProduction) {
-    delete (logEntry as any).errorMessage
+    delete logEntry.errorMessage
   }
 
   // Write to console (Cloudflare Logpush picks up from there)

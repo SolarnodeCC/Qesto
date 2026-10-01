@@ -8,6 +8,7 @@
 import { createApp } from '../functions/api/app'
 import type { Env } from '../functions/api/types'
 import { safeLogContext } from '../functions/api/lib/log'
+import { alertCritical } from '../functions/api/lib/alerts'
 import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
@@ -16,7 +17,6 @@ import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-tr
 import { runKvBackup } from '../functions/api/lib/kv-backup'
 import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
 import { runContentEngine } from '../functions/api/lib/marketing/content-engine'
-import { runMentionMonitor } from '../functions/api/lib/marketing/mention-monitor'
 import { refreshAllTokens } from '../functions/api/lib/marketing/token-status'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
@@ -95,13 +95,17 @@ async function runKbHealthWatchdog(env: Env): Promise<void> {
       route: 'worker/kb-health',
       errorClass: err instanceof Error ? err.name : 'UnknownError',
     })
+    await alertCritical(env, 'worker/kb-health', err instanceof Error ? err.name : 'KbHealthFailed', {
+      traceId,
+      errorClass: err instanceof Error ? err.name : 'KbHealthFailed',
+    })
   }
 }
 
 async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
   // Daily 02:00 UTC batch — KB health watchdog, workspace-trend rollup, pulse
   // retention. Gated on the exact cron expression so the other schedules
-  // (every-3h mention monitor, etc.) don't re-run these daily jobs.
+  // don't re-run these daily jobs.
   if (event.cron === '0 2 * * *') {
     await runKbHealthWatchdog(env)
 
@@ -120,6 +124,10 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
         route: 'worker/ws-trends',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
       })
+      await alertCritical(env, 'worker/ws-trends', err instanceof Error ? err.name : 'WsTrendsFailed', {
+        traceId: trendTraceId,
+        errorClass: err instanceof Error ? err.name : 'WsTrendsFailed',
+      })
     }
 
     // PULSE-RETENTION-01 — daily GDPR retention (90d redact / 7y delete).
@@ -135,6 +143,10 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
         traceId: pulseTraceId,
         route: 'worker/pulse-retention',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+      await alertCritical(env, 'worker/pulse-retention', err instanceof Error ? err.name : 'PulseRetentionFailed', {
+        traceId: pulseTraceId,
+        errorClass: err instanceof Error ? err.name : 'PulseRetentionFailed',
       })
     }
   }
@@ -153,6 +165,10 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
         route: 'worker/kv-backup',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
       })
+      await alertCritical(env, 'worker/kv-backup', err instanceof Error ? err.name : 'KvBackupFailed', {
+        traceId: backupTraceId,
+        errorClass: err instanceof Error ? err.name : 'KvBackupFailed',
+      })
     }
   }
 
@@ -169,23 +185,15 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
         route: 'worker/content-engine',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
       })
-    }
-  }
-
-  // Marketing Mention Monitor — every 3h (see ops-cron.ts 'mention-monitor').
-  if (event.cron === '0 */3 * * *') {
-    const traceId = `mention-monitor-${Date.now()}`
-    try {
-      await runMentionMonitor(env, env.DB, env.MARKETING_KV)
-      console.log('[mention-monitor] OK')
-    } catch (err) {
-      safeLogContext(err, {
+      await alertCritical(env, 'worker/content-engine', err instanceof Error ? err.name : 'ContentEngineFailed', {
         traceId,
-        route: 'worker/mention-monitor',
-        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        errorClass: err instanceof Error ? err.name : 'ContentEngineFailed',
       })
     }
   }
+
+  // Marketing Mention Monitor cron removed (Reddit/YouTube not connected for this
+  // account). Re-enable in wrangler.toml + restore runMentionMonitor import if needed.
 
   // Marketing OAuth proactive token refresh — daily 04:00 UTC (see ops-cron.ts 'oauth-token-refresh').
   if (event.cron === '0 4 * * *') {
@@ -198,6 +206,10 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
         traceId,
         route: 'worker/oauth-token-refresh',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+      await alertCritical(env, 'worker/oauth-token-refresh', err instanceof Error ? err.name : 'OAuthRefreshFailed', {
+        traceId,
+        errorClass: err instanceof Error ? err.name : 'OAuthRefreshFailed',
       })
     }
   }
@@ -225,9 +237,12 @@ async function handleQueue(
       safeLogContext(err, {
         traceId: 'queue',
         route: 'worker/queue-consumer',
-        sessionId,
-        taskType,
         errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+      await alertCritical(env, 'worker/queue-consumer', err instanceof Error ? err.name : 'QueueTaskFailed', {
+        traceId: `queue-${sessionId}`,
+        errorClass: err instanceof Error ? err.name : 'QueueTaskFailed',
+        details: { taskType },
       })
     }
   }

@@ -164,6 +164,26 @@ export type Env = {
   LDAP_SYNC_MOCK?: string
   /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
   MARKETING_WEBHOOK_SECRET?: string
+  /**
+   * OPS-ALERTS: Slack/generic incoming webhook for critical pages.
+   * `wrangler secret put ALERT_WEBHOOK_URL` — unset = no-op.
+   */
+  ALERT_WEBHOOK_URL?: string
+  /**
+   * OPS-ALERTS: optional Sentry DSN (`https://<key>@<host>/<project>`).
+   * `wrangler secret put SENTRY_DSN` — unset = no-op.
+   */
+  SENTRY_DSN?: string
+  /**
+   * OPS-ALERTS: fine-grained GitHub PAT with Issues: write on GITHUB_ALERT_REPO.
+   * `wrangler secret put GITHUB_ALERT_TOKEN` — unset = no GitHub issues.
+   */
+  GITHUB_ALERT_TOKEN?: string
+  /**
+   * OPS-ALERTS: `owner/repo` for auto-alert issues (var, not secret).
+   * Default intended: `SolarnodeCC/Qesto`.
+   */
+  GITHUB_ALERT_REPO?: string
   /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
   OAUTH_TOKEN_MEK?: string
   /** PWA push — VAPID private key (wrangler secret). */

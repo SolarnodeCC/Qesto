@@ -90,6 +90,8 @@ import { writeEvent } from './lib/observability'
 import { parseTraceHeaders } from './lib/distributed-trace'
 import { securityHeadersMiddleware } from './middleware/security-headers'
 import { sanitizeError } from './lib/error-handler'
+import { safeLogContext } from './lib/log'
+import { alertCritical } from './lib/alerts'
 import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
@@ -259,12 +261,39 @@ export function createApp() {
     const trace_id = c.get('trace_id') ?? 'unknown'
     const maybeStatus = (err as unknown as { status?: number }).status
     const status = typeof maybeStatus === 'number' ? maybeStatus : 500
+    const route = c.req.path
+
+    // Structured error log (PII-sanitized) with request id, route, and stack.
+    safeLogContext(err, {
+      traceId: trace_id,
+      route,
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+      statusCode: status,
+      stack: err instanceof Error ? err.stack : undefined,
+    })
+
     // Fire analytics event for 5xx errors only; 4xx client errors are noise.
     if (status >= 500 && c.env?.METRICS_AE) {
       writeEvent(c.env.METRICS_AE, {
         name: 'error.api',
         traceId: trace_id,
       })
+    }
+    // Page ops on unhandled 5xx (no-op when ALERT_WEBHOOK_URL / SENTRY_DSN unset).
+    if (status >= 500) {
+      c.executionCtx.waitUntil(
+        alertCritical(
+          c.env,
+          route,
+          err instanceof Error ? err.name : 'UnhandledError',
+          {
+            traceId: trace_id,
+            route,
+            errorClass: err instanceof Error ? err.name : 'UnhandledError',
+            details: { status },
+          },
+        ),
+      )
     }
     const sanitized = sanitizeError(err, c.env?.ENV, status)
     const code = status === 401

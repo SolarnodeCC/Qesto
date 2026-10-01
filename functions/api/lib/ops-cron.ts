@@ -16,7 +16,6 @@ export type CronJob = {
 
 const DAY = 24 * 60 * 60 * 1000
 const WEEK = 7 * DAY
-const HOUR = 60 * 60 * 1000
 
 // Sourced from wrangler.toml [triggers].crons plus known automation workers.
 export const CRON_REGISTRY: CronJob[] = [
@@ -26,7 +25,8 @@ export const CRON_REGISTRY: CronJob[] = [
   { key: 'linkedin-automation', label: 'LinkedIn content automation', schedule: '0 8 * * *', intervalMs: DAY },
   // Marketing automation (absorbs linkedin-automation going forward; left running during transition).
   { key: 'content-engine', label: 'Marketing content engine', schedule: '0 6 * * 3,5,7', intervalMs: 2.5 * DAY },
-  { key: 'mention-monitor', label: 'Marketing mention monitor', schedule: '0 */3 * * *', intervalMs: 3 * HOUR },
+  // mention-monitor DISABLED — Reddit/YouTube not connected; cron removed from wrangler.toml.
+  // Keep entry commented in registry history via docs; do not re-add until OAuth is live.
   { key: 'oauth-token-refresh', label: 'Marketing OAuth token refresh', schedule: '0 4 * * *', intervalMs: DAY },
 ]
 
