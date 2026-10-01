@@ -170,8 +170,15 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
       traceId: c.get('trace_id'),
     })
 
-    // Phase 2.1: Async work queues — fire & forget, non-blocking
-    // All post-session work enqueued to INSIGHTS_QUEUE; processed asynchronously by consumer.
+    // Prefer INSIGHTS_QUEUE; producer falls back to waitUntil when unbound.
+    // Soft-read executionCtx — Vitest app.request() has none.
+    let executionCtx: { waitUntil: (p: Promise<unknown>) => void } | undefined
+    try {
+      executionCtx = c.executionCtx
+    } catch {
+      executionCtx = undefined
+    }
+    const enqueueOpts = executionCtx ? { executionCtx } : {}
     const enqueuePromises: Promise<void>[] = []
 
     // Insights: precompute AI insights for team-plan users
@@ -182,26 +189,32 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
         anonymity: session.anonymity,
       })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:precompute_insights:${hash}`,
-          sessionId: id,
-          userId: user.sub,
-          ...(session.team_id ? { teamId: session.team_id } : {}),
-          taskType: 'precompute_insights',
-          payload: {
-            sessionTitle: session.title,
-            anonymity: session.anonymity ?? null,
-            plan: c.get('plan'),
-            traceId: c.get('trace_id'),
-          },
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.insights.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:precompute_insights:${hash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            ...(session.team_id ? { teamId: session.team_id } : {}),
+            taskType: 'precompute_insights',
+            payload: {
+              sessionTitle: session.title,
+              anonymity: session.anonymity ?? null,
+              plan: c.get('plan'),
+              traceId: c.get('trace_id'),
+            },
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.insights.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 
@@ -209,21 +222,27 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     if (c.get('plan') === 'team' && session.team_id && session.anonymity !== 'zero_knowledge') {
       const pulseHash = computePayloadHash({ sessionId: id, closedAt })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:pulse_rollup:${pulseHash}`,
-          sessionId: id,
-          userId: user.sub,
-          teamId: session.team_id,
-          taskType: 'pulse_rollup',
-          payload: {},
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.pulse.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:pulse_rollup:${pulseHash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            teamId: session.team_id,
+            taskType: 'pulse_rollup',
+            payload: {},
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.pulse.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 
@@ -231,21 +250,27 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:notify_slack:${hash}`,
-          sessionId: id,
-          userId: user.sub,
-          ...(session.team_id ? { teamId: session.team_id } : {}),
-          taskType: 'notify_slack',
-          payload: { counts, total },
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.slack.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:notify_slack:${hash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            ...(session.team_id ? { teamId: session.team_id } : {}),
+            taskType: 'notify_slack',
+            payload: { counts, total },
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.slack.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 
@@ -253,21 +278,27 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:notify_teams:${hash}`,
-          sessionId: id,
-          userId: user.sub,
-          ...(session.team_id ? { teamId: session.team_id } : {}),
-          taskType: 'notify_teams',
-          payload: { counts, total },
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.teams.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:notify_teams:${hash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            ...(session.team_id ? { teamId: session.team_id } : {}),
+            taskType: 'notify_teams',
+            payload: { counts, total },
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.teams.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 
@@ -275,29 +306,35 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
     if (c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:deliver_webhook:${hash}`,
-          sessionId: id,
-          userId: user.sub,
-          ...(session.team_id ? { teamId: session.team_id } : {}),
-          taskType: 'deliver_webhook',
-          payload: {
-            event: 'session.closed',
-            data: {
-              sessionId: id,
-              sessionTitle: session.title,
-              totalVotes: total,
-              durationMs: session.started_at ? closedAt - session.started_at : 0,
-            },
-          },
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.webhook.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:deliver_webhook:${hash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            ...(session.team_id ? { teamId: session.team_id } : {}),
+            taskType: 'deliver_webhook',
+            payload: {
+              event: 'session.closed',
+              data: {
+                sessionId: id,
+                sessionTitle: session.title,
+                totalVotes: total,
+                durationMs: session.started_at ? closedAt - session.started_at : 0,
+              },
+            },
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.webhook.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 
@@ -306,28 +343,34 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
       const questionCount = await countSessionQuestions(c.env.DB, id)
       const hash = computePayloadHash({ sessionTitle: session.title, questionCount })
       enqueuePromises.push(
-        enqueuePostSessionWork(c.env, {
-          idempotencyKey: `${id}:deliver_marketing:${hash}`,
-          sessionId: id,
-          userId: user.sub,
-          ...(session.team_id ? { teamId: session.team_id } : {}),
-          taskType: 'deliver_marketing',
-          payload: {
-            isPublic: Boolean(session.is_public ?? 1),
-            language: 'en',
-            sessionMode: session.session_mode ?? 'reflection',
-            questionCount,
-            participantCount: total,
-            responseRate: total > 0 ? 1.0 : 0.0,
-          },
-          meta: { enqueuedAt: Date.now() },
-        }).catch((err) => {
-          logEvent({
-            event: 'queue.marketing.enqueue_error',
+        enqueuePostSessionWork(
+          c.env,
+          {
+            idempotencyKey: `${id}:deliver_marketing:${hash}`,
             sessionId: id,
-            error: String(err),
-          })
-        }),
+            userId: user.sub,
+            ...(session.team_id ? { teamId: session.team_id } : {}),
+            taskType: 'deliver_marketing',
+            payload: {
+              isPublic: Boolean(session.is_public ?? 1),
+              language: 'en',
+              sessionMode: session.session_mode ?? 'reflection',
+              questionCount,
+              participantCount: total,
+              responseRate: total > 0 ? 1.0 : 0.0,
+            },
+            meta: { enqueuedAt: Date.now() },
+          },
+          enqueueOpts,
+        )
+          .then(() => undefined)
+          .catch((err) => {
+            logEvent({
+              event: 'queue.marketing.enqueue_error',
+              sessionId: id,
+              error: String(err),
+            })
+          }),
       )
     }
 

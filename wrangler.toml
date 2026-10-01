@@ -72,6 +72,9 @@ CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
 # Use a branded sender on qesto.cc for production auth emails.
 RESEND_FROM = "Qesto <login@qesto.cc>"
+# OPS-ALERTS: GitHub auto-issue target (Issues: write via GITHUB_ALERT_TOKEN secret).
+# See knowledge-base/operations/monitoring/ALERTING_SETUP.md
+GITHUB_ALERT_REPO = "SolarnodeCC/Qesto"
 
 # Feature flags (production)
 REALTIME_TOWNHALL_ENABLED = "true"
@@ -190,17 +193,23 @@ binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
-# Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps)
-# TODO (Phase 2 build): Wire Cloudflare Queues producer binding
-# - Create queue "qesto-insights" in Cloudflare account
-# - Uncomment [[queues.producers]] binding below
-# - Implement consumer handler: export queue() in worker/index.ts
-# - Update lifecycle.ts to call enqueuePostSessionWork()
-# For now, work is still done via waitUntil() (Phase 1 pattern)
-#
-# [[queues.producers]]
-# binding = "INSIGHTS_QUEUE"
-# queue = "qesto-insights"
+# Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps).
+# MANUAL (one-time, per account): create the queues before the next deploy that
+# relies on them, or the producer falls back to waitUntil in-process:
+#   wrangler queues create qesto-insights
+#   wrangler queues create qesto-insights-dlq
+# Consumer handler: worker/index.ts → queue(); producer: lib/queues/producer.ts.
+# Docs: knowledge-base/operations/monitoring/ALERTING_SETUP.md
+[[queues.producers]]
+binding = "INSIGHTS_QUEUE"
+queue = "qesto-insights"
+
+[[queues.consumers]]
+queue = "qesto-insights"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "qesto-insights-dlq"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
@@ -305,8 +314,10 @@ simple = { limit = 10, period = 60 }
 # Marketing automation (worker/index.ts -> handleScheduled):
 #   "0 6 * * 3,5,7" — Content Engine (Tue/Thu/Sat 06:00 UTC; single expression — the
 #                     handler and ops-cron.ts registry match on this exact string)
-#   "0 */3 * * *"   — Mention Monitor (every 3h)
 #   "0 4 * * *"     — OAuth token proactive refresh (daily 04:00 UTC)
+# Mention Monitor (Reddit/YouTube) cron DISABLED — owner does not use those
+# platforms; the every-3h job only logged "not connected" noise. Code retained
+# under functions/api/lib/marketing/mention-monitor.ts for later re-enable.
 #
 # ⚠️ Cloudflare day-of-week is 1=Sunday … 7=Saturday (NOT the standard 0=Sunday..6=Sat).
 # `0` is INVALID and makes the whole /schedules deploy fail with 400. So:
@@ -315,10 +326,9 @@ simple = { limit = 10, period = 60 }
 #   "0 6 * * 3,5,7" — Content Engine, Tue/Thu/Sat 06:00 UTC
 # See https://developers.cloudflare.com/workers/configuration/cron-triggers/
 #
-# ⚠️ Cloudflare allows at most 5 cron triggers per Worker — we are at the limit.
-# To add a schedule, combine it into an existing expression (day-of-week lists etc.)
-# or dispatch off an existing firing; a 6th entry makes the schedules deploy fail.
-crons = ["0 2 * * *", "0 3 * * 1", "0 6 * * 3,5,7", "0 */3 * * *", "0 4 * * *"]
+# ⚠️ Cloudflare allows at most 5 cron triggers per Worker — we have headroom after
+# removing the mention-monitor schedule.
+crons = ["0 2 * * *", "0 3 * * 1", "0 6 * * 3,5,7", "0 4 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Having a [env.preview] block today

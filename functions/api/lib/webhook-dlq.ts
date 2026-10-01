@@ -11,6 +11,7 @@ import { readKvJson, writeKvJson } from './kv'
 import { ulid } from './ulid'
 import { WEBHOOK_DLQ_TTL_SECONDS } from './constants'
 import { validateWebhookTargetUrl } from './webhook-url'
+import { ALERT_THRESHOLDS, alertCritical } from './alerts'
 
 export const DLQ_MAX_RETRY_ATTEMPTS = 10
 
@@ -33,12 +34,24 @@ export function webhookDlqKey(teamId: string): string {
 export async function enqueueWebhookDlq(
   kv: KVNamespace,
   entry: Omit<WebhookDlqEntry, 'id' | 'enqueuedAt'>,
+  alertEnv?: { ALERT_WEBHOOK_URL?: string; SENTRY_DSN?: string; GITHUB_ALERT_TOKEN?: string; GITHUB_ALERT_REPO?: string; ENV?: string; ACTIONS_KV?: KVNamespace; METRICS_KV?: KVNamespace },
 ): Promise<WebhookDlqEntry> {
   const full: WebhookDlqEntry = { ...entry, id: ulid(), enqueuedAt: Date.now() }
   const key = webhookDlqKey(entry.teamId)
   const list = (await readKvJson<WebhookDlqEntry[]>(kv, key)) ?? []
   list.unshift(full)
-  await writeKvJson(kv, key, list.slice(0, 100), { expirationTtl: WEBHOOK_DLQ_TTL_SECONDS })
+  const trimmed = list.slice(0, 100)
+  await writeKvJson(kv, key, trimmed, { expirationTtl: WEBHOOK_DLQ_TTL_SECONDS })
+
+  // Page ops when a team's DLQ crosses the warn threshold (growth signal).
+  if (alertEnv && trimmed.length >= ALERT_THRESHOLDS.webhookDlqWarnSize) {
+    await alertCritical(alertEnv, 'webhook/dlq', 'WebhookDlqGrowth', {
+      traceId: `webhook-dlq-${entry.teamId}`,
+      errorClass: 'WebhookDlqGrowth',
+      details: { size: trimmed.length, teamId: entry.teamId },
+    }).catch(() => undefined)
+  }
+
   return full
 }
 

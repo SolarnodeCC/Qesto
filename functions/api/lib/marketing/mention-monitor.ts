@@ -51,7 +51,12 @@ async function pollPlatform(
   const store = createEncryptedTokenStore(kv, env)
   const service = platform === 'reddit' ? reddit.REDDIT_SERVICE : youtube.YOUTUBE_SERVICE
   const stored = await store.getStoredToken(MARKETING_TEAM_SCOPE, service)
-  if (!stored) throw new Error(`not connected — run the OAuth flow at /${platform}-auth`)
+  // Soft-skip when the platform OAuth is not connected — do not throw (avoids
+  // cron error spam). Caller still records a zero-fetch success for the platform.
+  if (!stored) {
+    console.log(`[${JOB}] ${platform}: skipped (not connected)`)
+    return { fetched: 0, inserted: 0 }
+  }
 
   let accessToken = stored.access_token
   const needsRefresh = stored.expires_at !== undefined && stored.expires_at - nowMs < 7 * 24 * 60 * 60 * 1000

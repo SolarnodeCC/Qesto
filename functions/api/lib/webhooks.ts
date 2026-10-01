@@ -229,7 +229,17 @@ export async function deliverWebhook(
   integrationsKv: KVNamespace,
   metricsEnv?: Pick<
     Env,
-    'METRICS_AE' | 'ACTIONS_KV' | 'ATOMIC_RATE_LIMIT_ENABLED' | 'RL_WEBHOOK' | 'RATE_LIMIT_FAIL_CLOSED'
+    | 'METRICS_AE'
+    | 'ACTIONS_KV'
+    | 'ATOMIC_RATE_LIMIT_ENABLED'
+    | 'RL_WEBHOOK'
+    | 'RATE_LIMIT_FAIL_CLOSED'
+    | 'ALERT_WEBHOOK_URL'
+    | 'SENTRY_DSN'
+    | 'GITHUB_ALERT_TOKEN'
+    | 'GITHUB_ALERT_REPO'
+    | 'ENV'
+    | 'METRICS_KV'
   >,
 ): Promise<void> {
   if (!config.enabled) return
@@ -335,15 +345,19 @@ export async function deliverWebhook(
   // Dead-letter: enqueue in structured DLQ for operator replay (ENTERPRISE-POLISH §7b).
   try {
     const { enqueueWebhookDlq } = await import('./webhook-dlq')
-    await enqueueWebhookDlq(integrationsKv, {
-      webhookId: config.id,
-      teamId: config.teamId,
-      event: payload.event,
-      url: config.url,
-      payload: payload.data,
-      error: `All ${MAX_DELIVERY_ATTEMPTS} delivery attempts failed`,
-      attempts: MAX_DELIVERY_ATTEMPTS,
-    })
+    await enqueueWebhookDlq(
+      integrationsKv,
+      {
+        webhookId: config.id,
+        teamId: config.teamId,
+        event: payload.event,
+        url: config.url,
+        payload: payload.data,
+        error: `All ${MAX_DELIVERY_ATTEMPTS} delivery attempts failed`,
+        attempts: MAX_DELIVERY_ATTEMPTS,
+      },
+      metricsEnv,
+    )
   } catch {
     /* ignore — DLQ write failure must not mask original delivery failure */
   }
