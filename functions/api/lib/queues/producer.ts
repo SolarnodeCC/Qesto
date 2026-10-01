@@ -91,7 +91,7 @@ export type EnqueueResult = 'queued' | 'fallback' | 'dropped'
 
 export type EnqueueOptions = {
   /** When set and the queue binding is missing, run the consumer via waitUntil. */
-  executionCtx?: ExecutionContext
+  executionCtx?: { waitUntil: (promise: Promise<unknown>) => void }
 }
 
 /**

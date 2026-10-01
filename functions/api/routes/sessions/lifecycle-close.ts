@@ -170,9 +170,15 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
       traceId: c.get('trace_id'),
     })
 
-    // Phase 2.1: Async work queues — fire & forget, non-blocking.
-    // Prefer INSIGHTS_QUEUE; producer falls back to executionCtx.waitUntil when unbound.
-    const enqueueOpts = { executionCtx: c.executionCtx }
+    // Prefer INSIGHTS_QUEUE; producer falls back to waitUntil when unbound.
+    // Soft-read executionCtx — Vitest app.request() has none.
+    let executionCtx: { waitUntil: (p: Promise<unknown>) => void } | undefined
+    try {
+      executionCtx = c.executionCtx
+    } catch {
+      executionCtx = undefined
+    }
+    const enqueueOpts = executionCtx ? { executionCtx } : {}
     const enqueuePromises: Promise<void>[] = []
 
     // Insights: precompute AI insights for team-plan users

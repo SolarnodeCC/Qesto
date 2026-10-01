@@ -203,7 +203,7 @@ export async function dispatchAlert(
       reason: errorClass,
       message: result.message,
       traceId,
-      details: ctx.details,
+      ...(ctx.details ? { details: ctx.details } : {}),
     }),
   ])
   return { webhook, sentry, github }

@@ -60,7 +60,7 @@ describe('Alerts — Threshold Detection', () => {
 
 describe('alertFingerprint', () => {
   it('collapses ULIDs so the same route shares a bucket', () => {
-    const a = alertFingerprint('/api/sessions/01HABCDEFGHJKMNPQRSTVWXYZ/close', 'TypeError')
+    const a = alertFingerprint('/api/sessions/01HABCDEFGHJKMNPQRSTVWXYZA/close', 'TypeError')
     const b = alertFingerprint('/api/sessions/01HZZZZZZZZZZZZZZZZZZZZZZZ/close', 'TypeError')
     expect(a).toBe(b)
     expect(a).toContain('/:id')

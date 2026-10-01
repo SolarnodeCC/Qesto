@@ -269,7 +269,7 @@ export function createApp() {
       route,
       errorClass: err instanceof Error ? err.name : 'UnknownError',
       statusCode: status,
-      stack: err instanceof Error ? err.stack : undefined,
+      ...(err instanceof Error && err.stack ? { stack: err.stack } : {}),
     })
 
     // Fire analytics event for 5xx errors only; 4xx client errors are noise.
@@ -280,20 +280,25 @@ export function createApp() {
       })
     }
     // Page ops on unhandled 5xx (no-op when ALERT_WEBHOOK_URL / SENTRY_DSN unset).
+    // Guard executionCtx: Hono throws "This context has no ExecutionContext" in
+    // app.request() unit/integration tests that don't pass a full Worker ctx.
     if (status >= 500) {
-      c.executionCtx.waitUntil(
-        alertCritical(
-          c.env,
+      const page = alertCritical(
+        c.env,
+        route,
+        err instanceof Error ? err.name : 'UnhandledError',
+        {
+          traceId: trace_id,
           route,
-          err instanceof Error ? err.name : 'UnhandledError',
-          {
-            traceId: trace_id,
-            route,
-            errorClass: err instanceof Error ? err.name : 'UnhandledError',
-            details: { status },
-          },
-        ),
+          errorClass: err instanceof Error ? err.name : 'UnhandledError',
+          details: { status },
+        },
       )
+      try {
+        c.executionCtx.waitUntil(page)
+      } catch {
+        void page
+      }
     }
     const sanitized = sanitizeError(err, c.env?.ENV, status)
     const code = status === 401

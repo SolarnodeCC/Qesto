@@ -52,7 +52,7 @@ describe('enqueuePostSessionWork', () => {
 
     const env = {} as Env
     const result = await enqueuePostSessionWork(env, baseMessage, {
-      executionCtx: { waitUntil, passThroughOnException: () => {}, props: {} } as ExecutionContext,
+      executionCtx: { waitUntil },
     })
     expect(result).toBe('fallback')
     expect(waitUntil).toHaveBeenCalledOnce()
