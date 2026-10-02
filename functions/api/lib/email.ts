@@ -1,8 +1,9 @@
-// Email delivery via Resend. In dev (no RESEND_API_KEY), log the magic link
-// to console so developers can sign in without a mailbox.
+// Email delivery via Resend. In dev (no RESEND_API_KEY), log a redacted magic-link
+// hint to console so developers can sign in without a mailbox (Cursor Cloud may
+// scrub the token from terminal capture — seed D1 + callback instead; see AGENTS.md).
 
 import { CircuitBreakers } from './resilience/circuit-breaker'
-import { logEvent } from './log'
+import { logEvent, logExternalFailure } from './log'
 
 export type SendEmailArgs = {
   to: string
@@ -14,10 +15,17 @@ export type SendEmailArgs = {
 
 export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs): Promise<{ delivered: boolean; id?: string }> {
   if (!apiKey) {
-    logEvent({ event: 'log', message: `[email:dev] to=${args.to} subject=${args.subject}\n${args.text}` })
+    // Dev/local fallback when Resend is unset. Keep the magic-link URL so local
+    // sign-in works; redact recipient (PII). Cursor Cloud may still scrub the
+    // 64-hex token from terminal capture — use D1 seed + callback (AGENTS.md).
+    logEvent({
+      event: 'email.dev_fallback',
+      message: `[email:dev] to=[REDACTED] subject=${args.subject}\n${args.text}`,
+    })
     return { delivered: false }
   }
   const from = args.from?.trim() || 'Qesto <noreply@qesto.cc>'
+  const started = Date.now()
 
   return CircuitBreakers.resend.execute<{ delivered: boolean; id?: string }>(
     async (signal) => {
@@ -38,14 +46,38 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
       })
       if (!res.ok) {
         const body = await res.text()
-        throw new Error(`resend ${res.status}: ${body}`)
+        const err = new Error(`resend ${res.status}`)
+        logExternalFailure(err, {
+          traceId: 'email',
+          route: 'email.send',
+          operation: 'resend.emails',
+          provider: 'resend',
+          httpStatus: res.status,
+          duration: Date.now() - started,
+          outcome: 'http_error',
+          details: { body_len: body.length },
+        })
+        throw err
       }
       const json = (await res.json()) as { id?: string }
+      logEvent({
+        event: 'email.sent',
+        provider: 'resend',
+        duration_ms: Date.now() - started,
+        has_id: Boolean(json.id),
+      })
       return json.id ? { delivered: true, id: json.id } : { delivered: true }
     },
     () => {
-      // Resend circuit open — log and return undelivered (caller decides whether to retry later)
-      console.error(JSON.stringify({ event: 'email.circuit_open', to_hash: args.to.length }))
+      // Resend circuit open — caller decides whether to retry later
+      logExternalFailure(new Error('resend_circuit_open'), {
+        traceId: 'email',
+        route: 'email.send',
+        operation: 'resend.circuit',
+        provider: 'resend',
+        duration: Date.now() - started,
+        outcome: 'circuit_open',
+      })
       return { delivered: false }
     },
   )

@@ -13,6 +13,7 @@
  */
 import { z } from 'zod'
 import type { Anonymity, Env, PlanTier } from '../../types'
+import { logExternalFailure } from '../log'
 import {
   assertSanitizedAIGatewayRequest,
   sanitizeAIGatewayRequest,
@@ -137,7 +138,7 @@ export async function runThroughAIGateway(
     if (!response.ok) {
       // Gateway error: fall back to direct env.AI
       if (response.status >= 500) {
-        return fallbackToDirect(env, model, sanitizedInput, startMs)
+        return fallbackToDirect(env, model, sanitizedInput, startMs, `gateway_http_${response.status}`)
       }
       // Client error (bad request): propagate
       throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
@@ -146,7 +147,7 @@ export async function runThroughAIGateway(
     const parsed = AIGatewayRawResponseSchema.safeParse(await response.json())
     if (!parsed.success) {
       // Gateway returned an unexpected body shape — treat like a gateway fault.
-      return fallbackToDirect(env, model, sanitizedInput, startMs)
+      return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_invalid_body')
     }
     const data = parsed.data
 
@@ -162,9 +163,9 @@ export async function runThroughAIGateway(
   } catch (err) {
     // Network error, timeout, or Gateway down: fall back to direct env.AI
     if (err instanceof Error && err.name === 'AbortError') {
-      return fallbackToDirect(env, model, sanitizedInput, startMs)
+      return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_timeout')
     }
-    return fallbackToDirect(env, model, sanitizedInput, startMs)
+    return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_network')
   }
 }
 
@@ -251,7 +252,17 @@ async function fallbackToDirect(
   model: string,
   input: AIGatewayRequest,
   startMs: number,
+  reason: string,
 ): Promise<AIGatewayResponse> {
+  logExternalFailure(new Error(`ai_gateway_fallback:${reason}`), {
+    traceId: 'ai-gateway',
+    route: 'ai.gateway',
+    operation: 'ai.fallback_direct',
+    provider: 'workers_ai_gateway',
+    duration: Date.now() - startMs,
+    outcome: 'fallback_direct',
+    details: { reason, model },
+  })
   const result = await env.AI.run(model, input)
   return {
     result,

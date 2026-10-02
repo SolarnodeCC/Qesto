@@ -7,9 +7,11 @@
  * handlers depend on a typed client rather than embedding HTTP plumbing.
  */
 import { CircuitBreakers } from './resilience/circuit-breaker'
+import { logExternalFailure } from './log'
 
 export function makeStripeClient(secretKey: string) {
   async function get<T>(pathWithQuery: string): Promise<T> {
+    const started = Date.now()
     return CircuitBreakers.stripe.execute(
       async (signal) => {
         const res = await fetch(`https://api.stripe.com/v1${pathWithQuery}`, {
@@ -18,19 +20,38 @@ export function makeStripeClient(secretKey: string) {
           signal,
         })
         if (!res.ok) {
-          const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
-            error?: { message?: string }
-          }
-          throw new Error(err?.error?.message ?? 'Stripe API error')
+          await res.json().catch(() => ({ error: { message: 'Stripe error' } }))
+          const err = new Error('Stripe API error')
+          logExternalFailure(err, {
+            traceId: 'stripe',
+            route: 'stripe.client',
+            operation: 'stripe.get',
+            provider: 'stripe',
+            httpStatus: res.status,
+            duration: Date.now() - started,
+            outcome: 'http_error',
+          })
+          throw err
         }
         return res.json() as Promise<T>
       },
-      () => { throw new Error('Stripe circuit open') },
+      () => {
+        logExternalFailure(new Error('Stripe circuit open'), {
+          traceId: 'stripe',
+          route: 'stripe.client',
+          operation: 'stripe.get',
+          provider: 'stripe',
+          duration: Date.now() - started,
+          outcome: 'circuit_open',
+        })
+        throw new Error('Stripe circuit open')
+      },
     )
   }
 
   async function post<T>(path: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams(body).toString()
+    const started = Date.now()
     return CircuitBreakers.stripe.execute(
       async (signal) => {
         const res = await fetch(`https://api.stripe.com/v1${path}`, {
@@ -43,14 +64,32 @@ export function makeStripeClient(secretKey: string) {
           signal,
         })
         if (!res.ok) {
-          const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
-            error?: { message?: string }
-          }
-          throw new Error(err?.error?.message ?? 'Stripe API error')
+          await res.json().catch(() => ({ error: { message: 'Stripe error' } }))
+          const err = new Error('Stripe API error')
+          logExternalFailure(err, {
+            traceId: 'stripe',
+            route: 'stripe.client',
+            operation: 'stripe.post',
+            provider: 'stripe',
+            httpStatus: res.status,
+            duration: Date.now() - started,
+            outcome: 'http_error',
+          })
+          throw err
         }
         return res.json() as Promise<T>
       },
-      () => { throw new Error('Stripe circuit open') },
+      () => {
+        logExternalFailure(new Error('Stripe circuit open'), {
+          traceId: 'stripe',
+          route: 'stripe.client',
+          operation: 'stripe.post',
+          provider: 'stripe',
+          duration: Date.now() - started,
+          outcome: 'circuit_open',
+        })
+        throw new Error('Stripe circuit open')
+      },
     )
   }
   return {

@@ -70,6 +70,15 @@ export type Env = {
   SIGNUP_BLOCKED_EMAIL_DOMAINS_EXTRA?: string
   /** Checkout URL for paid plan upgrades. */
   CHECKOUT_URL?: string
+  /**
+   * #942 — opt-in Stripe payment surfaces (checkout/portal/invoices/subscription/webhook).
+   * Default off: plan catalog + `effectivePlan` stay; payment routes return 503 `stripe_disabled`.
+   */
+  STRIPE_PAYMENTS_ENABLED?: string
+  /** #942 — opt-in Reddit OAuth + mention poll + publish. Default off. */
+  REDDIT_INTEGRATION_ENABLED?: string
+  /** #942 — opt-in YouTube OAuth + mention poll + publish. Default off. */
+  YOUTUBE_INTEGRATION_ENABLED?: string
   /** Public Stripe price IDs; safe to expose for checkout/price reconciliation. */
   STRIPE_STARTER_MONTHLY_PRICE_ID?: string
   STRIPE_STARTER_ANNUAL_PRICE_ID?: string

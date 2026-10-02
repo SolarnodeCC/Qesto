@@ -19,7 +19,7 @@ import { CaptionsHandler, CaptionBroadcastPayloadSchema } from './lib/session-ro
 import { decodeRequestBody } from './lib/boundary-decode'
 import { ReactionsHandler } from './lib/session-room-reactions-handler'
 import { XrAvatarHandler } from './lib/session-room-xr-handler'
-import { logEvent } from './lib/log'
+import { logBestEffort, logEvent } from './lib/log'
 import { K_META, K_VOTERS } from './lib/session-room-storage-keys'
 import {
   type Meta,
@@ -352,7 +352,28 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
         errorClass: err instanceof Error ? err.name : 'UnknownError',
         errorMessage: err instanceof Error ? err.message : String(err),
       })
-      const meta = await this.ctx.storage.get<Meta>(K_META).catch(() => null)
+      const meta = await this.ctx.storage.get<Meta>(K_META).catch((metaErr) => {
+        // Best-effort: fault path still reports AE event without session ids.
+        logBestEffort(metaErr, {
+          traceId: 'session-room',
+          route: 'SessionRoom.webSocketMessage',
+          operation: 'do.storage.get_meta',
+          errorClass: 'DoStorageError',
+          reason: 'meta_read_after_ws_fault_non_blocking',
+        })
+        return null
+      })
+      if (meta?.sessionId) {
+        logBestEffort(err, {
+          traceId: 'session-room',
+          route: 'SessionRoom.webSocketMessage',
+          operation: 'do.ws_message',
+          errorClass: err instanceof Error ? err.name : 'UnknownError',
+          sessionId: meta.sessionId,
+          teamId: meta.teamId ?? undefined,
+          reason: 'ws_message_handler_fault',
+        })
+      }
       writeEvent(this.env.METRICS_AE, {
         name: 'do.storage_fault',
         sessionId: meta?.sessionId,
@@ -361,8 +382,16 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       })
       try {
         ws.send(errorMessage('internal', 'Message processing failed'))
-      } catch {
-        /* socket already closed */
+      } catch (sendErr) {
+        // Socket already closed — intentional ignore.
+        logBestEffort(sendErr, {
+          traceId: 'session-room',
+          route: 'SessionRoom.webSocketMessage',
+          operation: 'do.ws_send',
+          errorClass: 'WebSocketSendError',
+          reason: 'already_closed',
+          sessionId: meta?.sessionId,
+        })
       }
     }
   }
@@ -390,11 +419,25 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     await broadcastParticipants(this)
   }
 
-  async webSocketError(ws: WebSocket, _err: unknown): Promise<void> {
+  async webSocketError(ws: WebSocket, err: unknown): Promise<void> {
+    logBestEffort(err, {
+      traceId: 'session-room',
+      route: 'SessionRoom.webSocketError',
+      operation: 'do.ws_error',
+      errorClass: err instanceof Error ? err.name : 'WebSocketError',
+      reason: 'ws_transport_error',
+    })
     try {
       ws.close(CLOSE_POLICY_VIOLATION, 'error')
-    } catch {
-      /* ignore */
+    } catch (closeErr) {
+      // Socket already closed — intentional ignore.
+      logBestEffort(closeErr, {
+        traceId: 'session-room',
+        route: 'SessionRoom.webSocketError',
+        operation: 'do.ws_close',
+        errorClass: 'WebSocketCloseError',
+        reason: 'already_closed',
+      })
     }
   }
 
@@ -417,9 +460,16 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     if (this.state.flushScheduled) return
     this.state.flushScheduled = true
     const flushAt = this.state.lastFlushAt + FLUSH_INTERVAL_MS
-    void this.scheduleAlarm(flushAt).catch(() => {
+    void this.scheduleAlarm(flushAt).catch((err) => {
       // Alarm scheduling failed; reset flag so next vote attempts to reschedule.
       this.state.flushScheduled = false
+      logBestEffort(err, {
+        traceId: 'session-room',
+        route: 'SessionRoom.scheduleFlush',
+        operation: 'do.setAlarm',
+        errorClass: 'DoAlarmError',
+        reason: 'flush_alarm_schedule_failed',
+      })
     })
   }
 

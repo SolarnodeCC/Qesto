@@ -1,3 +1,4 @@
+import { logBestEffort } from '../../lib/log'
 // Platformbeheer — Module 1: Dashboard overview.
 //
 // One endpoint, one job: answer "is alles oké?" in under a second. Everything a
@@ -271,7 +272,10 @@ export function mountPlatformOverviewRoutes(
         CACHE_KEY,
         { data, expires_at: Date.now() + CACHE_TTL_SECONDS * 1000 },
         { expirationTtl: CACHE_TTL_SECONDS + 60 },
-      ).catch(() => {})
+      ).catch((err) => {
+        // Best-effort metrics/ops cache write — must not fail the request.
+        logBestEffort(err, { traceId: 'admin', route: 'admin.platform.overview_cache', operation: 'kv.put', errorClass: 'KvBestEffortError', reason: 'cache_write_non_blocking' })
+      })
     }
 
     return c.json({ ok: true, data, trace_id }, 200)

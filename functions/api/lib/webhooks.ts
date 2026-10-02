@@ -24,6 +24,7 @@ import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './protocol-schemas'
 import { validateWebhookTargetUrl } from './webhook-url'
+import { logBestEffort, logExternalFailure } from './log'
 
 const WebhookTeamIndexSchema = z.array(z.string())
 
@@ -142,7 +143,16 @@ async function readDeliveryLog(kv: KVNamespace, webhookId: string): Promise<Deli
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? (parsed as DeliveryEntry[]) : []
-  } catch {
+  } catch (err) {
+    // Best-effort: corrupt/missing delivery log must not block delivery.
+    logBestEffort(err, {
+      traceId: 'webhook',
+      route: 'webhooks.readDeliveryLog',
+      operation: 'kv.get',
+      errorClass: 'WebhookLogError',
+      reason: 'delivery_log_read_non_blocking',
+      details: { webhookId },
+    })
     return []
   }
 }
@@ -305,8 +315,16 @@ export async function deliverWebhook(
     // Best-effort log write; ignore failure to avoid masking original error.
     try {
       await appendDeliveryLog(integrationsKv, config.id, entry)
-    } catch {
-      /* ignore */
+    } catch (logErr) {
+      logBestEffort(logErr, {
+        traceId: 'webhook',
+        route: 'webhooks.deliver',
+        operation: 'kv.append_delivery_log',
+        errorClass: 'WebhookLogError',
+        teamId: config.teamId,
+        reason: 'delivery_log_write_non_blocking',
+        details: { webhookId: config.id, attempt },
+      })
     }
 
     writeEvent(metricsEnv?.METRICS_AE, {
@@ -358,14 +376,35 @@ export async function deliverWebhook(
       },
       metricsEnv,
     )
-  } catch {
-    /* ignore — DLQ write failure must not mask original delivery failure */
+  } catch (dlqErr) {
+    // Best-effort: DLQ write failure must not mask original delivery failure.
+    logBestEffort(dlqErr, {
+      traceId: 'webhook',
+      route: 'webhooks.deliver',
+      operation: 'webhook.dlq_enqueue',
+      errorClass: 'WebhookDlqError',
+      teamId: config.teamId,
+      reason: 'dlq_write_non_blocking',
+      details: { webhookId: config.id, event: payload.event },
+    })
   }
 
   writeEvent(metricsEnv?.METRICS_AE, {
     name: 'webhook.failed',
     teamId: config.teamId,
     detail: config.id,
+  })
+  logExternalFailure(new Error(`All ${MAX_DELIVERY_ATTEMPTS} delivery attempts failed`), {
+    traceId: 'webhook',
+    route: 'webhooks.deliver',
+    operation: 'webhook.exhausted',
+    provider: 'outbound_webhook',
+    teamId: config.teamId,
+    httpStatus: null,
+    attempt: MAX_DELIVERY_ATTEMPTS,
+    retrying: false,
+    outcome: 'exhausted',
+    details: { webhookId: config.id, event: payload.event },
   })
 }
 

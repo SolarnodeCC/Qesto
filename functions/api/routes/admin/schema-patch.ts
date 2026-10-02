@@ -1,3 +1,4 @@
+import { ignoreSchemaPatchError } from '../../lib/log'
 import type { Env } from '../../types'
 
 let _sprint19SchemaPatchDone = false
@@ -5,8 +6,8 @@ let _sprint19SchemaPatchDone = false
 export async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
   if (_sprint19SchemaPatchDone) return
   _sprint19SchemaPatchDone = true
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.schema-patch'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.schema-patch'))
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS sprint19_events (
       id TEXT PRIMARY KEY,
@@ -21,9 +22,9 @@ export async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void>
       created_at INTEGER NOT NULL,
       trace_id TEXT NOT NULL
     )`,
-  ).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+  ).run().catch((err) => ignoreSchemaPatchError(err, 'admin.schema-patch'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.schema-patch'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.schema-patch'))
 }
 
 export function metricsKv(env: Env): KVNamespace | undefined {

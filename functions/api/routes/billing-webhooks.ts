@@ -23,6 +23,8 @@ import {
   isStripeWebhookEventProcessed,
   recordStripeWebhookEvent,
 } from '../repositories/billingRepository'
+import { stripePaymentsEnabled, STRIPE_DISABLED_CODE } from '../lib/integrations-policy'
+import { logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 import * as shared from './billing-shared'
@@ -32,6 +34,10 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
   // POST /api/billing/webhook/stripe — Handle inbound Stripe webhook events
   // Signature verification + idempotency + event routing
   parent.post('/api/billing/webhook/stripe', async (c) => {
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/billing/webhook/stripe', trace_id: c.get('trace_id') })
+      return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')
+    }
     const traceId = c.get('trace_id')
     if (!c.env.STRIPE_WEBHOOK_SECRET) {
       return errorResponse(c, 503, 'misconfigured','Stripe webhook not configured')

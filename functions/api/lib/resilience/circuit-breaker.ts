@@ -1,3 +1,4 @@
+import { logBestEffort } from '../log'
 /**
  * Two-tier circuit breaker for external dependencies.
  *
@@ -126,8 +127,16 @@ export class CircuitBreaker {
     }
     // Clear KV if using shared state
     if (this.kv && this.config.strategy === 'shared') {
-      this.kv.delete(this.kvKey).catch(() => {
-        // Ignore KV delete errors
+      // Best-effort: shared breaker state is advisory; local state already reset.
+      this.kv.delete(this.kvKey).catch((err) => {
+        logBestEffort(err, {
+          traceId: 'circuit-breaker',
+          route: 'circuit-breaker.reset',
+          operation: 'kv.delete',
+          errorClass: 'KvBestEffortError',
+          reason: 'breaker_kv_delete_non_blocking',
+          details: { key: this.kvKey },
+        })
       })
     }
   }
@@ -140,7 +149,17 @@ export class CircuitBreaker {
     if (this.state.status === 'half_open') {
       this.state.status = 'closed'
       if (this.kv && this.config.strategy === 'shared') {
-        this.kv.delete(this.kvKey).catch(() => {})
+        // Best-effort shared-state clear after half-open success.
+        this.kv.delete(this.kvKey).catch((err) => {
+          logBestEffort(err, {
+            traceId: 'circuit-breaker',
+            route: 'circuit-breaker.recordSuccess',
+            operation: 'kv.delete',
+            errorClass: 'KvBestEffortError',
+            reason: 'breaker_kv_delete_non_blocking',
+            details: { key: this.kvKey },
+          })
+        })
       }
     }
   }
@@ -160,10 +179,18 @@ export class CircuitBreaker {
           openedAt: this.state.openedAt,
           failureCount: this.state.failureCount,
         }
+        // Best-effort: open-state replication to KV must not throw into callers.
         this.kv.put(this.kvKey, JSON.stringify(kvData), {
           expirationTtl: Math.ceil(this.config.openDurationMs / 1000),
-        }).catch(() => {
-          // Ignore KV write errors
+        }).catch((err) => {
+          logBestEffort(err, {
+            traceId: 'circuit-breaker',
+            route: 'circuit-breaker.recordFailure',
+            operation: 'kv.put',
+            errorClass: 'KvBestEffortError',
+            reason: 'breaker_kv_put_non_blocking',
+            details: { key: this.kvKey },
+          })
         })
       }
 

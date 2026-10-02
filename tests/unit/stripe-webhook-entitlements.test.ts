@@ -107,6 +107,7 @@ describe('Stripe webhook entitlements (#585)', () => {
     })
     mountStripeWebhookRoutes(app)
     env = {
+      STRIPE_PAYMENTS_ENABLED: 'true',
       STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET,
       STRIPE_STARTER_MONTHLY_PRICE_ID: 'price_starter_m',
       STRIPE_STARTER_ANNUAL_PRICE_ID: 'price_starter_a',
