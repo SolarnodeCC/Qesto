@@ -17,12 +17,18 @@ import { acquireLock, releaseLock, recordLockRun } from './engine-lock'
 import { logCronRun } from './cron-log'
 import { buildLinkedInPrompt, buildYouTubePrompt, parseYouTubeResponse } from './tone'
 import { clampPost } from '../linkedin'
+import { youtubeIntegrationEnabled } from '../integrations-policy'
+import { logEvent } from '../log'
 
 const JOB = 'content-engine'
 const LOCK_TTL_MS = 30 * 60 * 1000
 
 const LINKEDIN_MODEL = '@cf/meta/llama-3.1-8b-instruct'
 const YOUTUBE_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+
+export type ContentEngineEnv = {
+  YOUTUBE_INTEGRATION_ENABLED?: string
+}
 
 interface CalendarRow {
   id: string
@@ -44,6 +50,7 @@ export async function runContentEngine(
   ai: Ai,
   kv: KVNamespace,
   nowMs: number = Date.now(),
+  policyEnv: ContentEngineEnv = {},
 ): Promise<{ generated: number; skipped: number; failed: number }> {
   const got = await acquireLock(kv, JOB, LOCK_TTL_MS)
   if (!got) {
@@ -55,6 +62,7 @@ export async function runContentEngine(
   let skipped = 0
   let failed = 0
   const errors: string[] = []
+  const youtubeOn = youtubeIntegrationEnabled(policyEnv)
 
   try {
     const due = await db
@@ -68,6 +76,16 @@ export async function runContentEngine(
 
     for (const row of due.results ?? []) {
       try {
+        if (row.platform === 'youtube' && !youtubeOn) {
+          // #942 — YouTube drafts disabled; leave calendar slot planned for re-enable.
+          logEvent({
+            event: 'content_engine.skipped',
+            platform: 'youtube',
+            reason: 'integration_disabled',
+            calendar_id: row.id,
+          })
+          continue
+        }
         if (row.platform === 'linkedin') {
           const { system, user } = buildLinkedInPrompt(row.topic, 'en')
           const result = (await runAI(envWithAI(ai), LINKEDIN_MODEL, {

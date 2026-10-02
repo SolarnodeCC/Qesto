@@ -177,7 +177,7 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
   if (event.cron === '0 6 * * 3,5,7') {
     const traceId = `content-engine-${Date.now()}`
     try {
-      const result = await runContentEngine(env.DB, env.AI, env.MARKETING_KV)
+      const result = await runContentEngine(env.DB, env.AI, env.MARKETING_KV, Date.now(), env)
       console.log(`[content-engine] OK — ${JSON.stringify(result)}`)
     } catch (err) {
       safeLogContext(err, {

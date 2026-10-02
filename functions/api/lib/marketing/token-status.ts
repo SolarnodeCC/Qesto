@@ -10,6 +10,8 @@ import { LINKEDIN_SERVICE, REFRESH_WINDOW_MS, refreshAccessToken as refreshLinke
 import * as reddit from './reddit'
 import * as youtube from './youtube'
 import { logCronRun } from './cron-log'
+import { redditIntegrationEnabled, youtubeIntegrationEnabled } from '../integrations-policy'
+import { logBestEffort, logEvent } from '../log'
 
 const JOB = 'oauth-token-refresh'
 
@@ -22,6 +24,8 @@ export interface TokenRefreshEnv {
   YOUTUBE_CLIENT_SECRET?: string
   OAUTH_TOKEN_MEK?: string
   ENV?: string
+  REDDIT_INTEGRATION_ENABLED?: string
+  YOUTUBE_INTEGRATION_ENABLED?: string
 }
 
 type Platform = 'linkedin' | 'reddit' | 'youtube'
@@ -67,6 +71,16 @@ export async function refreshAllTokens(
   ]
 
   for (const { platform, service } of platforms) {
+    if (platform === 'reddit' && !redditIntegrationEnabled(env)) {
+      logEvent({ event: 'oauth_token_refresh.skipped', platform: 'reddit', reason: 'integration_disabled' })
+      summaries.push('reddit: skipped (disabled)')
+      continue
+    }
+    if (platform === 'youtube' && !youtubeIntegrationEnabled(env)) {
+      logEvent({ event: 'oauth_token_refresh.skipped', platform: 'youtube', reason: 'integration_disabled' })
+      summaries.push('youtube: skipped (disabled)')
+      continue
+    }
     try {
       const stored = await store.getStoredToken(MARKETING_TEAM_SCOPE, service)
       if (!stored) {
@@ -118,7 +132,17 @@ export async function refreshAllTokens(
       anyFailed = true
       const msg = errMsg(err)
       summaries.push(`${platform}: ERROR ${msg}`)
-      await upsertStatus(db, platform, true, null, null, msg.slice(0, 500), nowMs).catch(() => undefined)
+      await upsertStatus(db, platform, true, null, null, msg.slice(0, 500), nowMs).catch((statusErr) => {
+        // Best-effort status write after refresh failure.
+        logBestEffort(statusErr, {
+          traceId: 'oauth-token-refresh',
+          route: 'cron.oauth-token-refresh',
+          operation: 'd1.oauth_token_status',
+          errorClass: 'D1BestEffortError',
+          reason: 'status_upsert_non_blocking',
+          details: { platform },
+        })
+      })
     }
   }
 
