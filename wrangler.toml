@@ -122,6 +122,12 @@ RATE_LIMIT_FAIL_CLOSED = "true"
 FREE_ACCESS_ALL = "false"
 FREE_ACCESS_UNTIL = "2026-12-12T23:59:59Z"
 FREE_ACCESS_TIER = "team"
+# #942 — Stripe Checkout/portal/webhooks/Connect payouts OFF by default.
+# Plan catalog + effectivePlan entitlements stay; flip to "true" to re-enable payments.
+STRIPE_PAYMENTS_ENABLED = "false"
+# #942 — Reddit / YouTube marketing OAuth + mention poll OFF by default.
+REDDIT_INTEGRATION_ENABLED = "false"
+YOUTUBE_INTEGRATION_ENABLED = "false"
 # Monthly AI insight runs per user while the window is open ("0" disables the
 # cap). Inert outside the window — team stays unlimited as sold.
 PROMO_AI_MONTHLY_CAP = "25"

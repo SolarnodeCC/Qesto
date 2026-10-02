@@ -33,6 +33,8 @@ import {
 import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
+import { stripePaymentsEnabled, STRIPE_DISABLED_CODE } from '../lib/integrations-policy'
+import { logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -60,6 +62,11 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
 
     const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
+
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/marketplace/connect/accounts', trace_id: c.get('trace_id') })
+      return fail(c, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment', 503)
+    }
 
     if (!c.env.STRIPE_SECRET_KEY) {
       return fail(c, 'misconfigured', 'Stripe Connect not configured', 503)
@@ -162,6 +169,10 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
     }
     if (!account.payoutsEnabled) {
       return fail(c, 'payouts_disabled', 'Partner account is not cleared for payouts yet', 409)
+    }
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/marketplace/connect/payouts', trace_id: c.get('trace_id') })
+      return fail(c, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment', 503)
     }
     if (!c.env.STRIPE_SECRET_KEY) {
       return fail(c, 'misconfigured', 'Stripe Connect not configured', 503)

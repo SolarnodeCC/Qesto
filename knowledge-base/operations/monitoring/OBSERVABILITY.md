@@ -26,6 +26,7 @@ _Last verified: 2026-04-06 (UTC)_
 - Admin and billing flows include dedicated operational routes.
 - API middleware emits request-level `[access]` structured logs and correlation headers (`X-Trace-Id`).
 - **Operator paging:** `functions/api/lib/alerts.ts` (`checkAlert` / `alertCritical` / `dispatchAlert`) — webhook, optional Sentry, optional GitHub `auto-alert` issues. Setup: [ALERTING_SETUP.md](./ALERTING_SETUP.md).
+- **Debug guide:** symptom → Log Explorer / AE / alerts: [DEBUG_GUIDE.md](./DEBUG_GUIDE.md).
 
 ## Maturity assessment
 - **Implemented foundation**: structured logging primitives + instrumentation hooks + optional multi-channel paging.

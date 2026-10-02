@@ -2,6 +2,7 @@ import { validateData, PermissionSchema, PermissionArraySchema } from './protoco
 
 // Derived from PermissionSchema — single source of truth, no manual drift possible
 import { z } from 'zod'
+import { ignoreSchemaPatchError } from './log'
 export type Permission = z.infer<typeof PermissionSchema>
 
 const ALL_TEAM_PERMISSIONS: Permission[] = [
@@ -78,8 +79,8 @@ export async function patchAuthzSchemaIfNeeded(db: D1Database): Promise<void> {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )`,
-  ).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_custom_roles_team ON custom_roles(team_id)`).run().catch(() => {})
+  ).run().catch((err) => ignoreSchemaPatchError(err, 'authz.patchAuthzSchemaIfNeeded'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_custom_roles_team ON custom_roles(team_id)`).run().catch((err) => ignoreSchemaPatchError(err, 'authz.patchAuthzSchemaIfNeeded'))
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS team_role_assignments (
       id TEXT PRIMARY KEY,
@@ -90,8 +91,8 @@ export async function patchAuthzSchemaIfNeeded(db: D1Database): Promise<void> {
       assigned_at INTEGER NOT NULL,
       UNIQUE(team_id, user_id, role_id)
     )`,
-  ).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_team_role_assignments_user_team ON team_role_assignments(user_id, team_id)`).run().catch(() => {})
+  ).run().catch((err) => ignoreSchemaPatchError(err, 'authz.patchAuthzSchemaIfNeeded'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_team_role_assignments_user_team ON team_role_assignments(user_id, team_id)`).run().catch((err) => ignoreSchemaPatchError(err, 'authz.patchAuthzSchemaIfNeeded'))
 }
 
 export async function customPermissionsForUser(

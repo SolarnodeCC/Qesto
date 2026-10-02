@@ -33,6 +33,8 @@ import { promoInsightsCap } from '../lib/promo-ai-quota'
 import {
   countInsightsThisMonth,
 } from '../repositories/billingRepository'
+import { stripePaymentsEnabled, STRIPE_DISABLED_CODE } from '../lib/integrations-policy'
+import { logBestEffort, logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 import * as shared from './billing-shared'
@@ -77,8 +79,15 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     let insightsUsedThisMonth = 0
     try {
       insightsUsedThisMonth = await countInsightsThisMonth(c.env.DB, userId, monthStart)
-    } catch {
-      // audit_events table may not exist in older deploys
+    } catch (err) {
+      // Best-effort: audit_events table may not exist in older deploys.
+      logBestEffort(err, {
+        traceId: c.get('trace_id') ?? 'billing',
+        route: '/api/plans/:userId/usage',
+        operation: 'd1.count_insights',
+        errorClass: 'D1BestEffortError',
+        reason: 'insights_count_non_blocking',
+      })
     }
 
     // Calculate reset date (first day of next month)
@@ -114,6 +123,10 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // POST /api/billing/portal — create a Stripe billing portal session
   // Returns { url } for the frontend to redirect to.
   app.post('/billing/portal', authMiddleware, async (c) => {
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/billing/portal', trace_id: c.get('trace_id') })
+      return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')
+    }
     const user = c.get('user')
 
     if (!c.env.STRIPE_SECRET_KEY) {
@@ -139,6 +152,10 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
   // GET /api/billing/invoices — list Stripe invoices for the authenticated user.
   app.get('/billing/invoices', authMiddleware, async (c) => {
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/billing/invoices', trace_id: c.get('trace_id') })
+      return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')
+    }
     const user = c.get('user')
     if (!c.env.STRIPE_SECRET_KEY) {
       return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
@@ -155,6 +172,10 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
   // POST /api/billing/subscription — upgrade/downgrade/cancel active subscription.
   app.post('/billing/subscription', authMiddleware, async (c) => {
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/billing/subscription', trace_id: c.get('trace_id') })
+      return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')
+    }
     const user = c.get('user')
     if (!c.env.STRIPE_SECRET_KEY) {
       return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
@@ -183,6 +204,10 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // ENTERPRISE-POLISH s8b: supports interval=monthly|annual for annual billing toggle.
   // Body: { plan: PlanTier, interval: 'monthly' | 'annual', seat_count?: number }
   app.post('/billing/checkout', authMiddleware, async (c) => {
+    if (!stripePaymentsEnabled(c.env)) {
+      logEvent({ event: 'stripe.disabled', route: '/api/billing/checkout', trace_id: c.get('trace_id') })
+      return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')
+    }
     const user = c.get('user')
     const traceId = c.get('trace_id')
     if (!c.env.STRIPE_SECRET_KEY) {

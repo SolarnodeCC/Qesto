@@ -19,6 +19,8 @@ import * as youtube from './youtube'
 import type { YouTubeMetadata } from './tone'
 import { z } from 'zod'
 import { decodeKvJson } from '../boundary-decode'
+import { youtubeIntegrationEnabled } from '../integrations-policy'
+import { logExternalFailure } from '../log'
 
 // Validate the stored YouTube metadata JSON at the boundary (HLT-031, #686)
 // instead of `JSON.parse(row.metadata) as YouTubeMetadata`.
@@ -35,6 +37,7 @@ export interface PublisherEnv {
   YOUTUBE_CLIENT_SECRET?: string
   OAUTH_TOKEN_MEK?: string
   ENV?: string
+  YOUTUBE_INTEGRATION_ENABLED?: string
   /** Non-secret org URN (linkedin-auth.ts writes it here, NOT to the encrypted token kv). */
   LINKEDIN_KV?: KVNamespace
 }
@@ -126,12 +129,25 @@ export async function publishContentItem(
       return { ok: true, platformPostId: `linkedin:published:${nowMs}` }
     } catch (err) {
       const reason = errMsg(err)
+      logExternalFailure(err, {
+        traceId: 'marketing-publisher',
+        route: 'marketing.publish',
+        operation: 'linkedin.publish',
+        provider: 'linkedin',
+        outcome: 'publish_failed',
+        details: { contentItemId: row.id },
+      })
       await markFailed(db, row.id, reason, nowMs)
       return { ok: false, reason }
     }
   }
 
   // YouTube
+  if (!youtubeIntegrationEnabled(env)) {
+    const reason = 'youtube_disabled'
+    await markFailed(db, row.id, reason, nowMs)
+    return { ok: false, reason }
+  }
   if (!row.youtube_video_id) {
     const reason = 'youtube_video_id is required — paste the uploaded video ID before publishing'
     await markFailed(db, row.id, reason, nowMs)
@@ -166,6 +182,14 @@ export async function publishContentItem(
     return { ok: true, platformPostId: row.youtube_video_id }
   } catch (err) {
     const reason = errMsg(err)
+    logExternalFailure(err, {
+      traceId: 'marketing-publisher',
+      route: 'marketing.publish',
+      operation: 'youtube.publish',
+      provider: 'youtube',
+      outcome: 'publish_failed',
+      details: { contentItemId: row.id },
+    })
     await markFailed(db, row.id, reason, nowMs)
     return { ok: false, reason }
   }

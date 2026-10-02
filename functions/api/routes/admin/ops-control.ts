@@ -1,3 +1,4 @@
+import { logBestEffort } from '../../lib/log'
 // Platformbeheer — Module 4: OPS (operational control + incident management).
 //
 // Read views over operational state + audited operator actions. Destructive
@@ -245,7 +246,10 @@ export function mountOpsControlRoutes(
     if ('error' in validated) return validated.error
     const kv = opsKv(c.env)
     const now = Date.now()
-    if (kv) await writeKvJson(kv, 'ops:backup:restore_requested', { requested_at: now, by: c.get('user')?.sub ?? null }).catch(() => {})
+    if (kv) await writeKvJson(kv, 'ops:backup:restore_requested', { requested_at: now, by: c.get('user')?.sub ?? null }).catch((err) => {
+        // Best-effort metrics/ops cache write — must not fail the request.
+        logBestEffort(err, { traceId: 'admin', route: 'admin.ops.backup_restore_flag', operation: 'kv.put', errorClass: 'KvBestEffortError', reason: 'cache_write_non_blocking' })
+      })
     await recordAuditEvent(c, { action: 'ops.backup_restore', subject_type: 'backup', subject_id: 'd1-restore', after_snapshot: { requested_at: now }, trace_id })
     return c.json({ ok: true, data: { restore_requested_at: now }, trace_id }, 200)
   })

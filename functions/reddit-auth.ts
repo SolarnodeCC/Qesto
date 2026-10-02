@@ -16,6 +16,8 @@ import type { Env } from './api/types'
 import { createEncryptedTokenStore } from './api/lib/integrations/token-store'
 import { MARKETING_TEAM_SCOPE } from './api/lib/marketing/constants'
 import { buildAuthorizeUrl, exchangeAuthorizationCode, oauthStateKey, REDDIT_SERVICE } from './api/lib/marketing/reddit'
+import { redditIntegrationEnabled } from './api/lib/integrations-policy'
+import { logEvent, safeLogContext } from './api/lib/log'
 
 function html(body: string, status = 200): Response {
   const doc = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
@@ -35,6 +37,10 @@ function randomNonce(): string {
 
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { env, request } = context
+  if (!redditIntegrationEnabled(env)) {
+    logEvent({ event: 'reddit.disabled', route: '/reddit-auth' })
+    return html(`<h1 class="err">Reddit integration disabled</h1><p>This deployment has Reddit OAuth turned off (issue #942).</p>`, 410)
+  }
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
   const state = url.searchParams.get('state')
@@ -81,6 +87,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 <p>Qesto can now read Reddit mentions. The Mention Monitor polls every 3 hours.</p>
 <p>Access &amp; refresh tokens are stored encrypted. You can close this page.</p>`)
   } catch (err) {
+    safeLogContext(err, {
+      traceId: 'reddit-auth',
+      route: '/reddit-auth',
+      errorClass: err instanceof Error ? err.name : 'RedditOAuthError',
+      statusCode: 502,
+      operation: 'reddit.token_exchange',
+    })
     const msg = err instanceof Error ? err.message : 'unknown error'
     return html(`<h1 class="err">Token exchange failed</h1><p><code>${escapeHtml(msg)}</code></p><p><a class="btn" href="/reddit-auth">Try again</a></p>`, 502)
   }

@@ -1,3 +1,4 @@
+import { logBestEffort } from '../../lib/log'
 // Platformbeheer — Module 2: Realtime platform observability.
 //
 // Diagnostic, near-realtime read APIs over Cloudflare-native data only
@@ -283,7 +284,10 @@ export function mountObservabilityRoutes(
         cacheKey,
         { data: snapshot, expires_at: Date.now() + SNAPSHOT_CACHE_TTL_SECONDS * 1000 },
         { expirationTtl: SNAPSHOT_CACHE_TTL_SECONDS + 30 },
-      ).catch(() => {})
+      ).catch((err) => {
+        // Best-effort metrics/ops cache write — must not fail the request.
+        logBestEffort(err, { traceId: 'admin', route: 'admin.observability.snapshot_cache', operation: 'kv.put', errorClass: 'KvBestEffortError', reason: 'cache_write_non_blocking' })
+      })
     }
 
     return c.json({ ok: true, data: snapshot, trace_id }, 200)

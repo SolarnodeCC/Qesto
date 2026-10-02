@@ -20,6 +20,7 @@ import type {
   TokenResponse,
   WebhookEvent,
 } from '../types'
+import { logExternalFailure } from '../../log'
 
 const SLACK_AUTH_URL = 'https://slack.com/oauth/v2/authorize'
 const SLACK_TOKEN_URL = 'https://slack.com/api/oauth.v2.access'
@@ -161,6 +162,7 @@ export class SlackProvider implements IntegrationProvider {
       throw new Error('Slack: missing accessToken or channel')
     }
     const text = buildSlackMessage(payload)
+    const started = Date.now()
     const res = await fetch(SLACK_POST_MESSAGE_URL, {
       method: 'POST',
       headers: {
@@ -170,11 +172,32 @@ export class SlackProvider implements IntegrationProvider {
       body: JSON.stringify({ channel, text }),
     })
     if (!res.ok) {
-      throw new Error(`Slack chat.postMessage HTTP ${res.status}: ${res.statusText}`)
+      const err = new Error(`Slack chat.postMessage HTTP ${res.status}: ${res.statusText}`)
+      logExternalFailure(err, {
+        traceId: 'integrations',
+        route: 'integrations.slack.send',
+        operation: 'slack.chat.postMessage',
+        provider: 'slack',
+        httpStatus: res.status,
+        duration: Date.now() - started,
+        outcome: 'http_error',
+      })
+      throw err
     }
     const json = (await res.json()) as SlackPostMessageResponse
     if (!json.ok) {
-      throw new Error(`Slack chat.postMessage failed: ${json.error ?? 'unknown'}`)
+      const err = new Error(`Slack chat.postMessage failed: ${json.error ?? 'unknown'}`)
+      logExternalFailure(err, {
+        traceId: 'integrations',
+        route: 'integrations.slack.send',
+        operation: 'slack.chat.postMessage',
+        provider: 'slack',
+        httpStatus: res.status,
+        duration: Date.now() - started,
+        outcome: 'api_error',
+        details: { slack_error: json.error ?? 'unknown' },
+      })
+      throw err
     }
   }
 

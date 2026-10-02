@@ -3,14 +3,15 @@ import { errorResponse } from '../../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
+import { ignoreSchemaPatchError } from '../../lib/log'
 import type { JourneyEventBaseline } from './types'
 
 let schemaPatched = false
 async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
   if (schemaPatched) return
   schemaPatched = true
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.journey-events.schema'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.journey-events.schema'))
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS sprint19_events (
       id TEXT PRIMARY KEY,
@@ -25,9 +26,9 @@ async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
       created_at INTEGER NOT NULL,
       trace_id TEXT NOT NULL
     )`,
-  ).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+  ).run().catch((err) => ignoreSchemaPatchError(err, 'admin.journey-events.schema'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.journey-events.schema'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch((err) => ignoreSchemaPatchError(err, 'admin.journey-events.schema'))
 }
 
 export function mountJourneyEventRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {

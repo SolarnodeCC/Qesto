@@ -21,6 +21,7 @@ function makeEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
     JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    STRIPE_PAYMENTS_ENABLED: 'true',
     STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),

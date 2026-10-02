@@ -15,6 +15,7 @@
 //   • `writeEvent()` writes application events to Analytics Engine.
 
 import { recordMetric } from './metrics-kv'
+import { logBestEffort } from './log'
 import type { PlanTier } from '../types'
 
 export type SpanContext = {
@@ -93,8 +94,16 @@ function safeRecord(
 ): void {
   if (!kv) return
   // Intentionally not awaited — metric writes never block the hot path.
-  void recordMetric(kv, route, latency_ms, status, user_id, trace_id).catch(() => {
-    // Swallow: metrics are best-effort, and we never log PII.
+  void recordMetric(kv, route, latency_ms, status, user_id, trace_id).catch((err) => {
+    // Best-effort metrics — never block the hot path or log PII.
+    logBestEffort(err, {
+      traceId: trace_id || 'metrics',
+      route: 'observability.safeRecord',
+      operation: 'kv.recordMetric',
+      errorClass: 'MetricsBestEffortError',
+      reason: 'metric_write_non_blocking',
+      details: { metricRoute: route, status },
+    })
   })
 }
 

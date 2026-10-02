@@ -69,7 +69,7 @@ describe('Sprint 5 auth/billing routes', () => {
         headers: { 'content-type': 'application/json', cookie },
         body: JSON.stringify({ action: 'cancel' }),
       }),
-      { ...env, STRIPE_SECRET_KEY: 'sk_test' } as Env,
+      { ...env, STRIPE_SECRET_KEY: 'sk_test', STRIPE_PAYMENTS_ENABLED: 'true' } as Env,
     )
     expect(res.status).toBe(400)
   })

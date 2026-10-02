@@ -11,7 +11,7 @@
  * needs widening.
  */
 
-import { logEvent } from './log'
+import { ignoreSchemaPatchError, logEvent } from './log'
 
 const SESSION_COLUMN_ALTERS = [
   `ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once'`,
@@ -40,14 +40,16 @@ export async function sessionsTableNeedsModeWiden(db: D1Database): Promise<boole
     if (!row?.sql) return false
     // sqlite_master DDL is the only reliable signal — SQLite cannot ALTER CHECK in place.
     return !row.sql.includes("'townhall'")
-  } catch {
+  } catch (err) {
+    // Best-effort: if sqlite_master is unreadable, assume no widen needed and continue.
+    ignoreSchemaPatchError(err, 'session-schema-repair.needsModeWiden')
     return false
   }
 }
 
 async function addMissingSessionColumns(db: D1Database): Promise<void> {
   for (const ddl of SESSION_COLUMN_ALTERS) {
-    await db.prepare(ddl).run().catch(() => {})
+    await db.prepare(ddl).run().catch((err) => ignoreSchemaPatchError(err, 'session-schema-repair.addMissingSessionColumns'))
   }
   await db
     .prepare(
@@ -68,11 +70,11 @@ async function addMissingSessionColumns(db: D1Database): Promise<void> {
       )`,
     )
     .run()
-    .catch(() => {})
+    .catch((err) => ignoreSchemaPatchError(err, 'session-schema-repair'))
   await db
     .prepare(`CREATE INDEX IF NOT EXISTS idx_townhall_q_session ON townhall_questions(session_id, status)`)
     .run()
-    .catch(() => {})
+    .catch((err) => ignoreSchemaPatchError(err, 'session-schema-repair'))
 }
 
 /** Idempotent additive repair for townhall REST config/export paths and cold-start patch. */

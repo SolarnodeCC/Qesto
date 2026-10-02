@@ -23,6 +23,7 @@ import type {
   TokenResponse,
   WebhookEvent,
 } from '../types'
+import { logExternalFailure } from '../../log'
 
 const MS_AUTH_BASE = 'https://login.microsoftonline.com'
 const MS_GRAPH_BASE = 'https://graph.microsoft.com'
@@ -131,6 +132,7 @@ export class TeamsProvider implements IntegrationProvider {
     }
     const body = buildAdaptiveCardMessage(payload)
     const url = `${MS_GRAPH_BASE}/v1.0/teams/${encodeURIComponent(groupId)}/channels/${encodeURIComponent(channelId)}/messages`
+    const started = Date.now()
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -141,7 +143,18 @@ export class TeamsProvider implements IntegrationProvider {
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new Error(`Teams Graph send HTTP ${res.status}: ${res.statusText} ${text}`)
+      const err = new Error(`Teams Graph send HTTP ${res.status}: ${res.statusText}`)
+      logExternalFailure(err, {
+        traceId: 'integrations',
+        route: 'integrations.teams.send',
+        operation: 'teams.graph.messages',
+        provider: 'teams',
+        httpStatus: res.status,
+        duration: Date.now() - started,
+        outcome: 'http_error',
+        details: { body_len: text.length },
+      })
+      throw err
     }
   }
 

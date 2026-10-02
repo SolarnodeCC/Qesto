@@ -4,6 +4,7 @@
 import { hardDeleteSession } from './session-delete'
 import { teamDocumentKey, userPrefsKey } from './kv-keys'
 import { readKvText, writeKvJson, deleteKv } from './kv'
+import { logBestEffort } from './log'
 
 export type GdprDeleteResult = {
   sessionsDeleted: number
@@ -43,8 +44,16 @@ export async function deleteUserGdprData(
     try {
       const res = (await env.DECISIONS_VECTORIZE.deleteByIds(sessionIds)) as { count?: number } | undefined
       vectorsDeleted = typeof res?.count === 'number' ? res.count : sessionIds.length
-    } catch {
-      /* swallow — durable-record deletion below is what GDPR Art. 17 requires */
+    } catch (err) {
+      // Best-effort: vector purge must not block Art. 17 D1/KV deletion.
+      logBestEffort(err, {
+        traceId: 'gdpr-delete',
+        route: 'gdpr.deleteUser',
+        operation: 'vectorize.deleteByIds',
+        errorClass: 'VectorizePurgeError',
+        reason: 'vector_purge_non_blocking',
+        details: { sessionCount: sessionIds.length },
+      })
     }
   }
 
@@ -55,11 +64,29 @@ export async function deleteUserGdprData(
   }
 
   await env.DB.prepare(`DELETE FROM sprint19_events WHERE user_id = ?1`).bind(userId).run()
-  await env.DB.prepare(`DELETE FROM audit_events WHERE actor_id = ?1`).bind(userId).run().catch(() => {})
+  await env.DB.prepare(`DELETE FROM audit_events WHERE actor_id = ?1`).bind(userId).run().catch((err) => {
+    // Best-effort: audit table may be absent on older deploys.
+    logBestEffort(err, {
+      traceId: 'gdpr-delete',
+      route: 'gdpr.deleteUser',
+      operation: 'd1.delete_audit_events',
+      errorClass: 'D1CleanupError',
+      reason: 'audit_events_cleanup_non_blocking',
+    })
+  })
   const userDelete = await env.DB.prepare(`DELETE FROM users WHERE id = ?1`).bind(userId).run()
 
   await deleteKv(env.USERS_KV, userPrefsKey(userId))
-  await deleteKv(env.USERS_KV, `user-teams:${userId}`).catch(() => {})
+  await deleteKv(env.USERS_KV, `user-teams:${userId}`).catch((err) => {
+    // Best-effort KV cleanup — user row already deleted from D1.
+    logBestEffort(err, {
+      traceId: 'gdpr-delete',
+      route: 'gdpr.deleteUser',
+      operation: 'kv.delete_user_teams',
+      errorClass: 'KvCleanupError',
+      reason: 'user_teams_kv_cleanup_non_blocking',
+    })
+  })
 
   const teamsRaw = await readKvText(env.TEAMS_KV, `user-teams:${userId}`)
   if (teamsRaw) {

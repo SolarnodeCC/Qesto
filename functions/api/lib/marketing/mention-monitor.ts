@@ -15,6 +15,8 @@ import { MARKETING_TEAM_SCOPE, MENTION_RETENTION_MS, type MarketingPlatform } fr
 import type { NormalizedMention } from './mention-types'
 import * as reddit from './reddit'
 import * as youtube from './youtube'
+import { redditIntegrationEnabled, youtubeIntegrationEnabled } from '../integrations-policy'
+import { logBestEffort, logEvent } from '../log'
 
 const JOB = 'mention-monitor'
 
@@ -25,6 +27,8 @@ export interface MentionMonitorEnv {
   YOUTUBE_CLIENT_SECRET?: string
   OAUTH_TOKEN_MEK?: string
   ENV?: string
+  REDDIT_INTEGRATION_ENABLED?: string
+  YOUTUBE_INTEGRATION_ENABLED?: string
 }
 
 function errMsg(err: unknown): string {
@@ -140,6 +144,16 @@ export async function runMentionMonitor(
   let anyFailed = false
 
   for (const platform of platforms) {
+    if (platform === 'reddit' && !redditIntegrationEnabled(env)) {
+      logEvent({ event: 'mention_monitor.skipped', platform: 'reddit', reason: 'integration_disabled' })
+      summaries.push('reddit: skipped (disabled)')
+      continue
+    }
+    if (platform === 'youtube' && !youtubeIntegrationEnabled(env)) {
+      logEvent({ event: 'mention_monitor.skipped', platform: 'youtube', reason: 'integration_disabled' })
+      summaries.push('youtube: skipped (disabled)')
+      continue
+    }
     try {
       const { fetched, inserted } = await pollPlatform(env, db, kv, platform, nowMs)
       summaries.push(`${platform}: fetched=${fetched} inserted=${inserted}`)
@@ -147,7 +161,14 @@ export async function runMentionMonitor(
       anyFailed = true
       const msg = errMsg(err)
       summaries.push(`${platform}: ERROR ${msg}`)
-      console.error(`[${JOB}] ${platform} poll failed: ${msg}`)
+      logBestEffort(err, {
+        traceId: 'mention-monitor',
+        route: 'cron.mention-monitor',
+        operation: `poll.${platform}`,
+        errorClass: err instanceof Error ? err.name : 'MentionPollError',
+        reason: 'platform_poll_failed',
+        details: { platform },
+      })
       try {
         await db
           .prepare(
@@ -157,8 +178,16 @@ export async function runMentionMonitor(
           )
           .bind(platform, nowMs, msg.slice(0, 500))
           .run()
-      } catch {
-        /* best-effort */
+      } catch (stateErr) {
+        // Best-effort monitor_state write.
+        logBestEffort(stateErr, {
+          traceId: 'mention-monitor',
+          route: 'cron.mention-monitor',
+          operation: 'd1.monitor_state',
+          errorClass: 'D1BestEffortError',
+          reason: 'monitor_state_write_non_blocking',
+          details: { platform },
+        })
       }
     }
   }

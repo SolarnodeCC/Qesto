@@ -74,6 +74,10 @@ Manual (not in repo):
 2. **Pages Observability** — Pages → `qesto` → Settings → Functions → enable Workers Logs / Observability if available on the plan.
 3. **Cloudflare Notifications** — Account → Notifications → add Worker error / Queue backlog alerts as a second line of defence (complements app-level `ALERT_WEBHOOK_URL`).
 
+## Debugging by symptom
+
+See [DEBUG_GUIDE.md](./DEBUG_GUIDE.md) for Log Explorer / Analytics Engine / alert filters per flow (auth, SessionRoom, webhooks, AI, crons).
+
 ## Anti-spam (GitHub channel)
 
 | Control | Behaviour |

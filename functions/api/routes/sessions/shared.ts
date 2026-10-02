@@ -23,7 +23,7 @@ import { readKvJson } from '../../lib/kv'
 import { teamDocumentKey } from '../../lib/kv-keys'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
 import { CachedThemeLabelsSchema, decodeKvJson } from '../../lib/boundary-decode'
-import { logEvent } from '../../lib/log'
+import { ignoreSchemaPatchError, logEvent } from '../../lib/log'
 import { ensureTownhallSchema } from '../../lib/session-schema-repair'
 import { effectivePlan } from '../../lib/free-access'
 
@@ -47,19 +47,19 @@ let _schemaPatchDone = false
 export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   if (_schemaPatchDone) return
   _schemaPatchDone = true
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   // Avoid adding a narrow session_mode CHECK — legacy patch left prod unable to set 'townhall'.
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   // OBS-001: analytics segmentation column. Nullable — individual (no-team) sessions remain valid.
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN team_id TEXT DEFAULT NULL`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN team_id TEXT DEFAULT NULL`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   // Sprint 18 prereq: AI provenance + GDPR consent audit trail for wizard generation.
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_model TEXT`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_edited_at INTEGER`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_model TEXT`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_edited_at INTEGER`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS sprint19_events (
       id TEXT PRIMARY KEY,
@@ -74,9 +74,9 @@ export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
       created_at INTEGER NOT NULL,
       trace_id TEXT NOT NULL
     )`,
-  ).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+  ).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   await ensureTownhallSchema(db).catch((err) => {
     logEvent({
       event: 'patchSchemaIfNeeded.ensureTownhallSchema_failed',

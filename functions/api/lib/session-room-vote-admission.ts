@@ -17,6 +17,7 @@ import { applyVoteMutation, evaluateVoteAdmission } from './session-room-vote'
 import { analyzeOpenResponseSentiment, SENTIMENT_COOLDOWN_MS } from './ai/sentiment'
 import { sentimentContextFromMeta } from './ai/session-context'
 import { flagOff } from './flags'
+import { logBestEffort } from './log'
 import { serverMessage, errorMessage, now } from './session-room-messages'
 import {
   K_META,
@@ -184,7 +185,18 @@ export async function handleVote(
   })
 
   if (question.kind === 'open' && meta) {
-    void maybeAnalyzeSentiment(self, meta, question.id, voters).catch(() => {})
+    // Best-effort sentiment — must not fail the vote path.
+    void maybeAnalyzeSentiment(self, meta, question.id, voters).catch((err) => {
+      logBestEffort(err, {
+        traceId: 'session-room',
+        route: 'SessionRoom.handleVote',
+        operation: 'ai.sentiment',
+        errorClass: err instanceof Error ? err.name : 'SentimentError',
+        sessionId: meta.sessionId,
+        ...(meta.teamId ? { teamId: meta.teamId } : {}),
+        reason: 'sentiment_analysis_non_blocking',
+      })
+    })
   }
 }
 
