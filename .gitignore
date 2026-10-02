@@ -48,3 +48,4 @@ target/jankurai/
 # stopped `git add -A` from picking the file up.
 .claude/settings.local.json
 
+target/security/
