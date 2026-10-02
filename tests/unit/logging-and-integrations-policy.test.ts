@@ -103,4 +103,9 @@ describe('integrations-policy (#942)', () => {
     expect(redditIntegrationEnabled({ REDDIT_INTEGRATION_ENABLED: 'true' })).toBe(true)
     expect(youtubeIntegrationEnabled({ YOUTUBE_INTEGRATION_ENABLED: 'true' })).toBe(true)
   })
+
+  it('treats any non-true value as disabled', () => {
+    expect(stripePaymentsEnabled({ STRIPE_PAYMENTS_ENABLED: 'false' })).toBe(false)
+    expect(stripePaymentsEnabled({ STRIPE_PAYMENTS_ENABLED: '1' })).toBe(false)
+  })
 })

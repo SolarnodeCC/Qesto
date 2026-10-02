@@ -370,7 +370,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
           operation: 'do.ws_message',
           errorClass: err instanceof Error ? err.name : 'UnknownError',
           sessionId: meta.sessionId,
-          teamId: meta.teamId ?? undefined,
+          ...(meta.teamId ? { teamId: meta.teamId } : {}),
           reason: 'ws_message_handler_fault',
         })
       }
@@ -390,7 +390,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
           operation: 'do.ws_send',
           errorClass: 'WebSocketSendError',
           reason: 'already_closed',
-          sessionId: meta?.sessionId,
+          ...(meta?.sessionId ? { sessionId: meta.sessionId } : {}),
         })
       }
     }

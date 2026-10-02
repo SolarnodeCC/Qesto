@@ -193,7 +193,7 @@ export async function handleVote(
         operation: 'ai.sentiment',
         errorClass: err instanceof Error ? err.name : 'SentimentError',
         sessionId: meta.sessionId,
-        teamId: meta.teamId ?? undefined,
+        ...(meta.teamId ? { teamId: meta.teamId } : {}),
         reason: 'sentiment_analysis_non_blocking',
       })
     })

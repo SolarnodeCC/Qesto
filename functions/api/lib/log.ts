@@ -189,13 +189,16 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
  */
 export function logBestEffort(
   err: unknown,
-  ctx: Omit<SafeLogContext, 'level'> & { reason?: string },
+  ctx: Omit<SafeLogContext, 'level' | 'errorClass'> & {
+    errorClass?: string
+    reason?: string
+  },
 ): void {
-  const { reason, details, ...rest } = ctx
+  const { reason, details, errorClass, ...rest } = ctx
   safeLogContext(err, {
     ...rest,
     level: 'warn',
-    errorClass: rest.errorClass || (err instanceof Error ? err.name : 'BestEffortFailure'),
+    errorClass: errorClass || (err instanceof Error ? err.name : 'BestEffortFailure'),
     details: {
       ...(details ?? {}),
       ...(reason ? { reason } : {}),
@@ -211,20 +214,22 @@ export function logBestEffort(
  */
 export function logExternalFailure(
   err: unknown,
-  ctx: Omit<SafeLogContext, 'level'> & {
+  ctx: Omit<SafeLogContext, 'level' | 'errorClass' | 'duration'> & {
+    errorClass?: string
     provider: string
     httpStatus?: number | null
     attempt?: number
     retrying?: boolean
     outcome?: string
+    duration?: number
   },
 ): void {
-  const { provider, httpStatus, attempt, retrying, outcome, details, duration, ...rest } = ctx
+  const { provider, httpStatus, attempt, retrying, outcome, details, duration, errorClass, ...rest } = ctx
   safeLogContext(err, {
     ...rest,
     level: 'warn',
-    duration,
-    errorClass: rest.errorClass || `${provider}Error`,
+    ...(duration !== undefined ? { duration } : {}),
+    errorClass: errorClass || `${provider}Error`,
     details: {
       ...(details ?? {}),
       provider,
