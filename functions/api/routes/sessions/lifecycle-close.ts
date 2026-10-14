@@ -374,14 +374,19 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
       )
     }
 
-    // Fire & forget: if any fail to enqueue, they're logged but don't block the response
-    Promise.all(enqueuePromises).catch((err) => {
+    // Queue sends are post-response work, but still need a Worker lifetime hook.
+    const enqueueWork = Promise.all(enqueuePromises).catch((err) => {
       logEvent({
         event: 'queue.bulk_enqueue_error',
         sessionId: id,
         error: String(err),
       })
     })
+    if (executionCtx) {
+      executionCtx.waitUntil(enqueueWork)
+    } else {
+      await enqueueWork
+    }
 
     trackSessionWrite(c, 'sessions.close')
     return c.json({
