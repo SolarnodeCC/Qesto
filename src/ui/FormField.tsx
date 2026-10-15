@@ -9,6 +9,8 @@ export type FormFieldControlProps = {
 }
 
 type FormFieldProps = {
+  /** Stable control id. Defaults to a React `useId()` value. */
+  id?: string
   /** Visible label text. */
   label: string
   /** Optional hint under the control (wired via aria-describedby). */
@@ -30,6 +32,7 @@ type FormFieldProps = {
  * while label association, describedby, and error alert wiring stay consistent.
  */
 export function FormField({
+  id,
   label,
   hint,
   error,
@@ -39,7 +42,7 @@ export function FormField({
   children,
 }: FormFieldProps) {
   const reactId = useId()
-  const fieldId = `ff-${reactId}`
+  const fieldId = id ?? `ff-${reactId}`
   const hintId = hint ? `${fieldId}-hint` : undefined
   const errorId = error ? `${fieldId}-error` : undefined
   const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined
