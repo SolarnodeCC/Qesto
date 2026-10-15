@@ -11,6 +11,12 @@ export type FormFieldControlProps = {
 type FormFieldProps = {
   /** Visible label text. */
   label: string
+  /**
+   * Stable control id (e.g. `magic-email`). When omitted, a React `useId()`
+   * value is used. Callers that tests or password managers target by id must
+   * pass this — the generated id is not stable across renders/builds.
+   */
+  id?: string
   /** Optional hint under the control (wired via aria-describedby). */
   hint?: string
   /** Error message — sets aria-invalid and role="alert". */
@@ -31,6 +37,7 @@ type FormFieldProps = {
  */
 export function FormField({
   label,
+  id,
   hint,
   error,
   labelSrOnly = false,
@@ -39,7 +46,7 @@ export function FormField({
   children,
 }: FormFieldProps) {
   const reactId = useId()
-  const fieldId = `ff-${reactId}`
+  const fieldId = id ?? `ff-${reactId}`
   const hintId = hint ? `${fieldId}-hint` : undefined
   const errorId = error ? `${fieldId}-error` : undefined
   const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined

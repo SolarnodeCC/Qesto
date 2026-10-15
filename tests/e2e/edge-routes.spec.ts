@@ -14,7 +14,10 @@ test.describe('Edge route behavior', () => {
   test('invalid join code shows not-found state', async ({ page }) => {
     await page.goto('/j/ZZZZZZ')
     await expect(page).toHaveURL(/\/j\/ZZZZZZ(?:\?.*)?$/)
-    await expect(page.getByRole('main')).toContainText(/not found|session/i)
+    // ParticipantShell renders the not-found title in the page <h1> (header),
+    // not inside <main> — main only has retry / home actions.
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/not found|session/i)
+    await expect(page.getByRole('main')).toContainText(/try again/i)
   })
 
   test('authenticated dashboard tabs are switchable', async ({ page }) => {

@@ -31,6 +31,17 @@ describe('FormField', () => {
     expect(document.getElementById(describedby!)).toHaveTextContent('Invalid email')
   })
 
+  it('honors an explicit stable id for label/control association', () => {
+    render(
+      <FormField id="magic-email" label="Email">
+        {(field) => <input {...field} data-testid="control" />}
+      </FormField>,
+    )
+    const control = screen.getByTestId('control')
+    expect(control).toHaveAttribute('id', 'magic-email')
+    expect(screen.getByText('Email')).toHaveAttribute('for', 'magic-email')
+  })
+
   it('exposes hint via aria-describedby when no error', () => {
     render(
       <FormField label="Code" hint="6 characters">
