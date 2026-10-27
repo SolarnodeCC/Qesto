@@ -12,6 +12,7 @@ import { setAuthSessionCookie } from './cookie'
 import { authRedirectSsoFailed } from './errors'
 import { upsertOAuthUser } from './helpers'
 import type { AuthApp } from './types'
+import { isMfaEnabled, mintMfaPendingToken } from '../../lib/mfa'
 
 function redirectProviderNotConfigured(
   c: {
@@ -75,6 +76,11 @@ export function registerOAuthRoutes(app: AuthApp): void {
       }
 
       const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'google', providerUser.sub, providerUser.email)
+      // DD-04: Google is the first factor only when MFA is on.
+      if (await isMfaEnabled(c.env, userId)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: userId, email: providerUser.email })
+        return c.redirect(`${c.env.PAGES_URL}/login?mfa=${encodeURIComponent(mfaToken)}`, 302)
+      }
       const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
       void recordAuthAuditEvent(c.env.DB, {

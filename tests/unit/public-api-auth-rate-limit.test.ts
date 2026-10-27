@@ -9,7 +9,11 @@ import {
   type ApiKeyRecord,
 } from '../../functions/api/lib/api-keys'
 import { fakeRateLimitBinding } from '../../functions/api/lib/atomic-rate-limit'
-import { publicApiKeyMiddleware, type ApiKeyVars } from '../../functions/api/middleware/public-api-auth'
+import {
+  API_KEY_LAST_USED_REFRESH_MS,
+  publicApiKeyMiddleware,
+  type ApiKeyVars,
+} from '../../functions/api/middleware/public-api-auth'
 import type { Env } from '../../functions/api/types'
 
 class MemoryKv {
@@ -20,7 +24,9 @@ class MemoryKv {
     if (type === 'json') return JSON.parse(v)
     return v
   }
-  async put(key: string, value: string): Promise<void> {
+  puts: Array<{ key: string; options: KVNamespacePutOptions | undefined }> = []
+  async put(key: string, value: string, options?: KVNamespacePutOptions): Promise<void> {
+    this.puts.push({ key, options })
     this.store.set(key, value)
   }
 }
@@ -146,5 +152,33 @@ describe('publicApiKeyMiddleware rate limit (ADR-0073 WS-2)', () => {
     const blobs = (fallback![0] as { blobs: string[] }).blobs
     expect(blobs[5]).toContain('reason=binding_missing')
     expect(blobs[5]).toContain('profile=api_key')
+  })
+  // DD-17 (issue #890): no KV write per request; no TTL on the active record.
+  it('refreshes lastUsedAt when never set, without a KV TTL', async () => {
+    integrations.puts = []
+    const res = await probe(makeEnv({ ATOMIC_RATE_LIMIT_ENABLED: 'false' }))
+    expect(res.status).toBe(200)
+    const recordPuts = integrations.puts.filter((p) => p.key === apiKeyKvKey(record.id))
+    expect(recordPuts).toHaveLength(1)
+    expect(recordPuts[0]?.options?.expirationTtl).toBeUndefined()
+    const stored = JSON.parse(integrations.store.get(apiKeyKvKey(record.id))!) as ApiKeyRecord
+    expect(stored.lastUsedAt).toBeTypeOf('number')
+  })
+
+  it('does not rewrite the record when lastUsedAt is fresh', async () => {
+    await integrations.put(apiKeyKvKey(record.id), JSON.stringify({ ...record, lastUsedAt: Date.now() - 1000 }))
+    integrations.puts = []
+    for (let i = 0; i < 3; i++) {
+      expect((await probe(makeEnv({ ATOMIC_RATE_LIMIT_ENABLED: 'false' }))).status).toBe(200)
+    }
+    expect(integrations.puts.filter((p) => p.key === apiKeyKvKey(record.id))).toHaveLength(0)
+  })
+
+  it('refreshes again once the stale window has passed', async () => {
+    const stale = Date.now() - API_KEY_LAST_USED_REFRESH_MS - 1000
+    await integrations.put(apiKeyKvKey(record.id), JSON.stringify({ ...record, lastUsedAt: stale }))
+    integrations.puts = []
+    expect((await probe(makeEnv({ ATOMIC_RATE_LIMIT_ENABLED: 'false' }))).status).toBe(200)
+    expect(integrations.puts.filter((p) => p.key === apiKeyKvKey(record.id))).toHaveLength(1)
   })
 })

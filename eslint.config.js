@@ -78,6 +78,20 @@ export default tseslint.config(
     },
   },
 
+  // DD-33 (#905): server code logs only through lib/log.ts (safeLogContext /
+  // logEvent / logBestEffort), which redacts PII and secrets. A raw console.*
+  // call opts out of that redaction, so it is an error here.
+  {
+    files: ['functions/**/*.ts'],
+    rules: { 'no-console': 'error' },
+  },
+  {
+    // The redacting helpers themselves, and the request logger that emits
+    // only method/path/status/timing fields.
+    files: ['functions/api/lib/log.ts', 'functions/api/middleware/logger.ts'],
+    rules: { 'no-console': 'off' },
+  },
+
   // React hook correctness — the reason this config earns its place.
   {
     ...reactHooks.configs.flat.recommended,

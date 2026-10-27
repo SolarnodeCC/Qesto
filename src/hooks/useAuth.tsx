@@ -18,6 +18,8 @@ export type AuthUser = {
    * and hide upgrade CTAs, never to decide what is unlocked.
    */
   free_access?: FreeAccessStatus
+  /** DD-10: false until the address is proven (magic link / Google). */
+  email_verified?: boolean
 }
 
 export type FreeAccessStatus = {
@@ -34,10 +36,12 @@ type AuthState =
 
 type AuthApi = AuthState & {
   requestMagicLink: (email: string) => Promise<'sent' | 'invalid' | 'error'>
-  loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error'>
-  signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'error'>
+  loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error' | { mfaToken: string }>
+  /** DD-04: second sign-in step when two-factor authentication is on. */
+  verifyMfa: (mfaToken: string, factor: { code: string } | { recoveryCode: string }) => Promise<'ok' | 'invalid' | 'expired' | 'error'>
+  signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'password_breached' | 'error'>
   requestPasswordReset: (email: string) => Promise<'sent' | 'invalid' | 'error'>
-  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'error'>
+  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'>
   refresh: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -71,9 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loginWithPassword = useCallback(
-    async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error'> => {
-      const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/login', { method: 'POST', body: { email, password } })
+    async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error' | { mfaToken: string }> => {
+      const result = await api<{ id: string; email: string; token: string } | { mfa_required: true; mfa_token: string }>(
+        '/api/auth/password/login',
+        { method: 'POST', body: { email, password } },
+      )
       if (result.ok) {
+        if ('mfa_required' in result.data) return { mfaToken: result.data.mfa_token }
         setAuthToken(result.data.token)
         await refresh()
         return 'ok'
@@ -84,8 +92,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [refresh],
   )
 
+  const verifyMfa = useCallback(
+    async (
+      mfaToken: string,
+      factor: { code: string } | { recoveryCode: string },
+    ): Promise<'ok' | 'invalid' | 'expired' | 'error'> => {
+      const body = 'code' in factor ? { mfa_token: mfaToken, code: factor.code } : { mfa_token: mfaToken, recovery_code: factor.recoveryCode }
+      const result = await api<{ token: string }>('/api/auth/mfa/verify', { method: 'POST', body })
+      if (result.ok) {
+        setAuthToken(result.data.token)
+        await refresh()
+        return 'ok'
+      }
+      if (result.error.code === 'mfa_token_invalid') return 'expired'
+      if (result.status === 401 || result.status === 400) return 'invalid'
+      return 'error'
+    },
+    [refresh],
+  )
+
   const signupWithPassword = useCallback(
-    async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'error'> => {
+    async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'password_breached' | 'error'> => {
       const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
       if (result.ok) {
         setAuthToken(result.data.token)
@@ -93,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return 'ok'
       }
       if (result.status === 409) return 'email_taken'
+      if (!result.ok && result.error?.code === 'password_breached') return 'password_breached'
       return 'error'
     },
     [refresh],
@@ -106,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const confirmPasswordReset = useCallback(
-    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'error'> => {
+    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'> => {
       const result = await api<{ reset: boolean; token: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
       if (result.ok) {
         setAuthToken(result.data.token)
@@ -115,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (result.status === 400) {
         if (!result.ok && result.error?.code === 'invalid_token') return 'invalid_token'
+        if (!result.ok && result.error?.code === 'password_breached') return 'password_breached'
         return 'invalid'
       }
       return 'error'
@@ -134,13 +163,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...state,
       requestMagicLink,
       loginWithPassword,
+      verifyMfa,
       signupWithPassword,
       requestPasswordReset,
       confirmPasswordReset,
       refresh,
       logout,
     }),
-    [state, requestMagicLink, loginWithPassword, signupWithPassword, requestPasswordReset, confirmPasswordReset, refresh, logout],
+    [state, requestMagicLink, loginWithPassword, verifyMfa, signupWithPassword, requestPasswordReset, confirmPasswordReset, refresh, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

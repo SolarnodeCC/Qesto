@@ -54,7 +54,7 @@ export async function runContentEngine(
 ): Promise<{ generated: number; skipped: number; failed: number }> {
   const got = await acquireLock(kv, JOB, LOCK_TTL_MS)
   if (!got) {
-    console.log(`[${JOB}] lock held — skipping this invocation`)
+    logEvent({ event: 'content_engine.skipped', job: JOB, reason: 'lock_held' })
     return { generated: 0, skipped: 0, failed: 0 }
   }
 
@@ -143,7 +143,7 @@ export async function runContentEngine(
         failed++
         const msg = `calendar row ${row.id} (${row.platform} "${row.topic}"): ${errMsg(err)}`
         errors.push(msg)
-        console.error(`[${JOB}] ${msg}`)
+        logEvent({ event: 'content_engine.row_failed', job: JOB, message: msg }, 'error')
       }
     }
 

@@ -2,6 +2,7 @@ import { Context } from 'hono'
 import type { Env } from '../types'
 import { listTemplates } from '../lib/templates-kv'
 import type { ParentApp } from './parent-app'
+import { safeLogContext } from '../lib/log'
 
 /** Escape XML-reserved characters so generated URLs/dates can't break well-formedness. */
 function escapeXml(value: string): string {
@@ -74,7 +75,7 @@ ${urls}
     // Cache for 24 hours (86400 seconds)
     return xmlResponse(sitemapXml)
   } catch (error) {
-    console.error('[seo-sitemap] Error generating sitemap:', error)
+    safeLogContext(error, { traceId: c.req.header('cf-ray') ?? 'unknown', route: c.req.path, errorClass: 'SitemapError' })
     return c.json({ error: 'Failed to generate sitemap' }, 500)
   }
 }

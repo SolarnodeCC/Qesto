@@ -46,7 +46,7 @@ describe('Sprint 5 auth/billing routes', () => {
       plan: 'starter',
     })
     const cookie = await cookieFor('u1', 'u1@example.com')
-    const res = await app.fetch(new Request('http://local/api/billing/invoices', { headers: { cookie } }), env)
+    const res = await app.fetch(new Request('http://local/api/billing/invoices', { headers: { 'x-qesto-client': 'web', cookie } }), env)
     expect(res.status).toBe(503)
   })
 
@@ -66,7 +66,7 @@ describe('Sprint 5 auth/billing routes', () => {
     const res = await app.fetch(
       new Request('http://local/api/billing/subscription', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ action: 'cancel' }),
       }),
       { ...env, STRIPE_SECRET_KEY: 'sk_test', STRIPE_PAYMENTS_ENABLED: 'true' } as Env,

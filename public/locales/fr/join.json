@@ -83,5 +83,7 @@
   "wordCloud.submit": "Envoyer",
   "wordCloud.submitted": "Votre mot : {word}. Envoyez-en un autre pour le remplacer.",
   "wordCloud.single_word_hint": "Un seul mot — pas d’espaces.",
-  "wordCloud.top_words": "Mots les plus fréquents"
+  "wordCloud.top_words": "Mots les plus fréquents",
+  "inviteNeedsVerifiedEmail": "Confirmez d’abord votre adresse e-mail via le lien que nous vous avons envoyé, puis rouvrez cette invitation.",
+  "inviteWrongAccount": "Cette invitation a été envoyée à une autre adresse e-mail. Connectez-vous avec cette adresse pour l’accepter."
 }

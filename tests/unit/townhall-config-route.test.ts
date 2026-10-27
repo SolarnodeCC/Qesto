@@ -62,7 +62,7 @@ const post = (env: Env, c: string, body: unknown) =>
   createApp().fetch(
     new Request('http://local/api/sessions/sess_1/townhall/config', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie: c },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: c },
       body: JSON.stringify(body),
     }),
     env,
@@ -124,7 +124,7 @@ describe('POST /api/sessions/:id/townhall/config', () => {
     seed(db, 'team')
     await post(makeEnv(db), await cookie(), { moderation: 'post' })
     const res = await createApp().fetch(
-      new Request('http://local/api/sessions/sess_1/townhall/config', { headers: { cookie: await cookie() } }),
+      new Request('http://local/api/sessions/sess_1/townhall/config', { headers: { 'x-qesto-client': 'web', cookie: await cookie() } }),
       makeEnv(db),
     )
     expect(res.status).toBe(200)
@@ -168,7 +168,7 @@ describe('GET /api/sessions/:id/townhall/export', () => {
     seed(db, 'team', 'live')
     seedQuestion(db)
     const res = await createApp().fetch(
-      new Request('http://local/api/sessions/sess_1/townhall/export?format=json', { headers: { cookie: await cookie() } }),
+      new Request('http://local/api/sessions/sess_1/townhall/export?format=json', { headers: { 'x-qesto-client': 'web', cookie: await cookie() } }),
       makeEnv(db),
     )
     expect(res.status).toBe(200)
@@ -184,7 +184,7 @@ describe('GET /api/sessions/:id/townhall/export', () => {
     seed(db, 'team', 'live')
     seedQuestion(db, { body: 'Has, a comma' })
     const res = await createApp().fetch(
-      new Request('http://local/api/sessions/sess_1/townhall/export?format=csv', { headers: { cookie: await cookie() } }),
+      new Request('http://local/api/sessions/sess_1/townhall/export?format=csv', { headers: { 'x-qesto-client': 'web', cookie: await cookie() } }),
       makeEnv(db),
     )
     expect(res.status).toBe(200)
@@ -198,7 +198,7 @@ describe('GET /api/sessions/:id/townhall/export', () => {
     const db = new D1Mock()
     seed(db, 'starter', 'live')
     const res = await createApp().fetch(
-      new Request('http://local/api/sessions/sess_1/townhall/export', { headers: { cookie: await cookie() } }),
+      new Request('http://local/api/sessions/sess_1/townhall/export', { headers: { 'x-qesto-client': 'web', cookie: await cookie() } }),
       makeEnv(db),
     )
     expect(res.status).toBe(403)
@@ -213,7 +213,7 @@ describe('DELETE /api/sessions/:id/townhall/questions/:itemId', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/townhall/questions/q1', {
         method: 'DELETE',
-        headers: { cookie: await cookie() },
+        headers: { 'x-qesto-client': 'web', cookie: await cookie() },
       }),
       makeEnv(db),
     )
@@ -227,7 +227,7 @@ describe('DELETE /api/sessions/:id/townhall/questions/:itemId', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/townhall/questions/nope', {
         method: 'DELETE',
-        headers: { cookie: await cookie() },
+        headers: { 'x-qesto-client': 'web', cookie: await cookie() },
       }),
       makeEnv(db),
     )

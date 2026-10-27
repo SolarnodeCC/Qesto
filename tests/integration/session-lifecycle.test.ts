@@ -99,7 +99,7 @@ async function createSession(
   const res = await app.fetch(
     new Request('http://local/api/sessions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie, 'idempotency-key': crypto.randomUUID() },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': crypto.randomUUID() },
       body: JSON.stringify({ title }),
     }),
     env,
@@ -137,7 +137,7 @@ describe('POST /api/sessions/:id/start', () => {
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/start`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -158,7 +158,7 @@ describe('POST /api/sessions/:id/start', () => {
 
     // First start wins
     const r1 = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(r1.status).toBe(200)
@@ -168,7 +168,7 @@ describe('POST /api/sessions/:id/start', () => {
     // (In true concurrent races, both would pass the pre-check and the second
     // would hit meta.changes=0 then return 200 — that path is tested below.)
     const r2 = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(r2.status).toBe(409)
@@ -211,7 +211,7 @@ describe('POST /api/sessions/:id/start', () => {
     seedPollQuestion(db, sessionId)
 
     const res = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(res.status).toBe(200)
@@ -232,7 +232,7 @@ describe('POST /api/sessions/:id/start', () => {
     // non-retryable do_init_error, DB rolled back to draft so a later start works.
     const envFail = makeEnv(db, DO_FAIL)
     const r1 = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       envFail,
     )
     expect(r1.status).toBe(500)
@@ -243,7 +243,7 @@ describe('POST /api/sessions/:id/start', () => {
     // Retry: DO is now available → succeeds.
     const envOk = makeEnv(db, DO_OK)
     const r2 = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       envOk,
     )
     expect(r2.status).toBe(200)
@@ -259,7 +259,7 @@ describe('POST /api/sessions/:id/start', () => {
 
     // stub.fetch() rejects — the production "Session room unavailable" case.
     const res = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       makeEnv(db, makeRejectingDO()),
     )
     expect(res.status).toBe(500)
@@ -270,7 +270,7 @@ describe('POST /api/sessions/:id/start', () => {
 
     // Retry against a healthy DO succeeds.
     const retry = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       makeEnv(db, DO_OK),
     )
     expect(retry.status).toBe(200)
@@ -324,7 +324,7 @@ describe('POST /api/sessions/:id/start', () => {
 
     const req = () =>
       app.fetch(
-        new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+        new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
         env,
       )
 
@@ -343,14 +343,14 @@ describe('POST /api/sessions/:id/start', () => {
     seedPollQuestion(db, sessionId)
 
     const start = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       makeEnv(db, DO_OK),
     )
     expect(start.status).toBe(200)
     expect(db.sessions.get(sessionId)?.status).toBe('live')
 
     const close = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       makeEnv(db, DO_FAIL),
     )
 
@@ -367,7 +367,7 @@ describe('POST /api/sessions/:id/start', () => {
     // No questions seeded.
 
     const res = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(res.status).toBe(409)
@@ -385,7 +385,7 @@ describe('POST /api/sessions/:id/start', () => {
     seedPollQuestion(db, sessionId, 'ranking')
 
     const res = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(res.status).toBe(200)
@@ -405,7 +405,7 @@ describe('POST /api/sessions/:id/start', () => {
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/start`, {
         method: 'POST',
-        headers: { cookie: otherCookie },
+        headers: { 'x-qesto-client': 'web', cookie: otherCookie },
       }),
       env,
     )
@@ -425,7 +425,7 @@ describe('POST /api/sessions/:id/start', () => {
     row.status = 'live'
 
     const res = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(res.status).toBe(409)
@@ -448,7 +448,7 @@ describe('POST /api/sessions/:id/start', () => {
     })
 
     await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     spy.mockRestore()
@@ -474,7 +474,7 @@ describe('POST /api/sessions/:id/start', () => {
     })
 
     await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     spy.mockRestore()
@@ -537,7 +537,7 @@ describe('POST /api/sessions/:id/start', () => {
 
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_live_team/ws', {
-        headers: { upgrade: 'websocket', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { upgrade: 'websocket', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )

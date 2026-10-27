@@ -45,6 +45,10 @@ export default function TeamInvite() {
           message = t('inviteLinkExpired')
         } else if (code === 'already_member') {
           message = t('alreadyMemberOfTeam')
+        } else if (code === 'email_unverified') {
+          message = t('inviteNeedsVerifiedEmail')
+        } else if (code === 'invite_email_mismatch') {
+          message = t('inviteWrongAccount')
         }
         setState({ status: 'error', message })
       }

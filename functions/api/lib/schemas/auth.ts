@@ -14,6 +14,8 @@ export const AuthClaimsSchema = z.object({
   // Microsoft preferred_username can be a non-RFC-email UPN on some tenants.
   email: z.string().min(1),
   jti: z.string().optional(),
+  /** DD-04: unix seconds when a second factor was last verified for this session. */
+  mfa_at: z.number().optional(),
   iat: z.number(),
   exp: z.number(),
 })

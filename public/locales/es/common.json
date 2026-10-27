@@ -280,5 +280,13 @@
     "daysLeft_other": "Quedan {{count}} días",
     "endsToday": "Termina hoy",
     "ctaSuppressed": "Ahora gratis para todos: nada que mejorar."
+  },
+  "verifyEmail": {
+    "title": "Confirma tu correo electrónico.",
+    "body": "Hemos enviado un enlace a {{email}}. Hasta que lo abras, no podrás unirte a equipos, comprar un plan ni crear claves API.",
+    "resend": "Reenviar enlace",
+    "sending": "Enviando…",
+    "sent": "Enlace enviado: revisa tu bandeja de entrada.",
+    "error": "No se pudo enviar. Inténtalo más tarde."
   }
 }

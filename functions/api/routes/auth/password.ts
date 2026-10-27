@@ -6,6 +6,7 @@ import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { hashPassword, verifyPassword, passwordNeedsRehash } from '../../lib/password'
+import { BREACHED_PASSWORD_MESSAGE, isBreachedPassword } from '../../lib/breached-password'
 import { ensurePersonalTeam } from '../teams'
 import {
   JWT_TTL_SECONDS,
@@ -20,12 +21,14 @@ import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
 import { authJsonInternalError } from './errors'
 import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/protocol-schemas'
 import { bumpSessionEpoch } from '../../lib/session-token'
-import { safeLogContext } from '../../lib/log'
+import { logEvent, safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
 import { errorResponse } from '../../lib/error-handler'
 import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
+import { sendVerificationLink } from '../../lib/email-verification'
+import { isMfaEnabled, mintMfaPendingToken } from '../../lib/mfa'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
   app.post('/password/signup', async (c) => {
@@ -71,6 +74,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         return errorResponse(c, 429, 'rate_limited', 'Too many signups. Try again later.')
       }
 
+      // DD-36: screen the new password against breach corpora (after the rate
+      // limit, so this cannot be used to amplify outbound lookups).
+      if (await isBreachedPassword(c.env, password)) {
+        return errorResponse(c, 400, 'password_breached', BREACHED_PASSWORD_MESSAGE)
+      }
+
       const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
         .bind(normalEmail)
         .first<{ id: string }>()
@@ -100,6 +109,17 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         // Non-fatal: session creation falls back to ensurePersonalTeam as well
       }
 
+      // DD-10: the session is a personal sandbox until the mailbox is proven.
+      // Send the verification link off the response path.
+      const verification = sendVerificationLink(c.env, normalEmail, signupIp).catch((err) =>
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] signup/verify-email', errorClass: 'VerificationEmailError' }),
+      )
+      try {
+        c.executionCtx.waitUntil(verification)
+      } catch {
+        await verification
+      }
+
       const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
       void recordAuthAuditEvent(c.env.DB, {
@@ -110,7 +130,10 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         subject_id: userId,
         outcome: 'success',
       })
-      return c.json({ ok: true, data: { id: userId, email: normalEmail, token: jwt }, trace_id: c.get('trace_id') }, 201)
+      return c.json(
+        { ok: true, data: { id: userId, email: normalEmail, token: jwt, email_verified: false }, trace_id: c.get('trace_id') },
+        201,
+      )
     } catch (err) {
       return authJsonInternalError(c, err, '[auth] password signup')
     }
@@ -175,7 +198,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       const credRaw = user ? await readKvText(c.env.USERS_KV, pwdKey(user.id)) : null
       const cred = credRaw ? validateKvJson(credRaw, PasswordCredentialSchema) : null
       if (credRaw && !cred) {
-        console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }))
+        logEvent({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }, 'warn')
       }
 
       const valid = cred ? await verifyPassword(password, cred.hash) : false
@@ -207,6 +230,13 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         } catch {
           /* best-effort: a failed rehash must not block login */
         }
+      }
+
+      // DD-04: with MFA on, the password is only the first factor — hand back a
+      // short-lived pending token; POST /api/auth/mfa/verify issues the session.
+      if (await isMfaEnabled(c.env, user!.id)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: user!.id, email: normalEmail })
+        return c.json({ ok: true, data: { mfa_required: true, mfa_token: mfaToken }, trace_id: c.get('trace_id') })
       }
 
       const jwt = await signJwt({ sub: user!.id, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
@@ -339,6 +369,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         return authJsonInternalError(c, new Error('corrupt_reset_token'), '[auth] password reset-confirm corrupt token')
       }
       const { userId, email } = payload
+
+      // DD-36: refuse breached passwords BEFORE consuming the single-use token,
+      // so the user can retry with the same link.
+      if (await isBreachedPassword(c.env, password)) {
+        return errorResponse(c, 400, 'password_breached', BREACHED_PASSWORD_MESSAGE)
+      }
 
       await deleteKv(c.env.ACTIONS_KV, kvKey)
 

@@ -50,6 +50,7 @@ describe('Energizers Routes', () => {
         new Request(`http://localhost/api/sessions/${sessionId}/energizers`, {
           method: 'POST',
           headers: {
+            'x-qesto-client': 'web',
             'cookie': cookie,
             'content-type': 'application/json',
           },
@@ -216,7 +217,7 @@ describe('Energizers Routes', () => {
         const { app, env, attackerCookie } = await seedOwnerSession()
         const init: RequestInit = {
           method: ep.method,
-          headers: { cookie: attackerCookie, 'content-type': 'application/json' },
+          headers: { 'x-qesto-client': 'web', cookie: attackerCookie, 'content-type': 'application/json' },
         }
         if (ep.body !== undefined) init.body = JSON.stringify(ep.body)
         const res = await app.fetch(
@@ -234,7 +235,7 @@ describe('Energizers Routes', () => {
       const { app, env, ownerCookie } = await seedOwnerSession()
       const res = await app.fetch(
         new Request('http://localhost/api/sessions/sess-owned/leaderboard', {
-          headers: { cookie: ownerCookie },
+          headers: { 'x-qesto-client': 'web', cookie: ownerCookie },
         }),
         env,
       )
@@ -249,7 +250,7 @@ describe('Energizers Routes', () => {
       const res = await app.fetch(
         new Request('http://localhost/api/sessions/sess-owned/energizers', {
           method: 'POST',
-          headers: { cookie: attackerCookie, 'content-type': 'application/json' },
+          headers: { 'x-qesto-client': 'web', cookie: attackerCookie, 'content-type': 'application/json' },
           body: JSON.stringify({ kind: 'emoji_poll', prompt: 'gotcha' }),
         }),
         env,

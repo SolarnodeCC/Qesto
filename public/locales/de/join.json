@@ -83,5 +83,7 @@
   "wordCloud.submit": "Senden",
   "wordCloud.submitted": "Dein Wort: {word}. Sende ein anderes, um es zu ersetzen.",
   "wordCloud.single_word_hint": "Nur einzelne Wörter — keine Leerzeichen.",
-  "wordCloud.top_words": "Top-Wörter"
+  "wordCloud.top_words": "Top-Wörter",
+  "inviteNeedsVerifiedEmail": "Bestätige zuerst deine E-Mail-Adresse über den Link, den wir dir gesendet haben, und öffne diese Einladung dann erneut.",
+  "inviteWrongAccount": "Diese Einladung wurde an eine andere E-Mail-Adresse gesendet. Melde dich mit dieser Adresse an, um sie anzunehmen."
 }

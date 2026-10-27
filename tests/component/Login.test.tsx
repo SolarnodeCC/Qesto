@@ -92,7 +92,7 @@ describe('Login — password login', () => {
 
   it('tells the user when the credentials are rejected', async () => {
     const user = userEvent.setup()
-    loginWithPassword.mockResolvedValue({ ok: false, error: { code: 'invalid_credentials' } })
+    loginWithPassword.mockResolvedValue('invalid_credentials')
     renderLogin('/login?tab=login')
 
     const panel = within(screen.getByRole('tabpanel'))

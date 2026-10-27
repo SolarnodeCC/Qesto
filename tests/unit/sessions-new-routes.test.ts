@@ -131,7 +131,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -144,7 +144,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -158,7 +158,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -180,7 +180,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -198,7 +198,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -216,7 +216,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -233,7 +233,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -251,7 +251,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -271,7 +271,7 @@ describe('GET /api/sessions/:id/preflight', () => {
     seedQuestion(db)
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -299,7 +299,7 @@ describe('PATCH /api/sessions/:id AI provenance', () => {
     const patchRes = await app.fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           ai_generated: true,
           ai_consent_at: consentAt,
@@ -311,7 +311,7 @@ describe('PATCH /api/sessions/:id AI provenance', () => {
     expect(patchRes.status).toBe(200)
 
     const preflightRes = await app.fetch(
-      new Request('http://local/api/sessions/sess_1/preflight', { headers: { cookie } }),
+      new Request('http://local/api/sessions/sess_1/preflight', { headers: { 'x-qesto-client': 'web', cookie } }),
       makeEnv(db),
     )
     const body = (await preflightRes.json()) as {
@@ -347,7 +347,7 @@ describe('POST /api/sessions/:id/ai/generate', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/generate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
       }),
       makeEnv(db, { run: (async () => ({ response: aiResponse })) as unknown as Ai['run'] }),
@@ -373,7 +373,7 @@ describe('POST /api/sessions/:id/ai/generate', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/generate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
       }),
       makeEnv(db, { run: (async () => ({ response: repairedResponse })) as unknown as Ai['run'] }),
@@ -393,7 +393,7 @@ describe('POST /api/sessions/:id/ai/generate', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/generate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
       }),
       makeEnv(db, { run: (async () => ({ response: aiResponse })) as unknown as Ai['run'] }),
@@ -420,7 +420,7 @@ describe('POST /api/sessions/:id/ai/refine', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/refine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ grounding: 'team values', feedback: 'more specific' }),
       }),
       makeEnv(db),
@@ -434,7 +434,7 @@ describe('POST /api/sessions/:id/ai/refine', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/refine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ grounding: 'team values', feedback: 'more specific' }),
       }),
       makeEnv(db),
@@ -448,7 +448,7 @@ describe('POST /api/sessions/:id/ai/refine', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/refine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ feedback: 'more specific' }),
       }),
       makeEnv(db),
@@ -464,7 +464,7 @@ describe('POST /api/sessions/:id/ai/refine', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/refine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ grounding: 'team values' }),
       }),
       makeEnv(db),
@@ -492,7 +492,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     seedSession(db, { status: 'draft' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -507,7 +507,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     seedSession(db, { status: 'closed' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -538,7 +538,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes?window=7d', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -563,7 +563,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     seedSession(db, { status: 'archived' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -576,7 +576,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     seedSession(db, { status: 'closed' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -604,7 +604,7 @@ describe('preflight emits preflight.checked AE event', () => {
     const { env, mockAe } = makeEnvWithAe(db)
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       env,
     )
@@ -624,7 +624,7 @@ describe('preflight emits preflight.checked AE event', () => {
     const { env, mockAe } = makeEnvWithAe(db)
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       env,
     )
@@ -646,7 +646,7 @@ describe('preflight emits preflight.checked AE event', () => {
     seedQuestion(db)
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/preflight', {
-        headers: { cookie: await cookieFor(USER_ID) },
+        headers: { 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
       }),
       makeEnv(db),
     )
@@ -674,7 +674,7 @@ describe('AI generate emits ai.rate_limited AE event when rate limit is exceeded
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/ai/generate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ sessionTitle: 'Test', sessionGoal: 'Test goal' }),
       }),
       env,
@@ -700,7 +700,7 @@ describe('PATCH /api/sessions/:id accepts ai_accepted_count and ai_dismissed_cou
     const patchRes = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           ai_generated: true,
           ai_consent_at: consentAt,
@@ -721,7 +721,7 @@ describe('PATCH /api/sessions/:id accepts ai_accepted_count and ai_dismissed_cou
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ ai_accepted_count: -1 }),
       }),
       makeEnv(db),
@@ -735,7 +735,7 @@ describe('PATCH /api/sessions/:id accepts ai_accepted_count and ai_dismissed_cou
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookieFor(USER_ID) },
         body: JSON.stringify({ ai_accepted_count: 0 }),
       }),
       makeEnv(db),

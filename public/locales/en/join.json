@@ -83,5 +83,7 @@
   "wordCloud.submit": "Submit",
   "wordCloud.submitted": "Your word: {word}. Submit another to replace it.",
   "wordCloud.single_word_hint": "Single words only — no spaces.",
-  "wordCloud.top_words": "Top words"
+  "wordCloud.top_words": "Top words",
+  "inviteNeedsVerifiedEmail": "Confirm your email address first — use the link we sent you, then open this invite again.",
+  "inviteWrongAccount": "This invite was sent to a different email address. Sign in with that address to accept it."
 }

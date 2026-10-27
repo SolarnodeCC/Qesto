@@ -27,22 +27,18 @@ export async function deliverMarketingWebhook(
       body,
     })
   } catch (err) {
-    console.error(
-      JSON.stringify({
+    logEvent({
         event: 'webhook.marketing.delivery_error',
         sessionId: payload.sessionId,
         error: String(err),
-      }),
-    )
+      }, 'error')
     return
   }
   if (!response.ok) {
-    console.error(
-      JSON.stringify({
+    logEvent({
         event: 'webhook.marketing.delivery_failed',
         sessionId: payload.sessionId,
         status: response.status,
-      }),
-    )
+      }, 'error')
   }
 }

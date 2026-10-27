@@ -24,6 +24,7 @@ import {
   integrationsDisabled,
   resolvePrimaryTeamId,
 } from './shared'
+import { logEvent } from '../../lib/log'
 
 export function mountSalesforceRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
   app.get('/salesforce/status', authMiddleware, async (c) => {
@@ -83,7 +84,7 @@ export function mountSalesforceRoutes(app: Hono<{ Bindings: Env; Variables: Vars
       })
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=salesforce`, 302)
     } catch (err) {
-      console.error(JSON.stringify({ event: 'salesforce.callback.error', error: String(err) }))
+      logEvent({ event: 'salesforce.callback.error', error: String(err) }, 'error')
       return c.redirect(`${c.env.PAGES_URL}/integrations?error=salesforce_oauth_failed`, 302)
     }
   })

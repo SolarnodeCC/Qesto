@@ -26,9 +26,20 @@
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
+import { getCookie } from 'hono/cookie'
 import { resolveExpectedOrigin } from '../lib/origin'
+import { SESSION_COOKIE } from './auth'
 
 const UNSAFE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
+
+/**
+ * DD-24 (#896): marker header the SPA's API client sends on every request.
+ * A cross-site page cannot attach it without passing a CORS preflight, which
+ * our CORS policy only grants to PAGES_URL — so its presence proves the
+ * request came from our own frontend even when Origin/Referer are absent.
+ */
+export const CLIENT_MARKER_HEADER = 'x-qesto-client'
+export const CLIENT_MARKER_VALUE = 'web'
 
 function normaliseOrigin(url: string | null | undefined): string | null {
   if (!url) return null
@@ -72,24 +83,30 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   const refererHeader = c.req.header('referer')
   const candidate = normaliseOrigin(originHeader) ?? normaliseOrigin(refererHeader)
 
-  // If neither Origin nor Referer is present, the request is not coming from
-  // a browser that exposes cross-site context (e.g. curl, a CLI, or a
-  // same-origin fetch where the UA chose to omit the header). Since the
-  // session cookie is HttpOnly + SameSite=None, cross-site attackers cannot
-  // forge a fetch *without* sending an Origin. Be permissive for this case
-  // to avoid breaking non-browser integrations; reject only when a header is
-  // present and mismatched.
-  //
-  // Residual risk: any holder of a valid session cookie who can issue requests
-  // without Origin/Referer (e.g. a server-side integration) bypasses this
-  // check. Mitigation options if we add server-to-server callers:
-  //   (a) Issue short-lived API tokens and require Authorization header instead
-  //       of the session cookie — those callers never need cookie auth.
-  //   (b) Require a custom header (e.g. X-Qesto-Client) on all mutating
-  //       requests from known non-browser clients; CSRF attackers cannot set
-  //       custom headers cross-origin (CORS blocks them on the preflight).
-  // High-risk routes to revisit first: POST /billing/portal, POST /teams,
-  // DELETE /sessions/:id.
+  // If neither Origin nor Referer is present, the request did not come from a
+  // browser fetch/form (browsers send Origin on every unsafe-method request).
+  // DD-24 (#896): that used to be accepted unconditionally, so anything holding
+  // a session cookie that could suppress both headers bypassed the check.
+  // Now a header-less request may ride on the session *cookie* only if it
+  // carries the SPA marker header (custom headers cannot be set cross-site
+  // without a passed preflight). Bearer / API-key callers never use the cookie
+  // and stay unaffected, as do unauthenticated requests (nothing to forge).
+  if (!candidate) {
+    const usesCookieAuth =
+      Boolean(getCookie(c, SESSION_COOKIE)) && !c.req.header('authorization')
+    if (usesCookieAuth && c.req.header(CLIENT_MARKER_HEADER) !== CLIENT_MARKER_VALUE) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'forbidden_origin', message: 'Cross-origin request blocked' },
+          trace_id: (c.get('trace_id' as never) as string | undefined) ?? 'unknown',
+        },
+        403,
+      )
+    }
+    return next()
+  }
+
   const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
   const isLocalDevOrigin = candidate ? /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate) : false
   // SECURITY: localhost is a CSRF *attacker* origin against a deployed API, not

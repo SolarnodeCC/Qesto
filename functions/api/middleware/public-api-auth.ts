@@ -9,7 +9,6 @@
  * when the flag is on.
  */
 import type { Context, Next } from 'hono'
-import { API_KEY_RECORD_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson, readKvText } from '../lib/kv'
 import {
   ApiKeyRecordSchema,
@@ -23,6 +22,7 @@ import {
 import { atomicRateLimit } from '../lib/atomic-rate-limit'
 import { getFlag } from '../lib/flags'
 import { writeEvent } from '../lib/observability'
+import { logBestEffort } from '../lib/log'
 import { incrementAndCheckThreshold, shouldSendQuotaNotification } from '../lib/tenant-quota'
 import type { Env } from '../types'
 
@@ -30,6 +30,17 @@ export type ApiKeyVars = { apiKey: ApiKeyRecord }
 
 const KEY_LIMIT_PER_MIN = 120
 const KEY_WINDOW_SEC = 60
+/**
+ * DD-17 (#890): `lastUsedAt` is refreshed at most this often. KV allows ~1
+ * write/s per key and API keys may do 2 req/s, so a write per request caused
+ * contention and lost updates for a field nobody reads at sub-minute grain.
+ * Per-request metering goes to Analytics Engine (`api.request` below).
+ */
+export const API_KEY_LAST_USED_REFRESH_MS = 5 * 60_000
+
+export function shouldRefreshLastUsed(record: ApiKeyRecord, now = Date.now()): boolean {
+  return !record.lastUsedAt || now - record.lastUsedAt > API_KEY_LAST_USED_REFRESH_MS
+}
 const API_KEY_FORMAT = /^qesto_[0-9a-f]{32}$/
 
 async function legacyKvRateLimit(
@@ -109,10 +120,25 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     }
   }
 
-  const updated: ApiKeyRecord = { ...parsed.data, lastUsedAt: Date.now() }
-  await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(parsed.data.id), updated, {
-    expirationTtl: API_KEY_RECORD_TTL_SECONDS,
-  })
+  let current: ApiKeyRecord = parsed.data
+  if (shouldRefreshLastUsed(parsed.data)) {
+    current = { ...parsed.data, lastUsedAt: Date.now() }
+    // No expirationTtl — expiry lives in `expiresAt`, not KV eviction.
+    const write = writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(parsed.data.id), current).catch((err) =>
+      // Usage timestamp is informational; never fail the API call over it.
+      logBestEffort(err, {
+        traceId: c.req.header('cf-ray') ?? 'unknown',
+        route: c.req.path,
+        operation: 'apikey.lastUsedAt',
+      }),
+    )
+    // Off the response path when a Worker ctx exists; Vitest app.request() has none.
+    try {
+      c.executionCtx.waitUntil(write)
+    } catch {
+      await write
+    }
+  }
 
   writeEvent(c.env.METRICS_AE, {
     name: 'api.request',
@@ -137,6 +163,6 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     }
   } catch { /* fail-open */ }
 
-  c.set('apiKey', updated)
+  c.set('apiKey', current)
   await next()
 }

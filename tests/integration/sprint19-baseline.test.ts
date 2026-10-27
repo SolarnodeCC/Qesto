@@ -49,7 +49,7 @@ describe('Sprint 19 baseline endpoint', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/journey-events', {
         method: 'POST',
-        headers: { cookie: await adminCookie(), 'content-type': 'application/json' },
+        headers: { 'x-qesto-client': 'web', cookie: await adminCookie(), 'content-type': 'application/json' },
         body: JSON.stringify({ event: 'wizard.opened' }),
       }),
       makeEnv(db),
@@ -160,7 +160,7 @@ describe('Sprint 19 baseline endpoint', () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('http://local/api/admin/sprint19-baseline', {
-        headers: { cookie: await adminCookie() },
+        headers: { 'x-qesto-client': 'web', cookie: await adminCookie() },
       }),
       makeEnv(db),
     )

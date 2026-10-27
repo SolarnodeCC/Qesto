@@ -27,6 +27,6 @@
     },
     "noEmit": true
   },
-  "include": ["src/**/*", "functions/**/*", "tests/**/*", "scripts/**/*"],
+  "include": ["src/**/*", "functions/**/*", "tests/**/*", "scripts/**/*", "worker/**/*"],
   "exclude": ["node_modules", "dist", ".wrangler"]
 }

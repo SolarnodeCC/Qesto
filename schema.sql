@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at INTEGER NOT NULL,                                 -- unix ms
   last_login_at INTEGER,
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team')),
-  suspended_at INTEGER                                         -- unix ms; NULL = active
+  suspended_at INTEGER,                                        -- unix ms; NULL = active
+  email_verified_at INTEGER                                    -- unix ms; NULL = mailbox not proven (DD-10, 0083)
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_suspended ON users(suspended_at);

@@ -109,6 +109,18 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
 }
 
+/** DD-10: confirm-your-address mail for password signups (24h link, signs the user in). */
+export function verifyEmailEmail(appUrl: string, token: string) {
+  const url = `${appUrl}/api/auth/callback?token=${encodeURIComponent(token)}&redirect=/dashboard`
+  const subject = 'Confirm your email for Qesto'
+  const text = `Confirm your email address by opening this link (valid 24 hours):\n\n${url}\n\nIf you didn't create a Qesto account, ignore this email.`
+  const html = `<p>Confirm your email address to finish setting up your Qesto account. The link is valid for 24 hours.</p>
+<p><a href="${url}" style="display:inline-block;padding:12px 20px;background:linear-gradient(135deg,#14B8A6,#8B5CF6);color:#fff;text-decoration:none;border-radius:8px;font-family:system-ui,sans-serif">Confirm email</a></p>
+<p>Or paste this URL into your browser: <br><code>${url}</code></p>
+<p style="color:#525252;font-size:12px">If you didn't create a Qesto account, you can ignore this email.</p>`
+  return { url, subject, text, html }
+}
+
 export function magicLinkEmail(appUrl: string, token: string) {
   const url = `${appUrl}/api/auth/callback?token=${encodeURIComponent(token)}`
   const subject = 'Sign in to Qesto'

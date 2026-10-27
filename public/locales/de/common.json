@@ -280,5 +280,13 @@
     "daysLeft_other": "Noch {{count}} Tage",
     "endsToday": "Endet heute",
     "ctaSuppressed": "Derzeit für alle kostenlos – nichts zu upgraden."
+  },
+  "verifyEmail": {
+    "title": "Bestätige deine E-Mail-Adresse.",
+    "body": "Wir haben einen Link an {{email}} gesendet. Bis du ihn öffnest, kannst du keinen Teams beitreten, keinen Tarif kaufen und keine API-Schlüssel erstellen.",
+    "resend": "Link erneut senden",
+    "sending": "Wird gesendet…",
+    "sent": "Link gesendet — sieh in deinen Posteingang.",
+    "error": "Senden fehlgeschlagen. Versuche es später erneut."
   }
 }

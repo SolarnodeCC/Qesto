@@ -3,13 +3,14 @@
  */
 import { Hono } from 'hono'
 import { errorResponse } from '../lib/error-handler'
+import { parsePageQuery } from '../lib/pagination'
 import type { AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import {
-  listSessionsForTeam,
+  listSessionsForTeamPage,
   fetchSessionForTeam,
   fetchSessionResultsData,
 } from '../repositories/sessionRepository'
@@ -25,8 +26,12 @@ export function mountPublicApiV1Routes(parent: Hono<{ Bindings: Env; Variables: 
   app.use('*', publicApiKeyMiddleware)
 
   app.get('/sessions', async (c) => {
-    const sessions = await listSessionsForTeam(c.env.DB, c.get('apiKey').teamId)
-    return c.json({ ok: true, data: { sessions } })
+    // DD-14: keyset pages. Default 100 keeps the pre-pagination response size
+    // for integrators that never send a cursor; nextCursor fetches the rest.
+    const q = parsePageQuery(c.req.query(), 100)
+    if (!q.ok) return errorResponse(c, 400, 'bad_request', q.error)
+    const { items, nextCursor } = await listSessionsForTeamPage(c.env.DB, c.get('apiKey').teamId, q.page)
+    return c.json({ ok: true, data: { sessions: items, nextCursor } })
   })
 
   app.get('/sessions/:id/results', async (c) => {

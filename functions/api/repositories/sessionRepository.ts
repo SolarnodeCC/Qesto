@@ -3,6 +3,8 @@
  * Routes should import from here instead of inline prepare().
  */
 
+import { toPage, type Cursor } from '../lib/pagination'
+
 export type SessionRow = {
   id: string
   title: string
@@ -80,15 +82,29 @@ export async function fetchSessionForTeam(
   return row ?? null
 }
 
-export async function listSessionsForTeam(db: D1Database, teamId: string, limit = 100): Promise<SessionRow[]> {
-  const { results } = await db
-    .prepare(
-      `SELECT id, title, status, code, team_id, owner_id, created_at, closed_at
-         FROM sessions WHERE team_id = ?1 ORDER BY created_at DESC LIMIT ?2`,
-    )
-    .bind(teamId, limit)
-    .all<SessionRow>()
-  return results ?? []
+/**
+ * Keyset page of a team's sessions, newest first (DD-14). Fetches `limit + 1`
+ * rows so the caller can tell whether another page exists.
+ */
+export async function listSessionsForTeamPage(
+  db: D1Database,
+  teamId: string,
+  page: { limit: number; cursor: Cursor | null },
+): Promise<{ items: SessionRow[]; nextCursor: string | null }> {
+  const cols = 'id, title, status, code, team_id, owner_id, created_at, closed_at'
+  const stmt = page.cursor
+    ? db
+        .prepare(
+          `SELECT ${cols} FROM sessions
+            WHERE team_id = ?1 AND (created_at < ?2 OR (created_at = ?2 AND id < ?3))
+            ORDER BY created_at DESC, id DESC LIMIT ?4`,
+        )
+        .bind(teamId, page.cursor.createdAt, page.cursor.id, page.limit + 1)
+    : db
+        .prepare(`SELECT ${cols} FROM sessions WHERE team_id = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2`)
+        .bind(teamId, page.limit + 1)
+  const { results } = await stmt.all<SessionRow>()
+  return toPage(results ?? [], page.limit)
 }
 
 export async function createDraftSessionForTeam(

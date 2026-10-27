@@ -61,7 +61,7 @@ describe('team workspaces (ADR-0048)', () => {
     const create = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'Sprint retro', cadence: 'sprint' }),
       }),
       env,
@@ -69,7 +69,7 @@ describe('team workspaces (ADR-0048)', () => {
     expect(create.status).toBe(201)
 
     const list = await app.fetch(
-      new Request('http://local/api/teams/team-w/workspaces?kind=retro', { headers: { cookie } }),
+      new Request('http://local/api/teams/team-w/workspaces?kind=retro', { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(list.status).toBe(200)
@@ -92,7 +92,7 @@ describe('team workspaces (ADR-0048)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'Team Alpha' }),
       }),
       env,
@@ -104,7 +104,7 @@ describe('team workspaces (ADR-0048)', () => {
     const instance = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -116,7 +116,7 @@ describe('team workspaces (ADR-0048)', () => {
     expect(instBody.data.session.title).toContain('Retro #1')
 
     const history = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(history.status).toBe(200)
@@ -138,7 +138,7 @@ describe('team workspaces (ADR-0048)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'Actions retro' }),
       }),
       env,
@@ -148,7 +148,7 @@ describe('team workspaces (ADR-0048)', () => {
     const patch = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           items: [
             { text: 'Improve CI speed', status: 'open' },
@@ -161,7 +161,7 @@ describe('team workspaces (ADR-0048)', () => {
     expect(patch.status).toBe(200)
 
     const get = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, { headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(get.status).toBe(200)
@@ -186,7 +186,7 @@ describe('team workspaces (ADR-0048)', () => {
       const createWs = await app.fetch(
         new Request('http://local/api/teams/team-w/workspaces', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
           body: JSON.stringify({ kind: 'retro', title: 'Lineage retro' }),
         }),
         env,
@@ -212,7 +212,7 @@ describe('team workspaces (ADR-0048)', () => {
       const resolved = await app.fetch(
         new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
           method: 'PATCH',
-          headers: { 'content-type': 'application/json', cookie },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
           body: JSON.stringify({
             items: [{ id: carried.id, text: 'Carry forward follow-up - done', status: 'resolved' }],
           }),
@@ -234,7 +234,7 @@ describe('team workspaces (ADR-0048)', () => {
       const stillResolved = await app.fetch(
         new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
           method: 'PATCH',
-          headers: { 'content-type': 'application/json', cookie },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
           body: JSON.stringify({
             items: [{ id: carried.id, text: 'Carry forward follow-up - still done', status: 'resolved' }],
           }),
@@ -254,7 +254,7 @@ describe('team workspaces (ADR-0048)', () => {
       const reopenedWithNew = await app.fetch(
         new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
           method: 'PATCH',
-          headers: { 'content-type': 'application/json', cookie },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
           body: JSON.stringify({
             items: [
               { id: carried.id, text: 'Carry forward follow-up - reopened', status: 'open' },
@@ -299,14 +299,14 @@ describe('team workspaces (ADR-0048)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'History retro' }),
       }),
       env,
     )
     const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
     const inst = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     const sessionId = ((await inst.json()) as { data: { session: { id: string } } }).data.session.id
@@ -323,7 +323,7 @@ describe('team workspaces (ADR-0048)', () => {
     } as never)
 
     const hist = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/history`, { headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/history`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(hist.status).toBe(200)
@@ -348,7 +348,7 @@ describe('team workspaces (ADR-0048)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'Refresh retro' }),
       }),
       env,
@@ -356,14 +356,14 @@ describe('team workspaces (ADR-0048)', () => {
     const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
 
     const first = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(first.status).toBe(200)
     expect(((await first.json()) as { data: { debounced: boolean } }).data.debounced).toBe(false)
 
     const second = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(((await second.json()) as { data: { debounced: boolean } }).data.debounced).toBe(true)
@@ -398,7 +398,7 @@ describe('team workspaces (ADR-0048)', () => {
     const create = await app.fetch(
       new Request('http://local/api/teams/team-free/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ kind: 'retro', title: 'Nope' }),
       }),
       env,

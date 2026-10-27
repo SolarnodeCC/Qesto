@@ -40,6 +40,8 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
   if (opts.body !== undefined) headers['content-type'] = 'application/json'
   if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey
   headers['accept-language'] = getLanguageHeader()
+  // DD-24: CSRF marker — see functions/api/middleware/csrf.ts CLIENT_MARKER_HEADER.
+  headers['x-qesto-client'] = 'web'
   const token = getAuthToken()
   if (token) headers['authorization'] = `Bearer ${token}`
 

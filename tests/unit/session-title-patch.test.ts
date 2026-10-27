@@ -85,7 +85,7 @@ describe('session title PATCH and duplicate', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Renamed retro' }),
       }),
       env,
@@ -105,7 +105,7 @@ describe('session title PATCH and duplicate', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ anonymity: 'none' }),
       }),
       env,
@@ -123,7 +123,7 @@ describe('session title PATCH and duplicate', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'New name' }),
       }),
       env,
@@ -143,7 +143,7 @@ describe('session title PATCH and duplicate', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/duplicate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'My custom copy' }),
       }),
       env,
@@ -166,7 +166,7 @@ describe('session title PATCH and duplicate', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_1/duplicate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: '{}',
       }),
       env,

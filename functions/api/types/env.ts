@@ -99,6 +99,8 @@ export type Env = {
   SENTIMENT_ENABLED?: string
   /** SEC-RATELIMIT-01: return 503 when ACTIONS_KV rate limiter fails. */
   RATE_LIMIT_FAIL_CLOSED?: string
+  /** DD-06: comma-separated limiter profile labels allowed to fail OPEN (never `auth*`). */
+  RATE_LIMIT_FAIL_OPEN_PROFILES?: string
   /**
    * ADR-0073 / WS-1: prefer Workers Rate Limiting bindings via
    * `atomicRateLimit()`. MUST stay off until WS-2 canary is staged.
@@ -137,6 +139,20 @@ export type Env = {
   JWT_SECRET: string
   /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
   JWT_SECRET_PREV?: string
+  /**
+   * DD-23: dedicated signing key for admin impersonation tokens. Optional —
+   * when unset a key is derived from JWT_SECRET under a fixed domain label, so
+   * session tokens can never verify as impersonation tokens either way.
+   */
+  IMPERSONATION_SECRET?: string
+  /** DD-36: `"hibp"` adds the HIBP k-anonymity lookup to the bundled common-password denylist. */
+  BREACHED_PASSWORD_CHECK?: string
+  /** DD-10: `"false"` disables the verified-email gate (kill-switch). Default enforced. */
+  EMAIL_VERIFICATION_ENFORCED?: string
+  /** DD-04: AES-GCM key material for TOTP secrets at rest (optional; derived from JWT_SECRET when unset). */
+  MFA_ENCRYPTION_KEY?: string
+  /** DD-04: `"true"` requires a second factor verified within 15 min on platform-admin routes. */
+  ADMIN_MFA_REQUIRED?: string
   MULTI_REGION_WRITES_ENABLED?: string
   /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
   CLOUDFLARE_AI_GATEWAY_ID?: string

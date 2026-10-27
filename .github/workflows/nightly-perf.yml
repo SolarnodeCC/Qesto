@@ -1,0 +1,42 @@
+# DD-18 (#891): the stress and load lanes existed but no workflow ran them.
+# Too slow for every PR; nightly is enough to catch DO concurrency and
+# vote-flush regressions before a live session does.
+name: nightly-perf
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-perf
+  cancel-in-progress: true
+
+jobs:
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: bash ops/ci/nightly-perf.sh stress
+
+  load:
+    # k6 smoke against a deployed environment. Opt-in: set the repository
+    # variable LOAD_TEST_BASE_URL to a NON-production origin (staging). The job
+    # is skipped while it is unset, so production is never load-tested by
+    # accident.
+    if: ${{ vars.LOAD_TEST_BASE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: bash ops/ci/nightly-perf.sh load
+        env:
+          LOAD_TEST_BASE_URL: ${{ vars.LOAD_TEST_BASE_URL }}

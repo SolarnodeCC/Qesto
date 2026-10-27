@@ -7,11 +7,12 @@ import { LOGIN_FIELD_CLASS } from '../ui/input-field-class'
 import { inputHint } from '../ui/input-hint'
 import { FormField } from '../ui/FormField'
 import { Button } from '../ui/components'
+import MfaChallenge from '../components/auth/MfaChallenge'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
 type LoginStatus = 'idle' | 'submitting' | 'invalid_credentials' | 'error'
-type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'error'
+type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'password_breached' | 'error'
 type ResetStatus = 'idle' | 'submitting' | 'sent' | 'invalid' | 'error'
 
 export default function Login() {
@@ -29,6 +30,9 @@ export default function Login() {
   const requestedTab = search.get('tab')
   const initialTab: Tab = requestedTab === 'signup' || requestedTab === 'login' ? requestedTab : 'magic'
   const [tab, setTab] = useState<Tab>(initialTab)
+  // DD-04: set by a password login, or by ?mfa= after a magic-link / Google
+  // first factor; while set, the page shows the authenticator-code step.
+  const [mfaToken, setMfaToken] = useState<string | null>(() => search.get('mfa'))
   const isSignupIntent = initialTab === 'signup'
 
   // Magic link state
@@ -63,6 +67,12 @@ export default function Login() {
     setLoginStatus('submitting')
     const result = await loginWithPassword(loginEmail, loginPassword)
     if (result === 'ok') { navigate('/dashboard', { replace: true }); return }
+    if (typeof result === 'object' && typeof result.mfaToken === 'string') {
+      // DD-04: password accepted; the second factor is still required.
+      setLoginStatus('idle')
+      setMfaToken(result.mfaToken)
+      return
+    }
     setLoginStatus(result === 'invalid_credentials' ? 'invalid_credentials' : 'error')
   }
 
@@ -75,7 +85,7 @@ export default function Login() {
     setSignupStatus('submitting')
     const result = await signupWithPassword(signupEmail, signupPassword, signupName || undefined)
     if (result === 'ok') { navigate('/dashboard', { replace: true }); return }
-    setSignupStatus(result === 'email_taken' ? 'email_taken' : 'error')
+    setSignupStatus(result === 'email_taken' || result === 'password_breached' ? result : 'error')
   }
 
   async function onResetSubmit(e: FormEvent) {
@@ -106,6 +116,16 @@ export default function Login() {
   }
 
   const inputClass = LOGIN_FIELD_CLASS
+
+  if (mfaToken) {
+    return (
+      <main id="main" className="min-h-screen flex items-center justify-center p-8">
+        <section className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-12 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]">
+          <MfaChallenge mfaToken={mfaToken} onDone={() => navigate('/dashboard', { replace: true })} />
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main id="main" className="min-h-screen flex items-center justify-center p-8">
@@ -387,12 +407,15 @@ export default function Login() {
                   required
                   minLength={8}
                   value={signupPassword}
-                  onChange={(e) => { setSignupPassword(e.target.value); if (signupStatus === 'password_too_short') setSignupStatus('idle') }}
-                  aria-invalid={signupStatus === 'password_too_short'}
+                  onChange={(e) => { setSignupPassword(e.target.value); if (signupStatus === 'password_too_short' || signupStatus === 'password_breached') setSignupStatus('idle') }}
+                  aria-invalid={signupStatus === 'password_too_short' || signupStatus === 'password_breached'}
                   className={inputClass}
                 />
                 {signupStatus === 'password_too_short' && (
                   <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordMin8')}</p>
+                )}
+                {signupStatus === 'password_breached' && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordBreached')}</p>
                 )}
               </div>
               {signupStatus === 'error' && (

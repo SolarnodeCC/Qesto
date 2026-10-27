@@ -2,51 +2,936 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Qesto Public API",
-    "version": "3.0.0-draft"
+    "version": "3.0.0",
+    "description": "Bearer-authenticated with a team API key (`qesto_` + 32 hex). Rate limit: 120 requests/min per key (429 with Retry-After). v1 sunsets 2026-12-31 and v2 sunsets 2027-06-30 — both send `Deprecation`, `Sunset` and `Link: rel=\"successor-version\"` headers; migrate to v3."
   },
   "servers": [
     {
-      "url": "/api/v3"
+      "url": "https://qesto.cc/api"
     }
   ],
   "paths": {
-    "/sessions": {
+    "/v1/sessions": {
       "get": {
-        "summary": "List team sessions",
+        "tags": [
+          "v1 (deprecated)"
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v1ListSessions",
+        "summary": "List team sessions (newest first)",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque `nextCursor` from the previous page (keyset pagination).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "sessions",
+                        "nextCursor"
+                      ],
+                      "properties": {
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Session"
+                          }
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Null on the last page."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/v1/sessions/{id}/results": {
+      "get": {
+        "tags": [
+          "v1 (deprecated)"
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v1SessionResults",
+        "summary": "Session results",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "session",
+                        "questions",
+                        "vote_counts"
+                      ],
+                      "properties": {
+                        "session": {
+                          "$ref": "#/components/schemas/Session"
+                        },
+                        "questions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/QuestionSummary"
+                          }
+                        },
+                        "vote_counts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VoteCount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/v2/sessions": {
+      "post": {
+        "tags": [
+          "v2 (deprecated)"
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v2CreateSession",
+        "summary": "Create a draft session",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "code",
+                        "title",
+                        "status",
+                        "teamId",
+                        "createdAt"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "const": "draft"
+                        },
+                        "teamId": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "integer",
+                          "description": "Epoch milliseconds"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/v2/sessions/{id}/results": {
+      "get": {
+        "tags": [
+          "v2 (deprecated)"
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v2SessionResults",
+        "summary": "Session results (v2 names the vote array `votes`)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "session",
+                        "questions",
+                        "votes"
+                      ],
+                      "properties": {
+                        "session": {
+                          "$ref": "#/components/schemas/SessionBasic"
+                        },
+                        "questions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/QuestionSummary"
+                          }
+                        },
+                        "votes": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VoteCount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/v2/sessions/{id}/realtime": {
+      "get": {
+        "tags": [
+          "v2 (deprecated)"
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v2SessionRealtime",
+        "summary": "WebSocket connection details for a live session",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connection details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "protocolVersion",
+                        "supportedVersions",
+                        "websocketUrl",
+                        "events"
+                      ],
+                      "properties": {
+                        "protocolVersion": {
+                          "type": "integer",
+                          "enum": [
+                            1,
+                            2
+                          ]
+                        },
+                        "supportedVersions": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "websocketUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "events": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "note": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "409": {
+            "$ref": "#/components/responses/E409"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/v3/openapi.json": {
+      "get": {
+        "tags": [
+          "v3"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v3OpenApi",
+        "summary": "This document",
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1 document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        }
+      }
+    },
+    "/v3/sessions": {
+      "get": {
+        "tags": [
+          "v3"
+        ],
         "security": [
           {
             "bearer": [
               "read"
             ]
           }
-        ]
+        ],
+        "operationId": "v3ListSessions",
+        "summary": "List team sessions (newest first)",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque `nextCursor` from the previous page (keyset pagination).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "sessions",
+                        "nextCursor",
+                        "apiVersion"
+                      ],
+                      "properties": {
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Session"
+                          }
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Null on the last page."
+                        },
+                        "apiVersion": {
+                          "type": "integer",
+                          "const": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
       },
       "post": {
-        "summary": "Create draft session",
+        "tags": [
+          "v3"
+        ],
         "security": [
           {
             "bearer": [
               "write"
             ]
           }
-        ]
+        ],
+        "operationId": "v3CreateSession",
+        "summary": "Create a draft session",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Replays return the original response with `X-Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "session"
+                      ],
+                      "properties": {
+                        "session": {
+                          "$ref": "#/components/schemas/Session"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
       }
     },
-    "/sessions/{id}/results": {
+    "/v3/sessions/{id}/results": {
       "get": {
-        "summary": "Session results",
+        "tags": [
+          "v3"
+        ],
         "security": [
           {
             "bearer": [
               "read"
             ]
           }
-        ]
+        ],
+        "operationId": "v3SessionResults",
+        "summary": "Session results",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "session",
+                        "questions",
+                        "vote_counts"
+                      ],
+                      "properties": {
+                        "session": {
+                          "$ref": "#/components/schemas/Session"
+                        },
+                        "questions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/QuestionSummary"
+                          }
+                        },
+                        "vote_counts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VoteCount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
       }
     },
-    "/openapi.json": {
+    "/v3/usage": {
       "get": {
-        "summary": "This document"
+        "tags": [
+          "v3"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v3Usage",
+        "summary": "API usage for the current metering window",
+        "responses": {
+          "200": {
+            "description": "Usage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "usage",
+                        "quota"
+                      ],
+                      "properties": {
+                        "usage": {
+                          "type": "object",
+                          "required": [
+                            "teamId",
+                            "windowStart",
+                            "requestCount",
+                            "lastRequestAt"
+                          ],
+                          "properties": {
+                            "teamId": {
+                              "type": "string"
+                            },
+                            "windowStart": {
+                              "type": "integer",
+                              "description": "Epoch seconds"
+                            },
+                            "requestCount": {
+                              "type": "integer"
+                            },
+                            "lastRequestAt": {
+                              "type": "integer",
+                              "description": "Epoch milliseconds"
+                            }
+                          }
+                        },
+                        "quota": {
+                          "type": "object",
+                          "required": [
+                            "requestsPerDay"
+                          ],
+                          "properties": {
+                            "requestsPerDay": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          },
+          "503": {
+            "$ref": "#/components/responses/E503"
+          }
+        }
+      }
+    },
+    "/v3/residency": {
+      "get": {
+        "tags": [
+          "v3"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "v3Residency",
+        "summary": "Data-residency configuration and proof for the team",
+        "responses": {
+          "200": {
+            "description": "Residency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "teamId",
+                        "homeRegion",
+                        "writeBinding",
+                        "effectiveRegion",
+                        "residencyLocked",
+                        "proof"
+                      ],
+                      "properties": {
+                        "teamId": {
+                          "type": "string"
+                        },
+                        "homeRegion": {
+                          "type": "string"
+                        },
+                        "regionLock": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "writeBinding": {
+                          "type": "string"
+                        },
+                        "effectiveRegion": {
+                          "type": "string"
+                        },
+                        "residencyLocked": {
+                          "type": "boolean"
+                        },
+                        "proof": {
+                          "type": "object",
+                          "properties": {
+                            "checkedAt": {
+                              "type": "integer"
+                            },
+                            "source": {
+                              "type": "string"
+                            },
+                            "multiRegionWritesEnabled": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
       }
     }
   },
@@ -55,7 +940,239 @@
       "bearer": {
         "type": "http",
         "scheme": "bearer",
-        "description": "qesto_* API key"
+        "description": "Team API key: `qesto_` + 32 hex characters"
+      }
+    },
+    "schemas": {
+      "Session": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "code",
+          "team_id",
+          "owner_id",
+          "created_at",
+          "closed_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "energizing",
+              "live",
+              "closed",
+              "archived"
+            ]
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "team_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "owner_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Epoch milliseconds"
+          },
+          "closed_at": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "SessionBasic": {
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "team_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "QuestionSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "prompt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          }
+        }
+      },
+      "VoteCount": {
+        "type": "object",
+        "required": [
+          "question_id",
+          "option_id",
+          "count"
+        ],
+        "properties": {
+          "question_id": {
+            "type": "string"
+          },
+          "option_id": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "ok",
+          "error"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "E400": {
+        "description": "Invalid input",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E401": {
+        "description": "Missing, malformed or revoked API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E403": {
+        "description": "API key lacks the required scope",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E404": {
+        "description": "Session not found for this team",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E409": {
+        "description": "Session is not live",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E429": {
+        "description": "Rate limited — see Retry-After",
+        "headers": {
+          "Retry-After": {
+            "schema": {
+              "type": "integer"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "E503": {
+        "description": "Dependency unavailable",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
       }
     }
   }

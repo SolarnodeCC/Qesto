@@ -31,12 +31,14 @@ node scripts/check-claude-config.mjs
 # a known anti-pattern and fails if it grows — debt can only shrink, never creep.
 #   - check-ai-gateway: raw env.AI.run outside lib/ai/ai-gateway.ts (runAI facade)
 #   - check-d1-access:  inline env.DB.prepare in routes (belongs in repositories/)
+#   - check-unbounded-queries: D1 .all() reads with no LIMIT (DD-14; paginate instead)
 #   - check-error-response: inline `ok: false` envelopes (belongs in errorResponse())
 #   - check-kv-access:  direct env.*_KV calls outside lib/kv.ts (baseline 0 —
 #     its absence here let 15 violations creep in; see REFACTORING_AUDIT_2026-07-08.md)
 report_success "Architecture ratchets (AI gateway / D1 repo / error builder / KV / cycles)"
 node scripts/check-ai-gateway.mjs
 node scripts/check-d1-access.mjs
+node scripts/check-unbounded-queries.mjs
 node scripts/check-error-response.mjs
 node scripts/check-kv-access.mjs
 # DD-13: runtime import cycles (type-only imports are erased and excluded).

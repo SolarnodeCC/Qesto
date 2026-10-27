@@ -1,23 +1,28 @@
 # API contracts
 
-Public HTTP/WebSocket contracts for Qesto. **Do not hand-edit** files under `generated/`.
+Public HTTP contracts for Qesto. **Do not hand-edit** `openapi-v3.json` or anything under `generated/`.
 
-## Source of truth (interim)
+## Source of truth
 
-Until OpenAPI generation is fully wired, authoritative API documentation lives in:
+The public API (`/api/v1`, `/api/v2`, `/api/v3`) is described by one constant:
+[`functions/api/lib/openapi-v3-spec.ts`](../functions/api/lib/openapi-v3-spec.ts) (DD-05, #878).
+It is served at `/api/v3/openapi.json` and `/api/developer/openapi.json`.
 
-- [knowledge-base/api/API_FULL.md](../knowledge-base/api/API_FULL.md)
-- TypeScript types in `functions/api/types.ts`
+Internal (SPA-only) routes are not part of the public contract; see
+[knowledge-base/api/API_FULL.md](../knowledge-base/api/API_FULL.md).
 
-## Regeneration (planned)
+## Regeneration
 
 ```bash
-# Future: generate clients from OpenAPI
-# npm run contracts:generate
+npm run contracts:generate   # writes openapi-v3.json, then generated/api.d.ts
+npm run check:contracts      # fails if openapi-v3.json drifted from the constant
 ```
 
-Declared generated zone: `agent/generated-zones.toml` → `contracts/generated/api.d.ts`
+## Gates
 
-## Drift checks
+- `tests/unit/openapi-coverage.test.ts` (in `npm test`): every registered public route has a spec
+  operation, and every spec operation maps to a registered route. Adding or removing a public
+  route without updating the spec fails the build.
+- `ops/ci/contracts.sh`: regenerates and fails on any diff in `openapi-v3.json` or `generated/`.
 
-Run `just check` — includes typecheck which validates TS boundaries against server types.
+Declared generated zone: `agent/generated-zones.toml` → `contracts/generated/api.d.ts`.

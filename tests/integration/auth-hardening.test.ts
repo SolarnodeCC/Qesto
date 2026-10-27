@@ -5,6 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import * as oauth from '../../functions/api/lib/oauth'
 import * as saml from '../../functions/api/lib/saml'
+
+// These tests characterize the SAML routes' *enabled* behaviour, which in
+// production is additionally blocked by the DD-39 code gate (#911). Simulate a
+// future build where assertion validation has shipped.
+vi.mock('../../functions/api/lib/saml', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../functions/api/lib/saml')>()),
+  SAML_ASSERTION_VALIDATION_IMPLEMENTED: true,
+}))
 import * as authHelpers from '../../functions/api/routes/auth/helpers'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'

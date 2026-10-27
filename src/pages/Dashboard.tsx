@@ -22,6 +22,7 @@ import { TemplatesSection } from './dashboard/TemplatesSection'
 import { TemplatePreviewModal } from './dashboard/TemplatePreviewModal'
 import type { Template, TemplateModalState, StatusFilter, DashboardTeam, DuplicateModalState } from './dashboard/types'
 import FreeAccessBanner from '../components/FreeAccessBanner'
+import EmailVerificationBanner from '../components/EmailVerificationBanner'
 
 export default function Dashboard() {
   const auth = useAuth()
@@ -315,6 +316,8 @@ export default function Dashboard() {
       <div className="max-w-[1200px] mx-auto px-8 lg:px-16 py-16 animate-page-enter density-stack-12">
         {/* ADR-0074: temporary free-access window. Self-hides when closed. */}
         <FreeAccessBanner />
+        {/* DD-10: confirm-your-email prompt. Self-hides once verified. */}
+        <EmailVerificationBanner />
 
         <HeroSection
           userName={userName}

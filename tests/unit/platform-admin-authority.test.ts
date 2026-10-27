@@ -4,7 +4,7 @@
 import { Hono } from 'hono'
 import { describe, expect, it } from 'vitest'
 import { adminMiddleware } from '../../functions/api/middleware/admin'
-import { rbacMiddleware } from '../../functions/api/middleware/rbac'
+import { platformAdminGuard } from '../../functions/api/middleware/rbac'
 import type { Env } from '../../functions/api/types'
 
 // #586 (CRITICAL) — team 'owner' rows in user_roles must NOT confer platform-admin.
@@ -79,7 +79,7 @@ function rbacApp() {
     c.set('user', { sub: 'u1', email: 'u1@acme.test', iat: 1, exp: 2 })
     await next()
   })
-  app.use('/api/*', rbacMiddleware)
+  app.use('/api/*', platformAdminGuard)
   app.get('/api/admin/users', (c) => c.json({ ok: true }))
   return app
 }
@@ -108,13 +108,13 @@ describe('platform-admin authority (#586)', () => {
     expect(res.status).toBe(200)
   })
 
-  it('rbac matrix DENIES /api/admin/* to a plain team owner (no platform role)', async () => {
+  it('platformAdminGuard DENIES /api/admin/* to a plain team owner (no platform role)', async () => {
     const db = makeDb({ userRoles: new Set(['u1:owner']) })
     const res = await rbacApp().fetch(new Request('http://x/api/admin/users'), makeEnv(db))
     expect(res.status).toBe(403)
   })
 
-  it('rbac matrix ALLOWS /api/admin/* to a platform admin', async () => {
+  it('platformAdminGuard ALLOWS /api/admin/* to a platform admin', async () => {
     const db = makeDb({ userRoles: new Set(['u1:owner']), platformRoles: new Set(['u1:platform_admin']) })
     const res = await rbacApp().fetch(new Request('http://x/api/admin/users'), makeEnv(db))
     expect(res.status).toBe(200)

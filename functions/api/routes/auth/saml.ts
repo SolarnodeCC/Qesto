@@ -6,6 +6,7 @@ import {
   consumeSamlState,
   generateSamlState,
   parseAssertion,
+  SAML_ASSERTION_VALIDATION_IMPLEMENTED,
 } from '../../lib/saml'
 import { attachUserToTeam, loadTeam } from '../teams'
 import { JWT_TTL_SECONDS } from './constants'
@@ -28,9 +29,15 @@ import { flagOff } from '../../lib/flags'
  * `'true'` before any SAML route serves traffic:
  *   • `SAML_SSO_ENABLED` — operator intent to expose SSO
  *   • `SAML_SIGNATURE_VERIFY_ENABLED` — XML-DSig verification shipped (#529)
+ * and, independent of config, `SAML_ASSERTION_VALIDATION_IMPLEMENTED` in
+ * lib/saml.ts must be true (DD-39, #911).
  */
 function samlDisabled(c: Context<{ Bindings: Env; Variables: AuthVars }>): Response | null {
-  if (flagOff(c.env, 'SAML_SSO_ENABLED') || flagOff(c.env, 'SAML_SIGNATURE_VERIFY_ENABLED')) {
+  if (
+    !SAML_ASSERTION_VALIDATION_IMPLEMENTED ||
+    flagOff(c.env, 'SAML_SSO_ENABLED') ||
+    flagOff(c.env, 'SAML_SIGNATURE_VERIFY_ENABLED')
+  ) {
     return new Response(
       JSON.stringify({
         ok: false,
@@ -123,7 +130,7 @@ export function registerSamlRoutes(app: AuthApp): void {
       try {
         assertion = parseAssertion(samlResponse, expectedAudience)
       } catch (err) {
-        console.error(`[auth:saml] assertion parse failed: ${(err as Error).message}`)
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] saml/callback', errorClass: 'SamlAssertionParseError', statusCode: 400 })
         void recordAuthAuditEvent(c.env.DB, {
           action: 'auth.sso_failed',
           actor_ip: c.req.header('cf-connecting-ip') ?? null,

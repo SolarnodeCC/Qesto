@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
+import { activeImpersonationKey, mintImpersonationToken } from '../../functions/api/lib/impersonation'
 import { hashSessionToken, revokedSessionTokenKey } from '../../functions/api/lib/session-token'
 import type { Env } from '../../functions/api/types'
 import { KVMock } from '../helpers/kv-mock'
@@ -302,13 +303,17 @@ describe('impersonation — stopping is authoritative', () => {
   it('revokes the impersonation token server-side and clears it cross-site', async () => {
     const actions = kv()
     const app = createApp()
-    const env = makeEnv(new D1Mock() as unknown as D1Database, { ACTIONS_KV: actions })
-    // An impersonation cookie carries jti = `imp:<adminId>:<ulid>`.
-    const impToken = await signJwt(
-      { sub: 'target-user', email: 'target@example.com', jti: 'imp:admin-1:01HXYZ' },
-      SECRET,
-      900,
-    )
+    const env = makeEnv(new D1Mock() as unknown as D1Database, {
+      ACTIONS_KV: actions,
+      SEED_ADMIN_EMAIL: 'admin@example.com',
+    } as Partial<Env>)
+    // An impersonation cookie carries jti = `imp:<adminId>:<ulid>`, signed
+    // with the dedicated impersonation key and registered (DD-23).
+    const { token: impToken, jti } = await mintImpersonationToken(env, {
+      adminId: 'admin-1',
+      adminEmail: 'admin@example.com',
+      target: { id: 'target-user', email: 'target@example.com' },
+    })
 
     const res = await app.fetch(
       new Request('https://qesto.cc/api/admin/impersonation/stop', {
@@ -319,6 +324,7 @@ describe('impersonation — stopping is authoritative', () => {
     )
     expect(res.status).toBe(200)
     expect(await actions.get(revokedSessionTokenKey(await hashSessionToken(impToken)))).toBe('1')
+    expect(await actions.get(activeImpersonationKey(jti))).toBeNull()
 
     const setCookie = res.headers.get('set-cookie') ?? ''
     expect(setCookie).toMatch(/Secure/i)

@@ -102,7 +102,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(claims?.email).toBe('host@example.com')
 
     const meRes = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${jwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${jwt}` } }),
       env,
     )
     expect(meRes.status).toBe(200)
@@ -167,7 +167,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       3600,
     )
     const res = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${jwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${jwt}` } }),
       env,
     )
     expect(res.status).toBe(200)
@@ -179,7 +179,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     const db = new D1Mock()
     const app = createApp()
     const res = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: 'qesto_session=not.a.valid.jwt' } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: 'qesto_session=not.a.valid.jwt' } }),
       makeEnv(db),
     )
     expect(res.status).toBe(401)
@@ -249,7 +249,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     const refreshRes = await app.fetch(
       new Request('http://local/api/auth/refresh', {
         method: 'POST',
-        headers: { cookie: `qesto_session=${oldJwt}` },
+        headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${oldJwt}` },
       }),
       env,
     )
@@ -259,13 +259,13 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(newJwt).toBeTruthy()
 
     const oldMe = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${oldJwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${oldJwt}` } }),
       env,
     )
     expect(oldMe.status).toBe(401)
 
     const newMe = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${newJwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${newJwt}` } }),
       env,
     )
     expect(newMe.status).toBe(200)
@@ -403,6 +403,11 @@ describe('password signup + login', () => {
     expect(res.status).toBe(401)
   })
 
+  // Each signup hashes with PBKDF2 at 600k iterations (lib/password.ts), and
+  // these loops do LOGIN_MAX_PER_IP + 1 signups — well past Vitest's 5s default
+  // on a loaded runner. The budget is the test's, not a reason to weaken hashing.
+  const SIGNUP_LOOP_TIMEOUT_MS = 30_000
+
   it('rate-limits password signup by edge IP on non-local hosts', async () => {
     const db = new D1Mock()
     const usersKv = new KVMock()
@@ -427,7 +432,7 @@ describe('password signup + login', () => {
 
     expect(statuses.slice(0, LOGIN_MAX_PER_IP).every((s) => s === 201)).toBe(true)
     expect(statuses[LOGIN_MAX_PER_IP]).toBe(429)
-  })
+   }, SIGNUP_LOOP_TIMEOUT_MS)
 
   it('does not apply the IP signup limit on localhost (wrangler E2E)', async () => {
     const db = new D1Mock()
@@ -451,6 +456,25 @@ describe('password signup + login', () => {
     }
 
     expect(statuses.every((s) => s === 201)).toBe(true)
+  }, SIGNUP_LOOP_TIMEOUT_MS)
+})
+
+describe('breached-password screening (DD-36, issue #908)', () => {
+  it('refuses signup with a common breached password and creates no user', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        // jankurai:allow HLT-010-SECRET-SPRAWL reason="deliberately breached sample password the DD-36 screen must refuse; never a real credential" expires=2027-12-31
+        body: JSON.stringify({ email: 'breach@example.com', password: 'Password123' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('password_breached')
   })
 })
 

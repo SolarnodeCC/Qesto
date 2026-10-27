@@ -12,8 +12,11 @@ import { setCookie, deleteCookie, getCookie } from 'hono/cookie'
 import { authMiddleware, IMPERSONATION_COOKIE, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { rateLimit } from '../../middleware/rate-limit'
-import { ulid } from '../../lib/ulid'
-import { signJwt } from '../../lib/jwt'
+import {
+  endImpersonation,
+  IMPERSONATION_TTL_SECONDS,
+  mintImpersonationToken,
+} from '../../lib/impersonation'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { writeKvText } from '../../lib/kv'
 import { validateBody } from '../../lib/request-validation'
@@ -24,7 +27,6 @@ import type { Env } from '../../types'
 
 // Short-lived: impersonation should be just long enough to reproduce an issue,
 // not a standing credential.
-const IMPERSONATION_TTL_SECONDS = 15 * 60
 
 type UserRow = {
   id: string
@@ -154,7 +156,16 @@ export function mountUserSupportRoutes(
       return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
-    const jti = `imp:${actor?.sub ?? 'unknown'}:${ulid()}`
+    if (!actor?.sub || !c.env.ACTIONS_KV) {
+      return errorResponse(c, 503, 'unavailable', 'Impersonation registry unavailable')
+    }
+
+    // DD-23: separate signing key + server-side registry (lib/impersonation.ts).
+    const { token, jti } = await mintImpersonationToken(c.env, {
+      adminId: actor.sub,
+      adminEmail: actor.email,
+      target: { id: target.id, email: target.email },
+    })
 
     await recordAuditEvent(c, {
       action: 'user.impersonate',
@@ -163,8 +174,6 @@ export function mountUserSupportRoutes(
       after_snapshot: { impersonated_email: target.email, jti, ttl_seconds: IMPERSONATION_TTL_SECONDS },
       trace_id,
     })
-
-    const token = await signJwt({ sub: target.id, email: target.email, jti }, c.env.JWT_SECRET, IMPERSONATION_TTL_SECONDS)
 
     // HttpOnly impersonation cookie — the credential. The SPA learns it's
     // impersonating from /api/auth/me (cross-origin safe), not from JS cookies.
@@ -205,6 +214,7 @@ export function mountUserSupportRoutes(
     // no matter what the browser does with the Set-Cookie.
     const impersonationToken = getCookie(c, IMPERSONATION_COOKIE)
     if (impersonationToken && c.env.ACTIONS_KV) {
+      await endImpersonation(c.env, impersonationToken)
       const tokenHash = await hashSessionToken(impersonationToken)
       await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', {
         expirationTtl: IMPERSONATION_TTL_SECONDS,

@@ -6,6 +6,7 @@
  */
 
 import { ulid } from '../ulid'
+import { logBestEffort } from '../log'
 
 export type CronRunStatus = 'success' | 'failure' | 'running'
 
@@ -24,6 +25,6 @@ export async function logCronRun(
       .bind(ulid(), job, status, startedAt, Date.now(), detail?.slice(0, 2000) ?? null)
       .run()
   } catch (err) {
-    console.error(`[cron-log] failed to write cron_runs row for "${job}":`, err instanceof Error ? err.message : err)
+    logBestEffort(err, { traceId: 'cron-log', route: 'lib/marketing/cron-log', operation: 'cron_runs.write', details: { job } })
   }
 }

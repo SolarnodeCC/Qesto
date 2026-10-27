@@ -5,6 +5,8 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { mkdirSync, readdirSync, renameSync, statSync } from 'node:fs'
+import type { Plugin } from 'vite'
 
 function getFrontendCommit(): string {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12)
@@ -23,12 +25,43 @@ const frontendBuildTime = new Date().toISOString()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+/**
+ * DD-15 (#888) follow-up: 'hidden' maps carry no sourceMappingURL, but the
+ * .map files themselves were still deployed and fetchable by guessing the URL
+ * (`/assets/<chunk>.js.map`). After the bundle is written, move every map out
+ * of `dist/` into `sourcemaps/` (gitignored, same relative layout) so nothing
+ * that ships can serve them; CI can upload that folder to an error tracker.
+ * This runs inside `vite build`, so every build path (CI, Pages Git builds,
+ * local deploys) gets it.
+ */
+function privateSourcemaps(): Plugin {
+  const outDir = path.resolve(__dirname, 'dist')
+  const mapsDir = path.resolve(__dirname, 'sourcemaps')
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => {
+      const full = path.join(dir, name)
+      return statSync(full).isDirectory() ? walk(full) : [full]
+    })
+  return {
+    name: 'qesto-private-sourcemaps',
+    apply: 'build',
+    closeBundle() {
+      for (const file of walk(outDir)) {
+        if (!file.endsWith('.map')) continue
+        const dest = path.join(mapsDir, path.relative(outDir, file))
+        mkdirSync(path.dirname(dest), { recursive: true })
+        renameSync(file, dest)
+      }
+    },
+  }
+}
+
 export default defineConfig(() => {
   // VITE_API_BASE_URL is optional: empty string means relative URLs (co-located Pages + Functions).
   // Set it explicitly only when the API lives on a different origin.
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), privateSourcemaps()],
     define: {
       __QESTO_FRONTEND_COMMIT__: JSON.stringify(frontendCommit),
       __QESTO_FRONTEND_BUILD_TIME__: JSON.stringify(frontendBuildTime),
@@ -124,10 +157,34 @@ export default defineConfig(() => {
         // 85/85/75/85; raise these as coverage grows — never lower one to
         // make a build pass.
         thresholds: {
-          statements: 41,
-          branches: 30,
-          functions: 37,
-          lines: 42,
+          // Re-measured 2026-10 (DD-18, #891): 43.42 / 32.22 / 39.22 / 44.70.
+          statements: 42,
+          branches: 31,
+          functions: 38,
+          lines: 43,
+          // DD-18: the global number averages security-critical code with UI.
+          // Ratchet the small files where a regression is a breach, each group
+          // set just under its measured aggregate (2026-10) — raise, never lower.
+          // Measured: auth libs 98.1 L / 83.7 B; middleware 91.9 L / 78.2 B;
+          // vote path 67.4 L / 64.0 B.
+          'functions/api/lib/{jwt,password,authz,embed-token,session-token,impersonation,breached-password}.ts': {
+            lines: 97,
+            branches: 82,
+            functions: 97,
+            statements: 91,
+          },
+          'functions/api/middleware/{auth,csrf,admin,rbac,plan,rate-limit,public-api-auth,widget-token,security-headers}.ts': {
+            lines: 90,
+            branches: 77,
+            functions: 89,
+            statements: 89,
+          },
+          'functions/api/lib/session-room-vote*.ts': {
+            lines: 66,
+            branches: 63,
+            functions: 76,
+            statements: 63,
+          },
         },
       },
     },

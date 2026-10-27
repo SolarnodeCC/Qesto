@@ -47,7 +47,7 @@ async function createTeam(app: ReturnType<typeof createApp>, env: Env, cookie: s
   const res = await app.fetch(
     new Request('http://local/api/teams', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
       body: JSON.stringify({ name: 'Sprint 21 Team' }),
     }),
     env,
@@ -82,7 +82,7 @@ describe('Sprint 21 custom RBAC', () => {
     const deniedInvite = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/members`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: facilitatorCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: facilitatorCookie },
         body: JSON.stringify({ email: 'before@example.com', role: 'member' }),
       }),
       env,
@@ -92,7 +92,7 @@ describe('Sprint 21 custom RBAC', () => {
     const roleRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/roles`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: ownerCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: ownerCookie },
         body: JSON.stringify({ name: 'People coordinator', permissions: ['team:manage_members'] }),
       }),
       env,
@@ -104,7 +104,7 @@ describe('Sprint 21 custom RBAC', () => {
     const assignRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/roles/${roleBody.data.role.id}/assignments`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: ownerCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: ownerCookie },
         body: JSON.stringify({ userId: 'facilitator_1' }),
       }),
       env,
@@ -114,7 +114,7 @@ describe('Sprint 21 custom RBAC', () => {
     const allowedInvite = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/members`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: facilitatorCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: facilitatorCookie },
         body: JSON.stringify({ email: 'after@example.com', role: 'member' }),
       }),
       env,
@@ -137,7 +137,7 @@ describe('Sprint 21 custom RBAC', () => {
     const roleRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/roles`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: ownerCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: ownerCookie },
         body: JSON.stringify({ name: 'Auth manager', permissions: ['team:manage_auth'] }),
       }),
       env,
@@ -147,7 +147,7 @@ describe('Sprint 21 custom RBAC', () => {
     const samlRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: ownerCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: ownerCookie },
         body: JSON.stringify({
           samlConfig: {
             idpEntityId: 'urn:test:idp',

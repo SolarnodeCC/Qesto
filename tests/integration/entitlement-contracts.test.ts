@@ -57,7 +57,7 @@ async function createSession(app: ReturnType<typeof createApp>, env: Env, cookie
   const res = await app.fetch(
     new Request('http://local/api/sessions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie, 'idempotency-key': title },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': title },
       body: JSON.stringify({ title }),
     }),
     env,
@@ -98,13 +98,13 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // free → 403 on CSV (resultsExport=false) and JSON (plan!=team)
     const freeCsvRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeCsvRes.status).toBe(403)
 
     const freeJsonRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeJsonRes.status).toBe(403)
@@ -112,27 +112,27 @@ describe('Sprint 20 entitlement contracts', () => {
     // starter → 403 on JSON (plan!=team), but allowed on CSV by resultsExport=true
     // CSV gets 409 session_not_closed since session is draft
     const starterCsvRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterCsvRes.status).toBe(409) // allowed by resultsExport; blocked by session status
 
     const starterJsonRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterJsonRes.status).toBe(403) // blocked by plan check
 
     // team → allowed on both (session must be closed; draft returns 409)
     const teamCsvRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     // Draft session → 409 session_not_closed (plan gate passes; status gate blocks)
     expect(teamCsvRes.status).toBe(409)
 
     const teamJsonRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamJsonRes.status).toBe(409)
@@ -149,7 +149,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const rankingRes = await app.fetch(
       new Request(`http://local/api/sessions/${freeSessionId}/questions`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: freeCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: freeCookie },
         body: JSON.stringify({ kind: 'ranking', prompt: 'Rank these', options: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] }),
       }),
       env,
@@ -159,7 +159,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const consentRes = await app.fetch(
       new Request(`http://local/api/sessions/${freeSessionId}/questions`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: freeCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: freeCookie },
         body: JSON.stringify({ kind: 'consent', prompt: 'Proceed?' }),
       }),
       env,
@@ -169,7 +169,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const starterRes = await app.fetch(
       new Request(`http://local/api/sessions/${starterSessionId}/questions`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: starterCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: starterCookie },
         body: JSON.stringify({ kind: 'ranking', prompt: 'Rank these', options: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] }),
       }),
       env,
@@ -195,7 +195,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const starterRes = await app.fetch(
       new Request(`http://local/api/teams/${starterTeam}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: starterCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: starterCookie },
         body: JSON.stringify({ samlConfig }),
       }),
       env,
@@ -205,7 +205,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const teamRes = await app.fetch(
       new Request(`http://local/api/teams/${teamTeam}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: teamCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: teamCookie },
         body: JSON.stringify({ samlConfig }),
       }),
       env,
@@ -228,7 +228,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const res = await app.fetch(
       new Request(`http://local/api/teams/${teamId}/members`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ email: 'member_3@example.com', role: 'member' }),
       }),
       env,
@@ -251,7 +251,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${firstSessionId}/duplicate`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -280,13 +280,13 @@ describe('Sprint 20 entitlement contracts', () => {
     })
 
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/insights/themes`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/insights/themes`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
 
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/insights/themes`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/insights/themes`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(200)
@@ -302,7 +302,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/insights/analyze`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -326,7 +326,7 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Free user blocked by resultsExport=false entitlement
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
@@ -337,7 +337,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Starter user allowed by resultsExport=true entitlement
     // (session is draft, so returns 409 session_not_closed, not 403)
     const starterRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterRes.status).toBe(409)
@@ -347,7 +347,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Team user allowed by resultsExport=true entitlement
     // (session is draft, so returns 409 session_not_closed, not 403)
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(409)
@@ -369,7 +369,7 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Free user blocked by plan check (plan !== 'team')
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
@@ -378,7 +378,7 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Starter user blocked by plan check
     const starterRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterRes.status).toBe(403)
@@ -388,7 +388,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Team user allowed by plan check
     // (session is draft, so returns 409 session_not_closed, not 403)
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(409)
@@ -410,14 +410,14 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Free user blocked by plan check (plan !== 'team')
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.html`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.html`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
 
     // Starter user blocked by plan check
     const starterRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.html`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.html`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterRes.status).toBe(403)
@@ -425,7 +425,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Team user allowed by plan check
     // (session is draft, so returns 409 session_not_closed, not 403)
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.html`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.html`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(409)
@@ -445,14 +445,14 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Free user blocked by plan check (plan !== 'team')
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/export.pdf`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/export.pdf`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
 
     // Starter user blocked by plan check
     const starterRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/export.pdf`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/export.pdf`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterRes.status).toBe(403)
@@ -460,7 +460,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Team user allowed by plan check
     // (session is draft, so returns 409 session_not_closed, not 403)
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/export.pdf`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/export.pdf`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(409)
@@ -480,7 +480,7 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Free user blocked by insightsAI=false entitlement
     const freeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${freeSessionId}/insights`, { headers: { cookie: freeCookie } }),
+      new Request(`http://local/api/sessions/${freeSessionId}/insights`, { headers: { 'x-qesto-client': 'web', cookie: freeCookie } }),
       env,
     )
     expect(freeRes.status).toBe(403)
@@ -490,7 +490,7 @@ describe('Sprint 20 entitlement contracts', () => {
 
     // Starter user blocked by insightsAI=false entitlement
     const starterRes = await app.fetch(
-      new Request(`http://local/api/sessions/${starterSessionId}/insights`, { headers: { cookie: starterCookie } }),
+      new Request(`http://local/api/sessions/${starterSessionId}/insights`, { headers: { 'x-qesto-client': 'web', cookie: starterCookie } }),
       env,
     )
     expect(starterRes.status).toBe(403)
@@ -501,7 +501,7 @@ describe('Sprint 20 entitlement contracts', () => {
     // Team user allowed by insightsAI=true entitlement
     // (session is draft, so returns 409 session_not_closed_for_insights, not 403)
     const teamRes = await app.fetch(
-      new Request(`http://local/api/sessions/${teamSessionId}/insights`, { headers: { cookie: teamCookie } }),
+      new Request(`http://local/api/sessions/${teamSessionId}/insights`, { headers: { 'x-qesto-client': 'web', cookie: teamCookie } }),
       env,
     )
     expect(teamRes.status).toBe(409)
@@ -523,7 +523,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const freeRes = await app.fetch(
       new Request(`http://local/api/sessions/${freeSessionId}/insights/analyze`, {
         method: 'POST',
-        headers: { cookie: freeCookie },
+        headers: { 'x-qesto-client': 'web', cookie: freeCookie },
       }),
       env,
     )
@@ -536,7 +536,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const starterRes = await app.fetch(
       new Request(`http://local/api/sessions/${starterSessionId}/insights/analyze`, {
         method: 'POST',
-        headers: { cookie: starterCookie },
+        headers: { 'x-qesto-client': 'web', cookie: starterCookie },
       }),
       env,
     )
@@ -550,7 +550,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const teamRes = await app.fetch(
       new Request(`http://local/api/sessions/${teamSessionId}/insights/analyze`, {
         method: 'POST',
-        headers: { cookie: teamCookie },
+        headers: { 'x-qesto-client': 'web', cookie: teamCookie },
       }),
       env,
     )
@@ -565,7 +565,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const res = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ name }),
       }),
       env,

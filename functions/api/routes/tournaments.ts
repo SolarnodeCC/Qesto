@@ -4,8 +4,8 @@
  * SECURITY: every route here is object-scoped to a session the caller may
  * access. `bracket_matches` rows key only on `energizer_id`, and an energizer id
  * alone carries no tenant, so a bare `WHERE energizer_id = ?` (or
- * `WHERE id = ?` on a match) is a cross-tenant read/write. The RBAC matrix
- * lists these paths but `rbacMiddleware` deliberately hard-enforces only the
+ * `WHERE id = ?` on a match) is a cross-tenant read/write. The old RBAC matrix
+ * no longer exists (DD-07); `platformAdminGuard` enforces only the
  * platform-admin surface and defers everything else to the route's own check —
  * so the check has to live here. Resolve energizer → session (or match →
  * energizer → session) and run `requireSessionAccess` before touching a row.

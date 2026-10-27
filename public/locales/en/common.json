@@ -156,7 +156,6 @@
   "decisionsSearch.matchScore": "{{score}}% match",
   "decisionsSearch.viewSessionAria": "View session for decision: {{question}}",
   "decisionsSearch.viewSession": "View session",
-
   "templates.galleryTitle": "Qesto — Session Template Gallery",
   "templates.galleryDescription": "Browse ready-made session templates, apply in one click, and start collecting live responses in minutes.",
   "templates.galleryBadge": "Template Gallery",
@@ -253,5 +252,13 @@
     "daysLeft_other": "{{count}} days left",
     "endsToday": "Ends today",
     "ctaSuppressed": "Free for everyone right now — nothing to upgrade."
+  },
+  "verifyEmail": {
+    "title": "Confirm your email.",
+    "body": "We sent a link to {{email}}. Until you open it you can’t join teams, buy a plan or create API keys.",
+    "resend": "Resend link",
+    "sending": "Sending…",
+    "sent": "Link sent — check your inbox.",
+    "error": "Could not send. Try again later."
   }
 }

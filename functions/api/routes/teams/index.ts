@@ -33,6 +33,8 @@ import { writeEvent } from '../../lib/observability'
 import { denyFeature, featureAllowed } from '../../lib/entitlements'
 import { patchAuthzSchemaIfNeeded } from '../../lib/authz'
 import { recordAuditEvent } from '../../lib/audit'
+import { requireVerifiedEmail } from '../../lib/email-verification'
+import { hashMagicLinkToken } from '../../lib/tokens'
 import { readKvText, writeKvText, deleteKv } from '../../lib/kv'
 import { validateBody } from '../../lib/request-validation'
 import { validateKvJson, TeamInviteTokenSchema } from '../../lib/protocol-schemas'
@@ -86,6 +88,45 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   app.use('*', async (c, next) => {
     await patchAuthzSchemaIfNeeded(c.env.DB)
     await next()
+  })
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // POST /api/teams/accept-invite — redeem an invite token (body: { token }).
+  // The SPA (pages/TeamInvite.tsx) always called this, but no handler existed,
+  // so invites could not be accepted. DD-10 (#883): the caller must hold a
+  // VERIFIED address equal to the invited one — otherwise anyone who
+  // registered the invitee's address unverified would inherit the grant.
+  // ───────────────────────────────────────────────────────────────────────────
+  app.post('/accept-invite', requireVerifiedEmail, async (c) => {
+    const user = c.get('user')
+    const body = (await c.req.json().catch(() => null)) as { token?: unknown } | null
+    const token = typeof body?.token === 'string' ? body.token : ''
+    if (token.length !== 64) return errorResponse(c, 400, 'invalid_token', 'Invite link invalid or expired')
+
+    const tokenHash = await hashMagicLinkToken(token)
+    const invite = validateKvJson(await readKvText(c.env.TEAMS_KV, teamInviteKey(tokenHash)), TeamInviteTokenSchema)
+    if (!invite) return errorResponse(c, 404, 'invalid_token', 'Invite link invalid or expired')
+    if (invite.email.toLowerCase() !== user.email.toLowerCase()) {
+      // Do not consume: the rightful invitee may still open it.
+      return errorResponse(c, 403, 'invite_email_mismatch', 'This invite was sent to a different email address')
+    }
+    const team = await loadTeam(c.env.TEAMS_KV, invite.teamId)
+    if (!team) return errorResponse(c, 404, 'not_found', 'Team no longer exists')
+    if (team.members.some((m) => m.userId === user.sub)) {
+      await deleteKv(c.env.TEAMS_KV, teamInviteKey(tokenHash))
+      return errorResponse(c, 409, 'already_member', 'You are already a member of this team')
+    }
+
+    // Single use: delete before granting so a replay cannot grant twice.
+    await deleteKv(c.env.TEAMS_KV, teamInviteKey(tokenHash))
+    await attachUserToTeam(c.env.TEAMS_KV, c.env.DB, team.id, user.sub, user.email, invite.role as Role)
+    await recordAuditEvent(c, {
+      action: 'role.assigned',
+      subject_type: 'team_member',
+      subject_id: user.sub,
+      after_snapshot: { teamId: team.id, role: invite.role, via: 'invite_accept' },
+    })
+    return c.json({ ok: true, data: { teamName: team.name, joined: true }, trace_id: c.get('trace_id') })
   })
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -342,18 +383,6 @@ export async function attachUserToTeam(
     await addUserTeam(kv, userId, teamId)
   }
   await upsertUserRole(db, userId, role)
-}
-
-export async function consumeInvite(
-  kv: KVNamespace,
-  tokenHash: string,
-): Promise<{ teamId: string; email: string; role: Role } | null> {
-  const raw = await kv.get(teamInviteKey(tokenHash))
-  if (!raw) return null
-  await kv.delete(teamInviteKey(tokenHash))
-  const invite = validateKvJson(raw, TeamInviteTokenSchema)
-  if (!invite) return null
-  return { teamId: invite.teamId, email: invite.email, role: invite.role as Role }
 }
 
 export { loadTeam, saveTeam, loadUserTeamIds, addUserTeam } from './shared'

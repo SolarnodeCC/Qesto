@@ -24,7 +24,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     it('returns live metrics for authenticated admin', async () => {
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -39,7 +39,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     it('returns 403 for non-admin user', async () => {
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -63,7 +63,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const start = Date.now()
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -80,7 +80,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const end = new Date().toISOString()
       const res = await app.fetch(
         new Request(`http://local/api/admin/metrics/historical?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -97,7 +97,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const startTime = Date.now()
       const res = await app.fetch(
         new Request(`http://local/api/admin/metrics/historical?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -115,7 +115,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/export', {
           method: 'POST',
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
           body: JSON.stringify({ start, end }),
         }),
         env,
@@ -131,7 +131,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/export', {
           method: 'POST',
-          headers: { cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
+          headers: { 'x-qesto-client': 'web', cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
           body: JSON.stringify({ start: new Date().toISOString(), end: new Date().toISOString() }),
         }),
         env,
@@ -158,7 +158,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       const call = () =>
         app2.fetch(
           new Request('http://local/api/admin/metrics/live', {
-            headers: { cookie: user, 'cf-connecting-ip': '127.0.0.1' },
+            headers: { 'x-qesto-client': 'web', cookie: user, 'cf-connecting-ip': '127.0.0.1' },
           }),
           env2,
         )
@@ -217,7 +217,7 @@ describe('Admin Routes — Phase 8 Step 2', () => {
 
       const res = await app.fetch(
         new Request('http://local/api/admin/analytics', {
-          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'x-qesto-client': 'web', cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )

@@ -58,7 +58,7 @@ async function pollPlatform(
   // Soft-skip when the platform OAuth is not connected — do not throw (avoids
   // cron error spam). Caller still records a zero-fetch success for the platform.
   if (!stored) {
-    console.log(`[${JOB}] ${platform}: skipped (not connected)`)
+    logEvent({ event: 'mention_monitor.skipped', job: JOB, platform, reason: 'not_connected' })
     return { fetched: 0, inserted: 0 }
   }
 

@@ -341,6 +341,13 @@ Executed in **`functions/api/[[route]].ts`** (or current router entry — search
 9. Structured logging — R2 / console  
 10. Route handlers  
 
+### Authorization model (DD-07 / DD-22, 2026-10)
+
+- **In-route checks are the only real authorization gate.** Team/tenant routes call `requireTeamPermission` (`lib/authz.ts`); session routes call `requireSessionAccess` / owner checks; admin sub-apps mount `adminMiddleware`.
+- The parent-level `platformAdminGuard` (`middleware/rbac.ts`) enforces exactly one thing: platform-admin authority on `/api/admin/*` (with a small, reasoned exemption list). It replaced a ~45-entry route→role matrix that was evaluated and then ignored for everything except platform-admin routes.
+- `softAuthMiddleware` runs on `/api/*` before the guard so it sees the principal; it never rejects.
+- **Coverage is enforced by test, not convention:** `tests/unit/route-authorization-coverage.test.ts` enumerates every registered route and requires an unauthenticated request to get 401/403 unless the route is on its `PUBLIC_ROUTES` allowlist (each entry carries a reason). Adding a public route means adding it there in the same PR.
+
 **`onError` (illustrative pseudocode only)** — production maps **typed** errors / stable codes, not `err.message` keys:
 
 ```typescript

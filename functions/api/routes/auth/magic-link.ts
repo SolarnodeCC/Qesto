@@ -16,11 +16,13 @@ import {
 import { setAuthSessionCookie } from './cookie'
 import { authEmailRequestSchema } from './schemas'
 import { authJsonInternalError, authRedirectLoginServerError } from './errors'
-import { safeLogContext } from '../../lib/log'
+import { logBestEffort, safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
 import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
+import { markEmailVerified } from '../../lib/email-verification'
+import { isMfaEnabled, mintMfaPendingToken } from '../../lib/mfa'
 
 export function registerMagicLinkRoutes(app: AuthApp): void {
   app.post('/request', async (c) => {
@@ -170,6 +172,18 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         } catch {
           // Non-fatal: session creation falls back to ensurePersonalTeam as well
         }
+      }
+
+      // DD-10: consuming a magic link proves control of the mailbox.
+      await markEmailVerified(c.env.DB, userId).catch((err) =>
+        // Login must not fail over the flag; the user can re-verify later.
+        logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] callback', operation: 'email.mark_verified' }),
+      )
+
+      // DD-04: the magic link is only the first factor when MFA is on.
+      if (await isMfaEnabled(c.env, userId)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: userId, email: row.email })
+        return c.redirect(`${c.env.PAGES_URL}/login?mfa=${encodeURIComponent(mfaToken)}`, 302)
       }
 
       const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)

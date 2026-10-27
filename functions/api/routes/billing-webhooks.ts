@@ -112,7 +112,7 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
-      console.error(`[Stripe Webhook] Event ${stripeEvent.id} handler failed: ${errorMsg}`)
+      logEvent({ event: 'stripe.webhook.handler_failed', stripeEventId: stripeEvent.id, stripeEventType: stripeEvent.type, error: errorMsg }, 'error')
       // Record failure but don't mark as processed
       return errorResponse(c, 500, 'internal_error','Event handler failed')
     }
@@ -121,7 +121,7 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
     try {
       await recordStripeWebhookEvent(c.env.DB, stripeEvent.id, stripeEvent.type, Date.now())
     } catch (err) {
-      console.error(`[Stripe Webhook] Failed to record event ${stripeEvent.id}: ${err}`)
+      logEvent({ event: 'stripe.webhook.record_failed', stripeEventId: stripeEvent.id, error: err instanceof Error ? err.message : String(err) }, 'error')
       // Still return 200 — event was handled, just logging failed
     }
 
@@ -203,7 +203,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  * cross-checked against the configured price ids.
  */
 async function handleCheckoutSessionCompleted(
-  c: { env: Pick<Env, 'DB' | 'USERS_KV'> },
+  c: { env: Pick<Env, 'DB' | 'USERS_KV' | 'ACTIONS_KV'> },
   event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const session = event.data.object as Record<string, unknown>
@@ -214,7 +214,7 @@ async function handleCheckoutSessionCompleted(
     (typeof metadata.userId === 'string' ? metadata.userId : undefined)
 
   if (!userId) {
-    console.warn('[Stripe] checkout.session.completed without resolvable userId')
+    logEvent({ event: 'stripe.checkout.no_user' }, 'warn')
     return
   }
 
@@ -230,7 +230,7 @@ async function handleCheckoutSessionCompleted(
     plan = 'starter'
   }
   if (!plan) {
-    console.warn(`[Stripe] checkout.session.completed for ${userId} with no resolvable paid plan`)
+    logEvent({ event: 'stripe.checkout.no_plan', userId }, 'warn')
     return
   }
 
@@ -254,7 +254,7 @@ async function handleSubscriptionCreated(
   // Look up user by customer ID
   const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) {
-    console.warn(`[Stripe] Subscription ${sub.id} created for unknown customer ${customerId}`)
+    logEvent({ event: 'stripe.subscription.unknown_customer', subscriptionId: sub.id, customerId }, 'warn')
     return
   }
 

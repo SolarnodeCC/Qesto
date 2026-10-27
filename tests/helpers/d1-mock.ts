@@ -19,6 +19,8 @@ type User = {
   created_at: number
   last_login_at: number | null
   plan: 'free' | 'starter' | 'team'
+  /** DD-10: unix ms; null/absent = mailbox not proven. */
+  email_verified_at?: number | null
 }
 
 type SessionRow = {
@@ -548,6 +550,32 @@ export class D1PreparedStatementMock {
         last_login_at: created_at,
         plan: 'free',
       })
+      return { meta: { changes: 1 } }
+    }
+    // DD-10 email verification (lib/email-verification.ts).
+    if (this.sql.startsWith('ALTER TABLE users ADD COLUMN email_verified_at')) {
+      return { meta: { changes: 0 } }
+    }
+    if (this.sql.startsWith('UPDATE users SET email_verified_at = (')) {
+      // Backfill from consumed magic links.
+      let changes = 0
+      for (const u of this.db.users.values()) {
+        if (u.email_verified_at != null) continue
+        const consumed = [...this.db.magicLinks.values()]
+          .filter((m) => m.email === u.email && m.consumed_at != null)
+          .map((m) => m.consumed_at as number)
+        if (consumed.length) {
+          u.email_verified_at = Math.min(...consumed)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?1)')) {
+      const [now, id] = this.args as [number, string]
+      const row = this.db.users.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.email_verified_at = row.email_verified_at ?? now
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE users SET last_login_at')) {
@@ -2076,6 +2104,11 @@ export class D1PreparedStatementMock {
       const [id, team_id] = this.args as [string, string]
       const row = this.db.studioLibraryItems.get(id)
       return (row && row.team_id === team_id ? (row as unknown as T) : null)
+    }
+    if (this.sql.startsWith('SELECT email_verified_at FROM users WHERE id = ?1')) {
+      const [id] = this.args as [string]
+      const row = this.db.users.get(id)
+      return (row ? { email_verified_at: row.email_verified_at ?? null } : null) as T | null
     }
     // GET /energizers/active — the active energizer row for a session.
     if (this.sql.includes('FROM energizers') && this.sql.includes("state = 'active' LIMIT 1")) {

@@ -6,6 +6,7 @@
 import type { Env } from '../types'
 import { validateData, AuditContextSchema, UserContextSchema } from './protocol-schemas'
 import type { AuditEventRow } from './db-row-types'
+import { logBestEffort, logEvent, safeLogContext } from './log'
 
 export type AuditAction =
   | 'session.create'
@@ -30,6 +31,11 @@ export type AuditAction =
   | 'auth.login'
   | 'auth.login_failed'
   | 'auth.logout'
+  | 'auth.sessions_revoked'
+  | 'auth.mfa_enabled'
+  | 'auth.mfa_disabled'
+  | 'auth.mfa_verified'
+  | 'auth.mfa_failed'
   | 'auth.signup'
   | 'auth.magic_link_requested'
   | 'auth.magic_link_consumed'
@@ -179,7 +185,7 @@ export async function recordAuthAuditEvent(
       )
       .run()
   } catch (err) {
-    console.error('[audit] recordAuthAuditEvent failed:', (err as Error).message)
+    logBestEffort(err, { traceId: 'audit', route: 'lib/audit', operation: 'audit.recordAuthAuditEvent' })
   }
 }
 
@@ -195,7 +201,7 @@ export async function recordAuditEvent(
     // Validate context against schema (proof-aware decoder)
     const validCtx = validateData(ctx, AuditContextSchema)
     if (!validCtx) {
-      console.warn(`[audit] Invalid audit context`)
+      logEvent({ event: 'audit.invalid_context' }, 'warn')
       return
     }
 
@@ -203,7 +209,7 @@ export async function recordAuditEvent(
     const rawUser = c.get('user')
     const validUser = validateData(rawUser, UserContextSchema)
     if (!validUser) {
-      console.warn(`[audit] Invalid user context`)
+      logEvent({ event: 'audit.invalid_user_context' }, 'warn')
       return
     }
 
@@ -243,7 +249,7 @@ export async function recordAuditEvent(
       .run()
   } catch (err) {
     // Fail-safe: log but don't crash
-    console.error('[audit] recordAuditEvent failed:', (err as Error).message)
+    logBestEffort(err, { traceId: 'audit', route: 'lib/audit', operation: 'audit.recordAuditEvent' })
   }
 }
 
@@ -338,7 +344,7 @@ export async function queryAuditEvents(
       total: countResult?.count ?? 0,
     }
   } catch (err) {
-    console.error('[audit] queryAuditEvents failed:', (err as Error).message)
+    safeLogContext(err, { traceId: 'audit', route: 'lib/audit', errorClass: 'AuditQueryError', operation: 'audit.query' })
     return { events: [], total: 0 }
   }
 }

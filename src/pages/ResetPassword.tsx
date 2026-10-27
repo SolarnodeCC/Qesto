@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 
-type Status = 'idle' | 'submitting' | 'success' | 'invalid' | 'error'
+type Status = 'idle' | 'submitting' | 'success' | 'invalid' | 'password_breached' | 'error'
 
 export default function ResetPassword() {
   const t = useT('auth')
@@ -27,6 +27,10 @@ export default function ResetPassword() {
     const result = await confirmPasswordReset(token, password)
     if (result === 'ok') {
       setStatus('success')
+      return
+    }
+    if (result === 'password_breached') {
+      setStatus('password_breached')
       return
     }
     if (result === 'invalid_token' || result === 'invalid') {
@@ -87,6 +91,9 @@ export default function ResetPassword() {
             </div>
             {status === 'invalid' && (
               <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordsDontMatch')}</p>
+            )}
+            {status === 'password_breached' && (
+              <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordBreached')}</p>
             )}
             {status === 'error' && (
               <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>

@@ -63,7 +63,7 @@ const post = (env: Env, c: string, body: unknown) =>
   createApp().fetch(
     new Request('http://local/api/sessions/sess_retro/retro/config', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie: c },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: c },
       body: JSON.stringify(body),
     }),
     env,
@@ -101,7 +101,7 @@ describe('POST /api/sessions/:id/retro/config', () => {
     const env = makeEnv(db)
     await post(env, await cookie(), { dotVoteLimit: 4 })
     const res = await createApp().fetch(
-      new Request('http://local/api/sessions/sess_retro/retro/config', { headers: { cookie: await cookie() } }),
+      new Request('http://local/api/sessions/sess_retro/retro/config', { headers: { 'x-qesto-client': 'web', cookie: await cookie() } }),
       env,
     )
     expect(res.status).toBe(200)
@@ -118,7 +118,7 @@ describe('POST /api/sessions/:id/start (retro without questions)', () => {
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_retro/start', {
         method: 'POST',
-        headers: { cookie: await cookie() },
+        headers: { 'x-qesto-client': 'web', cookie: await cookie() },
       }),
       env,
     )

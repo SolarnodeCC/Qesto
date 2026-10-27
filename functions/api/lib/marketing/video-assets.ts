@@ -7,9 +7,7 @@
  * token IS the auth for that one route (added to SESSION_AUTH_EXEMPT).
  */
 
-import { z } from 'zod'
 import { hmacSign, timingSafeEqual } from '../shared/crypto'
-import { decodeKvJson } from '../boundary-decode'
 
 export interface VideoAssetRow {
   id: string
@@ -28,22 +26,25 @@ export async function listVideoAssets(
   filter: { category?: string; tag?: string } = {},
 ): Promise<VideoAssetRow[]> {
   const columns = 'id, r2_key, category, title, tags, duration_sec, size_bytes, created_at, updated_at'
+  // DD-14 (#887): both filters run in SQL. The tag filter used to be applied in
+  // memory over the first 1,000 rows (silently missing older matches), and was
+  // ignored entirely whenever a category was also given.
+  const where: string[] = []
+  const binds: string[] = []
   if (filter.category) {
-    const res = await db
-      .prepare(`SELECT ${columns} FROM video_assets WHERE category = ?1 ORDER BY created_at DESC LIMIT 1000`)
-      .bind(filter.category)
-      .all<VideoAssetRow>()
-    return res.results ?? []
+    binds.push(filter.category)
+    where.push(`category = ?${binds.length}`)
   }
-  const res = await db
-    .prepare(`SELECT ${columns} FROM video_assets ORDER BY created_at DESC LIMIT 1000`)
-    .all<VideoAssetRow>()
-  const rows = res.results ?? []
-  if (!filter.tag) return rows
-  return rows.filter(
-    // Validate the D1 JSON tags column at the boundary (HLT-031, #686).
-    (r) => decodeKvJson(r.tags, z.array(z.string()))?.includes(filter.tag!) ?? false,
-  )
+  if (filter.tag) {
+    binds.push(filter.tag)
+    where.push(`EXISTS (SELECT 1 FROM json_each(video_assets.tags) WHERE json_each.value = ?${binds.length})`)
+  }
+  const sql =
+    `SELECT ${columns} FROM video_assets` +
+    (where.length ? ` WHERE ${where.join(' AND ')}` : '') +
+    ' ORDER BY created_at DESC LIMIT 1000'
+  const res = await db.prepare(sql).bind(...binds).all<VideoAssetRow>()
+  return res.results ?? []
 }
 
 export async function getVideoAsset(db: D1Database, id: string): Promise<VideoAssetRow | null> {
