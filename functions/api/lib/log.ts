@@ -48,8 +48,13 @@ export interface SafeLogContext {
 /**
  * Redaction patterns for PII.
  * Each pattern matches common secret formats in Qesto's dependencies.
+ *
+ * `replace` defaults to a plain `[REDACTED]`. Patterns anchored on a label
+ * (DD-34) keep the label so the reader still knows *what* was redacted.
  */
-const REDACTION_PATTERNS = [
+type RedactionPattern = { name: string; pattern: RegExp; replace?: string }
+
+const REDACTION_PATTERNS: RedactionPattern[] = [
   // Emails (magic-link auth, participant emails, etc.)
   { name: 'email', pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g },
 
@@ -65,11 +70,21 @@ const REDACTION_PATTERNS = [
   // Stripe webhook secret (format: whsec_*)
   { name: 'stripe_webhook', pattern: /(whsec_[A-Za-z0-9]+)/g },
 
-  // Resend API key (format: re_*)
-  { name: 'resend_key', pattern: /(re_[A-Za-z0-9]+)/g },
+  // Resend API key (format: re_<random>). Word-anchored with a minimum length so
+  // identifiers that merely contain "re_" (`store_kv`, `are_open`) survive.
+  { name: 'resend_key', pattern: /\bre_[A-Za-z0-9_]{16,}/g },
 
-  // Cloudflare API tokens (40-char hex)
-  { name: 'cloudflare_token', pattern: /([a-f0-9]{40})/g },
+  // Cloudflare API tokens. Prefixed form (`cfat_…`) is unambiguous.
+  { name: 'cloudflare_token_prefixed', pattern: /\bcfat_[A-Za-z0-9_-]{20,}/g },
+
+  // Legacy 40-char Cloudflare tokens are only redacted when labelled
+  // (DD-34): a bare 40-char hex string is far more often a git SHA or SHA-1
+  // digest, which incident responders need to keep.
+  {
+    name: 'cloudflare_token',
+    pattern: /((?:token|key|secret|authorization)["'\s:=]+)([A-Za-z0-9_-]{40})\b/gi,
+    replace: '$1[REDACTED]',
+  },
 
   // SAML assertions (XML between tags)
   { name: 'saml_assertion', pattern: /<saml:Assertion[^>]*>.*?<\/saml:Assertion>/gis },
@@ -81,21 +96,24 @@ const REDACTION_PATTERNS = [
   { name: 'embedding', pattern: /\[[\d.]+(?:,\s*[\d.]+){100,}\]/g },
 ]
 
+/** Redact PII/secret patterns without truncating. */
+export function redactSecrets(msg: string): string {
+  if (!msg) return ''
+  let sanitized = msg
+  for (const { pattern, replace } of REDACTION_PATTERNS) {
+    sanitized = sanitized.replace(pattern, replace ?? '[REDACTED]')
+  }
+  return sanitized
+}
+
 /**
  * Sanitize error message by redacting PII patterns.
  * @param msg Raw error message
  * @returns Sanitized message with PII replaced by [REDACTED]
  */
-function sanitizeErrorMessage(msg: string): string {
-  if (!msg) return ''
-
-  let sanitized = msg
-  for (const { pattern } of REDACTION_PATTERNS) {
-    sanitized = sanitized.replace(pattern, '[REDACTED]')
-  }
-
+function sanitizeErrorMessage(msg: string, maxLength = 256): string {
   // Limit length to prevent log spam
-  return sanitized.substring(0, 256)
+  return redactSecrets(msg).substring(0, maxLength)
 }
 
 /**
@@ -130,7 +148,7 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
     (err instanceof Error && typeof err.stack === 'string' ? err.stack : undefined)
   // Cap stack length; redact PII patterns the same way as messages.
   const stack = rawStack
-    ? sanitizeErrorMessage(rawStack).substring(0, 2048)
+    ? sanitizeErrorMessage(rawStack, 2048)
     : undefined
 
   const level: LogLevel = ctx.level ?? 'error'
