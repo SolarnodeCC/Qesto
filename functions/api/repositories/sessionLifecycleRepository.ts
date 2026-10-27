@@ -95,7 +95,17 @@ export async function insertCloseVotes(
   await db.batch(batch)
 }
 
-/** Mark a session closed. */
+/**
+ * Mark a session closed and destroy its voter salt (DD-03, #876).
+ *
+ * The salt is the only key that maps a participant's IP + headers to the stored
+ * `votes.voter_id`. Overwriting it with fresh random bytes in the same write
+ * that closes the session makes those ids permanently un-invertible. It is
+ * replaced rather than NULLed: a NULL salt means "pre-0082 session" to
+ * `deriveVoterIdentity`, which would fall back to the legacy invertible scheme.
+ * Sessions are never reopened, so no post-close dedupe depends on the old key.
+ * Pre-0082 sessions (NULL salt) are left NULL — there is no key to destroy.
+ */
 export async function markSessionClosed(
   db: D1Database,
   id: string,
@@ -103,8 +113,12 @@ export async function markSessionClosed(
   closedAt: number,
 ): Promise<void> {
   await db
-    .prepare(`UPDATE sessions SET status = 'closed', closed_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
-    .bind(closedAt, id, ownerId)
+    .prepare(
+      `UPDATE sessions SET status = 'closed', closed_at = ?1,
+         voter_salt = CASE WHEN voter_salt IS NULL THEN NULL ELSE ?4 END
+       WHERE id = ?2 AND owner_id = ?3`,
+    )
+    .bind(closedAt, id, ownerId, generateVoterSalt())
     .run()
 }
 
