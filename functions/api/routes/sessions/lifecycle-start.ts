@@ -10,6 +10,7 @@ import { requireFound, requireDraft } from '../../lib/session-lifecycle'
 import {
   fetchSession,
   fetchQuestions,
+  patchSchemaIfNeeded,
   questionToLive,
   postDO,
   describeDOError,
@@ -116,6 +117,7 @@ export function mountSessionStartRoute(app: Hono<{ Bindings: Env; Variables: Ses
     const user = c.get('user')
     const id = c.req.param('id')
     const traceId = c.get('trace_id')
+    await patchSchemaIfNeeded(c.env.DB)
     const startLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!startLoaded.ok) {
       return c.json(
