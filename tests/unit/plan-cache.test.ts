@@ -84,4 +84,21 @@ describe('plan cache (DD-16)', () => {
   it('keeps the TTL short', () => {
     expect(PLAN_CACHE_TTL_SECONDS).toBeLessThanOrEqual(60)
   })
+
+  it('ignores a stale KV tier when ENVIRONMENT is development', async () => {
+    const { db, calls } = countingDb('starter')
+    const actions = new KVMock()
+    await actions.put(planCacheKey('u1'), 'free')
+    const env = {
+      DB: db,
+      ACTIONS_KV: actions,
+      ENVIRONMENT: 'development',
+    } as unknown as Env
+    const a = app()
+    for (let i = 0; i < 2; i++) {
+      const res = await a.fetch(new Request('http://x/p'), env)
+      expect(((await res.json()) as { plan: string }).plan).toBe('starter')
+    }
+    expect(calls()).toBe(2)
+  })
 })
