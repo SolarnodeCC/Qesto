@@ -24,7 +24,7 @@ class MemoryKv {
     if (type === 'json') return JSON.parse(v)
     return v
   }
-  puts: Array<{ key: string; options?: KVNamespacePutOptions }> = []
+  puts: Array<{ key: string; options: KVNamespacePutOptions | undefined }> = []
   async put(key: string, value: string, options?: KVNamespacePutOptions): Promise<void> {
     this.puts.push({ key, options })
     this.store.set(key, value)
