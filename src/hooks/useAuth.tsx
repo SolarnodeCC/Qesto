@@ -35,9 +35,9 @@ type AuthState =
 type AuthApi = AuthState & {
   requestMagicLink: (email: string) => Promise<'sent' | 'invalid' | 'error'>
   loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error'>
-  signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'error'>
+  signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'password_breached' | 'error'>
   requestPasswordReset: (email: string) => Promise<'sent' | 'invalid' | 'error'>
-  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'error'>
+  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'>
   refresh: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const signupWithPassword = useCallback(
-    async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'error'> => {
+    async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'password_breached' | 'error'> => {
       const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
       if (result.ok) {
         setAuthToken(result.data.token)
@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return 'ok'
       }
       if (result.status === 409) return 'email_taken'
+      if (!result.ok && result.error?.code === 'password_breached') return 'password_breached'
       return 'error'
     },
     [refresh],
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const confirmPasswordReset = useCallback(
-    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'error'> => {
+    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'> => {
       const result = await api<{ reset: boolean; token: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
       if (result.ok) {
         setAuthToken(result.data.token)
@@ -115,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (result.status === 400) {
         if (!result.ok && result.error?.code === 'invalid_token') return 'invalid_token'
+        if (!result.ok && result.error?.code === 'password_breached') return 'password_breached'
         return 'invalid'
       }
       return 'error'

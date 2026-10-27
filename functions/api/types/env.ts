@@ -143,6 +143,8 @@ export type Env = {
    * session tokens can never verify as impersonation tokens either way.
    */
   IMPERSONATION_SECRET?: string
+  /** DD-36: `"hibp"` adds the HIBP k-anonymity lookup to the bundled common-password denylist. */
+  BREACHED_PASSWORD_CHECK?: string
   MULTI_REGION_WRITES_ENABLED?: string
   /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
   CLOUDFLARE_AI_GATEWAY_ID?: string

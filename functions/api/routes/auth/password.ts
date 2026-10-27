@@ -6,6 +6,7 @@ import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { hashPassword, verifyPassword, passwordNeedsRehash } from '../../lib/password'
+import { BREACHED_PASSWORD_MESSAGE, isBreachedPassword } from '../../lib/breached-password'
 import { ensurePersonalTeam } from '../teams'
 import {
   JWT_TTL_SECONDS,
@@ -69,6 +70,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       })
       if (!signupEmailGate.allowed) {
         return errorResponse(c, 429, 'rate_limited', 'Too many signups. Try again later.')
+      }
+
+      // DD-36: screen the new password against breach corpora (after the rate
+      // limit, so this cannot be used to amplify outbound lookups).
+      if (await isBreachedPassword(c.env, password)) {
+        return errorResponse(c, 400, 'password_breached', BREACHED_PASSWORD_MESSAGE)
       }
 
       const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
@@ -339,6 +346,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         return authJsonInternalError(c, new Error('corrupt_reset_token'), '[auth] password reset-confirm corrupt token')
       }
       const { userId, email } = payload
+
+      // DD-36: refuse breached passwords BEFORE consuming the single-use token,
+      // so the user can retry with the same link.
+      if (await isBreachedPassword(c.env, password)) {
+        return errorResponse(c, 400, 'password_breached', BREACHED_PASSWORD_MESSAGE)
+      }
 
       await deleteKv(c.env.ACTIONS_KV, kvKey)
 

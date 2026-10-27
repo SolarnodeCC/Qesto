@@ -459,6 +459,24 @@ describe('password signup + login', () => {
   }, SIGNUP_LOOP_TIMEOUT_MS)
 })
 
+describe('breached-password screening (DD-36, issue #908)', () => {
+  it('refuses signup with a common breached password and creates no user', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'breach@example.com', password: 'Password123' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('password_breached')
+  })
+})
+
 describe('password reset flow', () => {
   it('accepts reset-request and writes a reset token for existing users', async () => {
     const db = new D1Mock()

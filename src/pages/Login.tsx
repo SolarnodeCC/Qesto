@@ -11,7 +11,7 @@ import { Button } from '../ui/components'
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
 type LoginStatus = 'idle' | 'submitting' | 'invalid_credentials' | 'error'
-type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'error'
+type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'password_breached' | 'error'
 type ResetStatus = 'idle' | 'submitting' | 'sent' | 'invalid' | 'error'
 
 export default function Login() {
@@ -75,7 +75,7 @@ export default function Login() {
     setSignupStatus('submitting')
     const result = await signupWithPassword(signupEmail, signupPassword, signupName || undefined)
     if (result === 'ok') { navigate('/dashboard', { replace: true }); return }
-    setSignupStatus(result === 'email_taken' ? 'email_taken' : 'error')
+    setSignupStatus(result === 'email_taken' || result === 'password_breached' ? result : 'error')
   }
 
   async function onResetSubmit(e: FormEvent) {
@@ -387,12 +387,15 @@ export default function Login() {
                   required
                   minLength={8}
                   value={signupPassword}
-                  onChange={(e) => { setSignupPassword(e.target.value); if (signupStatus === 'password_too_short') setSignupStatus('idle') }}
-                  aria-invalid={signupStatus === 'password_too_short'}
+                  onChange={(e) => { setSignupPassword(e.target.value); if (signupStatus === 'password_too_short' || signupStatus === 'password_breached') setSignupStatus('idle') }}
+                  aria-invalid={signupStatus === 'password_too_short' || signupStatus === 'password_breached'}
                   className={inputClass}
                 />
                 {signupStatus === 'password_too_short' && (
                   <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordMin8')}</p>
+                )}
+                {signupStatus === 'password_breached' && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordBreached')}</p>
                 )}
               </div>
               {signupStatus === 'error' && (

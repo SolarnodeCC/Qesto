@@ -112,6 +112,10 @@ ATOMIC_RATE_LIMIT_ENABLED = "false"
 # with several-hundred-fold amplification. Auth must degrade to 503, never to
 # unlimited. Per-profile exceptions go in RATE_LIMIT_FAIL_OPEN_PROFILES.
 RATE_LIMIT_FAIL_CLOSED = "true"
+# DD-36 (#908): screen new passwords (signup, reset) against Have I Been Pwned
+# via k-anonymity range lookup — only a 5-char SHA-1 prefix leaves the Worker.
+# Fails open on timeout; the bundled common-password denylist always applies.
+BREACHED_PASSWORD_CHECK = "hibp"
 
 # ADR-0074 — temporary all-users free access.
 # SHIPS OFF. Enabling requires BOTH: FREE_ACCESS_ALL="true" AND a
