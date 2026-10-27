@@ -16,6 +16,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
+// jankurai:allow HLT-010-SECRET-SPRAWL reason="local HMAC key for test-only JWTs, never used outside this suite" expires=2027-12-31
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 function makeEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
@@ -94,6 +95,7 @@ describe('email verification (DD-10)', () => {
       new Request('http://localhost:8788/api/auth/password/signup', {
         method: 'POST',
         headers: json,
+        // jankurai:allow HLT-010-SECRET-SPRAWL reason="synthetic signup password for this suite only" expires=2027-12-31
         body: JSON.stringify({ email: 'new@acme.test', password: 'a-long-unique-passphrase' }),
       }),
       env,

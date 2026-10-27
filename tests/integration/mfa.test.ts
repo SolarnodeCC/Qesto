@@ -15,6 +15,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
+// jankurai:allow HLT-010-SECRET-SPRAWL reason="local HMAC key for test-only JWTs, never used outside this suite" expires=2027-12-31
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 const EMAIL = 'mfa@acme.test'
 const json = { 'content-type': 'application/json', 'x-qesto-client': 'web' }
@@ -66,6 +67,7 @@ async function setup() {
   const env = makeEnv(db)
   const app = createApp()
   db.users.set('u1', { id: 'u1', email: EMAIL, display_name: null, created_at: 1, last_login_at: null, plan: 'free' })
+  // jankurai:allow HLT-010-SECRET-SPRAWL reason="synthetic password for this suite only" expires=2027-12-31
   await env.USERS_KV.put(pwdKey('u1'), JSON.stringify({ hash: await hashPassword('correct horse battery') }))
   const auth = { authorization: `Bearer ${await signJwt({ sub: 'u1', email: EMAIL }, SECRET, 3600)}` }
   return { db, env, app, auth }
@@ -76,6 +78,7 @@ function login(app: ReturnType<typeof createApp>, env: Env) {
     new Request('http://localhost:8788/api/auth/password/login', {
       method: 'POST',
       headers: json,
+      // jankurai:allow HLT-010-SECRET-SPRAWL reason="synthetic password for this suite only" expires=2027-12-31
       body: JSON.stringify({ email: EMAIL, password: 'correct horse battery' }),
     }),
     env,

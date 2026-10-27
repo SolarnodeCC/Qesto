@@ -10,6 +10,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
+// jankurai:allow HLT-010-SECRET-SPRAWL reason="local HMAC key for test-only JWTs, never used outside this suite" expires=2027-12-31
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 function makeEnv(): Env {

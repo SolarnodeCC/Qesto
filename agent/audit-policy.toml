@@ -83,6 +83,8 @@ excluded_paths = [
   "node_modules/",
   ".wrangler/",
   "coverage/",
+  # DD-15: `vite build` moves source maps here so they never deploy (gitignored).
+  "sourcemaps/",
   "agent/baselines/",
   "contracts/generated/",
 ]

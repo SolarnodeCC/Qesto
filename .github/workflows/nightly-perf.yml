@@ -25,8 +25,7 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci
-      - run: npm run test:stress
+      - run: bash ops/ci/nightly-perf.sh stress
 
   load:
     # k6 smoke against a deployed environment. Opt-in: set the repository
@@ -38,9 +37,6 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # Official k6 image, version-pinned; no third-party action needed.
-      - run: >-
-          docker run --rm -v "$PWD/tests/load:/scripts:ro" grafana/k6:0.54.0
-          run /scripts/k6-smoke.js -e BASE_URL="$LOAD_TEST_BASE_URL"
+      - run: bash ops/ci/nightly-perf.sh load
         env:
           LOAD_TEST_BASE_URL: ${{ vars.LOAD_TEST_BASE_URL }}

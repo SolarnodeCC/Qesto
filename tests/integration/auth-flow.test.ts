@@ -467,6 +467,7 @@ describe('breached-password screening (DD-36, issue #908)', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
+        // jankurai:allow HLT-010-SECRET-SPRAWL reason="deliberately breached sample password the DD-36 screen must refuse; never a real credential" expires=2027-12-31
         body: JSON.stringify({ email: 'breach@example.com', password: 'Password123' }),
       }),
       makeEnv(db),
