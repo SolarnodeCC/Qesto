@@ -13,6 +13,8 @@
 //   POST /api/billing/subscription   Stripe subscription management
 
 import { writeKvJson, writeKvText } from '../lib/kv'
+import { safeLogContext } from '../lib/log'
+import { invalidatePlanCache } from '../lib/plan-cache'
 import { type Env, type PlanQuotas, type PlanTier } from '../types'
 import {
   insertBillingAuditEvent,
@@ -50,12 +52,19 @@ export function validTier(value: unknown): value is PlanTier {
 }
 
 /** Set users.plan in D1 (best-effort; logs on failure). */
-export async function setUserPlan(env: Pick<Env, 'DB'>, userId: string, plan: PlanTier): Promise<void> {
+export async function setUserPlan(env: Pick<Env, 'DB' | 'ACTIONS_KV'>, userId: string, plan: PlanTier): Promise<void> {
   try {
     await setUserPlanInDb(env.DB, userId, plan)
   } catch (err) {
-    console.error(`[Stripe] setUserPlan failed for ${userId}: ${(err as Error).message}`)
+    safeLogContext(err, {
+      traceId: 'stripe-webhook',
+      route: 'billing-shared.setUserPlan',
+      errorClass: 'StripePlanWriteError',
+      userId,
+    })
   }
+  // DD-16: drop the cached tier so the change is visible on the next request.
+  await invalidatePlanCache(env, userId)
 }
 
 /** Persist the bidirectional Stripe customer ↔ user mapping (#585). */

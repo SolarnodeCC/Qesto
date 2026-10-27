@@ -6,6 +6,7 @@ import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
 import { errorResponse } from '../../lib/error-handler'
 import { AdminCreateUserSchema, AdminPatchUserSchema } from '../../lib/domain-schemas'
+import { invalidatePlanCache } from '../../lib/plan-cache'
 import type { Env } from '../../types'
 
 export type AdminUser = {
@@ -164,6 +165,8 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
           .run()
       }
     }
+
+    if (body.plan !== undefined) await invalidatePlanCache(c.env, userId)
 
     if ('admin_role' in body) {
       // #586: platform-admin grant/revoke operates on platform_roles only.

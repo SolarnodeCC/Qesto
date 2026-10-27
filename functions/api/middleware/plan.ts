@@ -5,7 +5,8 @@ import type { MiddlewareHandler } from 'hono'
 import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS as QUOTAS_MAP } from '../types'
 import type { AuthVariables } from './auth'
-import { logEvent } from '../lib/log'
+import { logBestEffort, logEvent } from '../lib/log'
+import { readCachedPlan, writeCachedPlan } from '../lib/plan-cache'
 import { effectivePlan, freeAccessActive } from '../lib/free-access'
 
 
@@ -86,7 +87,21 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
 
   let plan: PlanTier
   try {
-    plan = await lookupUserPlan(c.env.DB, user.sub)
+    // DD-16: KV cache in front of the per-request D1 read (lib/plan-cache.ts).
+    const cached = await readCachedPlan(c.env, user.sub)
+    if (cached) {
+      plan = cached
+    } else {
+      plan = await lookupUserPlan(c.env.DB, user.sub)
+      const fill = writeCachedPlan(c.env, user.sub, plan).catch((err) =>
+        logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, operation: 'plan_cache.write' }),
+      )
+      try {
+        c.executionCtx.waitUntil(fill)
+      } catch {
+        await fill
+      }
+    }
   } catch (err) {
     logEvent({
         event: 'plan_middleware.db_failure',

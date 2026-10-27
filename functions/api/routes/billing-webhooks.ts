@@ -203,7 +203,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  * cross-checked against the configured price ids.
  */
 async function handleCheckoutSessionCompleted(
-  c: { env: Pick<Env, 'DB' | 'USERS_KV'> },
+  c: { env: Pick<Env, 'DB' | 'USERS_KV' | 'ACTIONS_KV'> },
   event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const session = event.data.object as Record<string, unknown>
