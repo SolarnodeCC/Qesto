@@ -138,13 +138,17 @@ export const SCHEDULED_JOBS: readonly ScheduledJob[] = [
     // Marketing Content Engine — Tue/Thu/Sat 06:00 UTC (ops-cron.ts 'content-engine').
     key: 'content-engine',
     cron: '0 6 * * 3,5,7',
-    run: async (env) => JSON.stringify(await runContentEngine(env.DB, env.AI, env.MARKETING_KV, Date.now(), env)),
+    run: async (env) => {
+      if (!env.MARKETING_KV) return 'skipped — MARKETING_KV not bound'
+      return JSON.stringify(await runContentEngine(env.DB, env.AI, env.MARKETING_KV, Date.now(), env))
+    },
   },
   {
     // Marketing OAuth proactive token refresh — daily 04:00 UTC.
     key: 'oauth-token-refresh',
     cron: '0 4 * * *',
     run: async (env) => {
+      if (!env.INTEGRATIONS_KV) return 'skipped — INTEGRATIONS_KV not bound'
       await refreshAllTokens(env, env.DB, env.INTEGRATIONS_KV)
     },
   },

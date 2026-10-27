@@ -15,7 +15,6 @@ import { runAI, type AIGatewayEnv } from '../functions/api/lib/ai/ai-gateway'
 import {
   ClassificationOutput,
   TemplateRecord,
-  type Lang,
   type TemplateQuestion,
 } from '../functions/api/lib/template-schemas'
 import { createTemplateId, storeTemplate } from '../functions/api/lib/templates-kv'
@@ -108,9 +107,13 @@ async function logDiscard(
 }
 
 export class TemplateGenerationWorkflow extends WorkflowEntrypoint<Env, SessionPipelinePayload> {
-  async run(event: WorkflowEvent<SessionPipelinePayload>, steps: any) {
+  override async run(event: WorkflowEvent<SessionPipelinePayload>, steps: any) {
     const payload = event.payload
     const env = this.env
+    // Every discard/store below writes MARKETING_KV; fail fast with a clear
+    // error instead of a TypeError deep inside a step.
+    const marketingKv = env.MARKETING_KV
+    if (!marketingKv) throw new Error('MARKETING_KV is not bound — template generation cannot run')
     const sessionId = payload.sessionId
 
     console.log(`[workflow] Starting template generation for session ${sessionId}`)
@@ -220,7 +223,7 @@ Output ONLY a JSON object: { "score": number, "reason": string }`
         }
 
         if (score > SIMILARITY_REJECT_THRESHOLD) {
-          await logDiscard(env.MARKETING_KV, sessionId, `similarity_too_high:${score}`, q.id)
+          await logDiscard(marketingKv, sessionId, `similarity_too_high:${score}`, q.id)
           console.log(`[workflow] Discarded Q${q.id}: similarity score ${score}`)
         } else {
           valid.push({ ...q, rewritten: currentText })
@@ -257,7 +260,7 @@ Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
         } else {
           const verdict = parseJsonLoose(nerResponse) as { nouns?: unknown } | null
           const nouns = Array.isArray(verdict?.nouns) ? (verdict.nouns as string[]).join(',') : 'unparseable_verdict'
-          await logDiscard(env.MARKETING_KV, sessionId, `proper_nouns_found:${nouns}`, q.id)
+          await logDiscard(marketingKv, sessionId, `proper_nouns_found:${nouns}`, q.id)
           console.log(`[workflow] Discarded Q${q.id}: proper noun scan (${nouns})`)
         }
       }
@@ -271,7 +274,7 @@ Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
     // ──────────────────────────────────────────────────────────────────────
     const shouldContinue = await steps.do('check-question-count', async () => {
       if (properNounChecked.length === 0) {
-        await logDiscard(env.MARKETING_KV, sessionId, 'all_questions_discarded')
+        await logDiscard(marketingKv, sessionId, 'all_questions_discarded')
         return false
       }
       return true
@@ -454,9 +457,9 @@ Each array must contain exactly ${enTexts.length} strings, in the same order.`
           updatedAt: now,
         })
 
-        const result = await storeTemplate(env.DB, env.MARKETING_KV, record)
+        const result = await storeTemplate(env.DB, marketingKv, record)
         if (!result.stored) {
-          await logDiscard(env.MARKETING_KV, sessionId, 'duplicate_template')
+          await logDiscard(marketingKv, sessionId, 'duplicate_template')
           console.log(`[workflow] Discarded template for session ${sessionId}: duplicate content hash`)
           return { duplicate: true as const }
         }
