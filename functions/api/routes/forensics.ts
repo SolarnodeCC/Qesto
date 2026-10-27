@@ -7,7 +7,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import { AuditQuerySchema, filterAuditRecords, type AuditRecord } from '../lib/audit-query'
 import { computeWebhookSla } from '../lib/webhook-sla'
-import { cmkKvKey, parseCmkEnvelope } from '../lib/cmk'
+import { CMK_IMPLEMENTATION_STATUS, cmkKvKey, parseCmkIntent } from '../lib/cmk'
 import { readKvText } from '../lib/kv'
 import { readKvJson } from '../lib/kv'
 import type { Env } from '../types'
@@ -48,8 +48,13 @@ export function mountForensicsRoutes(parent: ParentApp) {
   admin.get('/cmk/:teamId', async (c) => {
     const teamId = c.req.param('teamId')
     const raw = c.env.TEAMS_KV ? await readKvText(c.env.TEAMS_KV, cmkKvKey(teamId)) : null
-    const envelope = parseCmkEnvelope(raw)
-    return c.json({ ok: true, data: { envelope }, trace_id: c.get('trace_id') })
+    const intent = parseCmkIntent(raw)
+    // DD-35: report the truth — a stored intent, no encryption, no algorithm.
+    return c.json({
+      ok: true,
+      data: { status: CMK_IMPLEMENTATION_STATUS, encryption: null, intent },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   parent.route('/api/admin/forensics', admin)
