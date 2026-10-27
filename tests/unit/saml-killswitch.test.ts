@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createApp } from '../../functions/api/app'
+import { SAML_ASSERTION_VALIDATION_IMPLEMENTED } from '../../functions/api/lib/saml'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
 // SEC-SAML-01 (#529): the SAML SP does not yet verify the XML-DSig signature on
 // assertions. Routes stay disabled (503) unless BOTH SAML_SSO_ENABLED and
-// SAML_SIGNATURE_VERIFY_ENABLED are explicitly 'true'.
+// SAML_SIGNATURE_VERIFY_ENABLED are explicitly 'true' — and, per DD-39 (#911),
+// SAML_ASSERTION_VALIDATION_IMPLEMENTED is true in code.
 
 function kv(): KVNamespace {
   return new KVMock() as unknown as KVNamespace
@@ -82,7 +86,11 @@ describe('SAML SP kill-switch (#529)', () => {
     expect(res.status).toBe(503)
   })
 
-  it('serves metadata (200) only when BOTH SAML flags are "true"', async () => {
+  // DD-39 (#911): flipping both flags is NOT enough. Assertion validation
+  // (DSig, Conditions, InResponseTo, Destination, replay) is unimplemented, so
+  // the routes must stay 503 until a code change sets the constant.
+  it('stays 503 with BOTH flags "true" while assertion validation is unimplemented', async () => {
+    expect(SAML_ASSERTION_VALIDATION_IMPLEMENTED).toBe(false)
     const app = createApp()
     const res = await app.fetch(
       new Request('https://qesto.cc/api/auth/saml/metadata'),
@@ -91,8 +99,12 @@ describe('SAML SP kill-switch (#529)', () => {
         SAML_SIGNATURE_VERIFY_ENABLED: 'true',
       } as Partial<Env>),
     )
-    expect(res.status).toBe(200)
-    const xml = await res.text()
-    expect(xml).toContain('md:EntityDescriptor')
+    expect(res.status).toBe(503)
+  })
+
+  it('wrangler.toml never enables SAML while validation is unimplemented', () => {
+    const toml = readFileSync(resolve(__dirname, '../../wrangler.toml'), 'utf8')
+    const enabled = /^\s*SAML_(SSO|SIGNATURE_VERIFY)_ENABLED\s*=\s*"true"/m.test(toml)
+    expect(SAML_ASSERTION_VALIDATION_IMPLEMENTED || !enabled).toBe(true)
   })
 })

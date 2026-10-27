@@ -30,6 +30,19 @@
 
 import { validateKvJson, SamlStateTokenSchema } from './protocol-schemas'
 
+/**
+ * DD-39 (#911): code-level gate that no `wrangler.toml` flag can override.
+ *
+ * `parseAssertion()` below verifies neither the XML-DSig signature nor
+ * `Conditions/@NotBefore|@NotOnOrAfter`, `InResponseTo`, `Destination`, or
+ * `Assertion/@ID` replay, and parses XML by regex (signature-wrapping and
+ * comment-truncation prone). Until a real parser with C14N and all of those
+ * checks lands, this stays `false` and every SAML route returns 503 even if
+ * both SAML_SSO_ENABLED and SAML_SIGNATURE_VERIFY_ENABLED are flipped — so
+ * enabling SAML requires a reviewed code change, not a config edit.
+ */
+export const SAML_ASSERTION_VALIDATION_IMPLEMENTED = false
+
 const SAML_STATE_TTL_SECONDS = 5 * 60 // 5 min
 
 export type SamlAssertion = {
