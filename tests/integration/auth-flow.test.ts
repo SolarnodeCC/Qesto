@@ -403,6 +403,11 @@ describe('password signup + login', () => {
     expect(res.status).toBe(401)
   })
 
+  // Each signup hashes with PBKDF2 at 600k iterations (lib/password.ts), and
+  // these loops do LOGIN_MAX_PER_IP + 1 signups — well past Vitest's 5s default
+  // on a loaded runner. The budget is the test's, not a reason to weaken hashing.
+  const SIGNUP_LOOP_TIMEOUT_MS = 30_000
+
   it('rate-limits password signup by edge IP on non-local hosts', async () => {
     const db = new D1Mock()
     const usersKv = new KVMock()
@@ -427,7 +432,7 @@ describe('password signup + login', () => {
 
     expect(statuses.slice(0, LOGIN_MAX_PER_IP).every((s) => s === 201)).toBe(true)
     expect(statuses[LOGIN_MAX_PER_IP]).toBe(429)
-  })
+   }, SIGNUP_LOOP_TIMEOUT_MS)
 
   it('does not apply the IP signup limit on localhost (wrangler E2E)', async () => {
     const db = new D1Mock()
@@ -451,7 +456,7 @@ describe('password signup + login', () => {
     }
 
     expect(statuses.every((s) => s === 201)).toBe(true)
-  })
+  }, SIGNUP_LOOP_TIMEOUT_MS)
 })
 
 describe('password reset flow', () => {
