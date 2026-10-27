@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import { apiKeyHasScope } from '../lib/api-keys'
 import { errorResponse } from '../lib/error-handler'
+import { parsePageQuery } from '../lib/pagination'
 import { OPENAPI_V3_SPEC } from '../lib/openapi-v3-spec'
 import { withIdempotency } from '../lib/idempotency'
 import { generateJoinCode } from '../lib/code'
@@ -14,7 +15,7 @@ import { validateBody } from '../lib/request-validation'
 import { recordApiUsage, getApiUsageForTeam } from '../lib/api-usage'
 import { getTeamRegionConfig, resolveWriteBinding } from '../lib/db-router'
 import {
-  listSessionsForTeam,
+  listSessionsForTeamPage,
   fetchSessionForTeam,
   fetchSessionResultsData,
   createDraftSessionForTeam,
@@ -47,8 +48,11 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
     if (!apiKeyHasScope(c.get('apiKey'), 'read')) {
       return errorResponse(c, 403, 'forbidden', 'read scope required')
     }
-    const sessions = await listSessionsForTeam(c.env.DB, c.get('apiKey').teamId)
-    return c.json({ ok: true, data: { sessions, apiVersion: 3 } })
+    // DD-14: keyset pages (see public-api-v1 for the default-100 rationale).
+    const q = parsePageQuery(c.req.query(), 100)
+    if (!q.ok) return errorResponse(c, 400, 'bad_request', q.error)
+    const { items, nextCursor } = await listSessionsForTeamPage(c.env.DB, c.get('apiKey').teamId, q.page)
+    return c.json({ ok: true, data: { sessions: items, nextCursor, apiVersion: 3 } })
   })
 
   app.post('/sessions', async (c) => {
