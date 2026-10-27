@@ -332,10 +332,12 @@ export interface LogEventPayload {
  * Emit a single structured JSON log line.
  * Replaces raw `logEvent({...})` calls.
  */
-export function logEvent(payload: LogEventPayload): void {
+export function logEvent(payload: LogEventPayload, level: LogLevel = 'info'): void {
   // Redact any PII that might have slipped into event fields.
-  const safe = redactObject(payload)
-  console.log(JSON.stringify(safe))
+  const line = JSON.stringify(redactObject(payload))
+  if (level === 'error') console.error(line)
+  else if (level === 'warn') console.warn(line)
+  else console.log(line)
 }
 
 function redactObject(obj: unknown): unknown {

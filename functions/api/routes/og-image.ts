@@ -3,6 +3,7 @@ import type { Env } from '../types'
 import { OgImageColorSchema } from '../lib/boundary-decode'
 import { generateOgImageSvg } from '../lib/og-image-generator'
 import type { ParentApp } from './parent-app'
+import { safeLogContext } from '../lib/log'
 
 /**
  * SEO-OG-01: Dynamic OG image generation endpoint
@@ -34,7 +35,7 @@ export async function getOgImage(c: Context<{ Bindings: Env }>) {
 
     return c.text(svg)
   } catch (error) {
-    console.error('[og-image] Error generating OG image:', error)
+    safeLogContext(error, { traceId: c.req.header('cf-ray') ?? 'unknown', route: '/api/og', errorClass: 'OgImageError' })
     return c.text('Failed to generate OG image', 500)
   }
 }

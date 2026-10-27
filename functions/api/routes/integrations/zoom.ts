@@ -23,6 +23,7 @@ import {
   integrationsDisabled,
   resolvePrimaryTeamId,
 } from './shared'
+import { logEvent } from '../../lib/log'
 
 export function mountZoomRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
   app.get('/zoom/connect', authMiddleware, async (c) => {
@@ -107,7 +108,7 @@ export function mountZoomRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
       })
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=zoom`, 302)
     } catch (err) {
-      console.error(JSON.stringify({ event: 'zoom.callback.error', error: String(err) }))
+      logEvent({ event: 'zoom.callback.error', error: String(err) }, 'error')
       return c.redirect(`${c.env.PAGES_URL}/integrations?error=zoom_oauth_failed`, 302)
     }
   })

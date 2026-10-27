@@ -17,6 +17,7 @@ import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../../routes
 import { deliverTeamWebhooks } from '../webhooks'
 import { deliverMarketingWebhook } from '../webhooks-marketing'
 import { writeEvent } from '../observability'
+import { logEvent } from '../log'
 
 /**
  * Handle a single queued work message.
@@ -70,15 +71,13 @@ export async function processPostSessionWork(
     }
 
     const durationMs = Date.now() - startMs
-    console.log(
-      JSON.stringify({
+    logEvent({
         event: 'queue.task.success',
         idempotencyKey,
         taskType,
         sessionId,
         durationMs,
-      }),
-    )
+      })
 
     // Phase 2.1: Emit queue success event for observability
     writeEvent(env.METRICS_AE, {
@@ -92,8 +91,7 @@ export async function processPostSessionWork(
     const errorMsg = err instanceof Error ? err.message : String(err)
     const durationMs = Date.now() - startMs
 
-    console.error(
-      JSON.stringify({
+    logEvent({
         event: 'queue.task.error',
         idempotencyKey,
         taskType,
@@ -101,8 +99,7 @@ export async function processPostSessionWork(
         teamId,
         error: errorMsg,
         attempt: meta.attempt ?? 1,
-      }),
-    )
+      }, 'error')
 
     // Phase 2.1: Emit queue failure event for observability (will be retried unless at max attempts)
     writeEvent(env.METRICS_AE, {

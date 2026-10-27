@@ -8,7 +8,7 @@
  * is logged + paged and the next job still runs), and adding a job no longer
  * needs a new trigger or new control flow.
  */
-import { safeLogContext } from './log'
+import { logEvent, safeLogContext } from './log'
 import { alertCritical } from './alerts'
 import type { Env } from '../types'
 
@@ -34,7 +34,7 @@ export async function runScheduledJobs(
     const traceId = `${job.key}-${Date.now()}`
     try {
       const summary = await job.run(env)
-      console.log(`[${job.key}] OK${summary ? ` — ${summary}` : ''}`)
+      logEvent({ event: 'cron.job.ok', job: job.key, ...(summary ? { summary } : {}) })
       results.push({ key: job.key, ok: true, ...(summary ? { summary } : {}) })
     } catch (err) {
       const errorClass = err instanceof Error ? err.name : 'ScheduledJobFailed'

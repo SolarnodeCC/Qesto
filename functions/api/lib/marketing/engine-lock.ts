@@ -1,3 +1,4 @@
+import { logBestEffort } from '../log'
 /**
  * KV TTL mutex for cron job idempotency (Content Engine / Mention Monitor).
  * Best-effort, not CAS-based — acceptable because cron invocations for a given
@@ -38,6 +39,6 @@ export async function recordLockRun(
       .bind(job, nowMs, status)
       .run()
   } catch (err) {
-    console.error(`[engine-lock] failed to record run for "${job}":`, err instanceof Error ? err.message : err)
+    logBestEffort(err, { traceId: 'engine-lock', route: 'lib/marketing/engine-lock', operation: 'engine_lock.record', details: { job } })
   }
 }

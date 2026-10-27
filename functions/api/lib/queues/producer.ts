@@ -18,7 +18,7 @@
  */
 
 import type { Env } from '../../types'
-import { safeLogContext } from '../log'
+import { logEvent, safeLogContext } from '../log'
 
 export type PostSessionWorkMessage = {
   /**
@@ -136,14 +136,12 @@ export async function enqueuePostSessionWork(
       return 'fallback'
     }
 
-    console.error(
-      JSON.stringify({
+    logEvent({
         event: 'queue.enqueue.dropped',
         taskType: message.taskType,
         sessionId: message.sessionId,
         reason: 'INSIGHTS_QUEUE_unbound_no_executionCtx',
-      }),
-    )
+      }, 'error')
     return 'dropped'
   }
 

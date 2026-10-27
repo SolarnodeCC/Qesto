@@ -1,5 +1,6 @@
 import { ulid } from '../../lib/ulid'
 import { validateKvJson, OAuthStateSchema } from '../../lib/protocol-schemas'
+import { logEvent } from '../../lib/log'
 
 /** USERS_KV: pwd:{userId} → { hash: string } */
 export const pwdKey = (userId: string) => `pwd:${userId}`
@@ -28,7 +29,7 @@ export async function upsertOAuthUser(
       await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, oauthState.userId).run()
       return oauthState.userId
     }
-    console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'oauth_state', provider, sub: providerSub }))
+    logEvent({ event: 'auth.kv_invalid', kind: 'oauth_state', provider, sub: providerSub }, 'warn')
   }
 
   const emailNorm = email.toLowerCase().trim()

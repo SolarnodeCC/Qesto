@@ -24,6 +24,7 @@ import {
   integrationsDisabled,
   resolvePrimaryTeamId,
 } from './shared'
+import { logEvent } from '../../lib/log'
 
 export function mountNotionRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
   app.get('/notion/status', authMiddleware, async (c) => {
@@ -77,7 +78,7 @@ export function mountNotionRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>)
       )
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=notion`, 302)
     } catch (err) {
-      console.error(JSON.stringify({ event: 'notion.callback.error', error: String(err) }))
+      logEvent({ event: 'notion.callback.error', error: String(err) }, 'error')
       return c.redirect(`${c.env.PAGES_URL}/integrations?error=notion_oauth_failed`, 302)
     }
   })

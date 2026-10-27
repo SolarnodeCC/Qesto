@@ -130,7 +130,7 @@ export function registerSamlRoutes(app: AuthApp): void {
       try {
         assertion = parseAssertion(samlResponse, expectedAudience)
       } catch (err) {
-        console.error(`[auth:saml] assertion parse failed: ${(err as Error).message}`)
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] saml/callback', errorClass: 'SamlAssertionParseError', statusCode: 400 })
         void recordAuthAuditEvent(c.env.DB, {
           action: 'auth.sso_failed',
           actor_ip: c.req.header('cf-connecting-ip') ?? null,

@@ -12,6 +12,7 @@
 import { WorkflowEntrypoint, WorkflowEvent } from 'cloudflare:workers'
 import type { Env } from '../functions/api/types'
 import { runAI, type AIGatewayEnv } from '../functions/api/lib/ai/ai-gateway'
+import { logBestEffort } from '../functions/api/lib/log'
 import {
   ClassificationOutput,
   TemplateRecord,
@@ -341,7 +342,8 @@ Output ONLY as JSON (no markdown, no preamble):
         )
         return parsed.data
       } catch (err) {
-        console.error('[workflow] Classification failed:', err)
+        // Non-fatal: classification falls back to defaults.
+        logBestEffort(err, { traceId: `workflow-${sessionId}`, route: 'worker/template-workflow', operation: 'workflow.classify' })
         return defaults
       }
     })

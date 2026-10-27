@@ -4,7 +4,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types'
-import { safeLogContext , logEvent} from './log'
+import { safeLogContext, logEvent } from './log'
 
 export interface PromptVersion {
   id: string
@@ -150,7 +150,7 @@ export async function activatePromptVersion(db: D1Database, promptId: string): P
       .first<{ id: string; topic: string | null }>()
 
     if (!prompt) {
-      console.warn(`Prompt ${promptId} not found`)
+      logEvent({ event: 'help.prompt_missing', promptId }, 'warn')
       return false
     }
 

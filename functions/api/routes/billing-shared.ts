@@ -13,7 +13,7 @@
 //   POST /api/billing/subscription   Stripe subscription management
 
 import { writeKvJson, writeKvText } from '../lib/kv'
-import { safeLogContext } from '../lib/log'
+import { logBestEffort, safeLogContext } from '../lib/log'
 import { invalidatePlanCache } from '../lib/plan-cache'
 import { type Env, type PlanQuotas, type PlanTier } from '../types'
 import {
@@ -93,7 +93,7 @@ export async function writeBillingAudit(
   try {
     await insertBillingAuditEvent(env.DB, userId, action, subjectId, snapshot)
   } catch (err) {
-    console.error(`[Stripe] audit write failed for ${action}: ${(err as Error).message}`)
+    logBestEffort(err, { traceId: 'stripe-webhook', route: 'billing-shared.writeBillingAudit', operation: 'billing.audit', details: { action } })
   }
 }
 

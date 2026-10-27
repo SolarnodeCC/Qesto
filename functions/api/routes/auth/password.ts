@@ -21,7 +21,7 @@ import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
 import { authJsonInternalError } from './errors'
 import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/protocol-schemas'
 import { bumpSessionEpoch } from '../../lib/session-token'
-import { safeLogContext } from '../../lib/log'
+import { logEvent, safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-domain'
 import { errorResponse } from '../../lib/error-handler'
@@ -182,7 +182,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       const credRaw = user ? await readKvText(c.env.USERS_KV, pwdKey(user.id)) : null
       const cred = credRaw ? validateKvJson(credRaw, PasswordCredentialSchema) : null
       if (credRaw && !cred) {
-        console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }))
+        logEvent({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }, 'warn')
       }
 
       const valid = cred ? await verifyPassword(password, cred.hash) : false

@@ -24,7 +24,7 @@ import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './protocol-schemas'
 import { validateWebhookTargetUrl } from './webhook-url'
-import { logBestEffort, logExternalFailure } from './log'
+import { logBestEffort, logEvent, logExternalFailure } from './log'
 
 const WebhookTeamIndexSchema = z.array(z.string())
 
@@ -465,14 +465,12 @@ export async function deliverTeamWebhooks(
       const id = ids[i]
       if (!config || !config.enabled || !config.events.includes(event)) return undefined
       return deliverWebhook(config, payload, kv, env).catch((err) => {
-        console.error(
-          JSON.stringify({
+        logEvent({
             event: 'webhook.deliver.error',
             webhookId: id,
             teamId,
             error: err instanceof Error ? err.message : String(err),
-          }),
-        )
+          }, 'error')
       })
     }),
   )
