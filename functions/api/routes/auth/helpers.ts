@@ -1,6 +1,7 @@
 import { ulid } from '../../lib/ulid'
 import { validateKvJson, OAuthStateSchema } from '../../lib/protocol-schemas'
-import { logEvent } from '../../lib/log'
+import { logEvent, logBestEffort } from '../../lib/log'
+import { markEmailVerified } from '../../lib/email-verification'
 
 /** USERS_KV: pwd:{userId} → { hash: string } */
 export const pwdKey = (userId: string) => `pwd:${userId}`
@@ -48,5 +49,10 @@ export async function upsertOAuthUser(
   }
 
   await kv.put(key, JSON.stringify({ userId, email: emailNorm }))
+  // DD-10: the provider has verified this address (exchangeGoogleCode rejects
+  // email_verified=false), so the account has proven mailbox ownership.
+  await markEmailVerified(db, userId).catch((err) =>
+    logBestEffort(err, { traceId: 'oauth', route: '[auth] oauth', operation: 'email.mark_verified', details: { provider } }),
+  )
   return userId
 }

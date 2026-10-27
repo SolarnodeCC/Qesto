@@ -38,6 +38,7 @@ import { logBestEffort, logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 import * as shared from './billing-shared'
+import { requireVerifiedEmail } from '../lib/email-verification'
 
 export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -203,7 +204,8 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // POST /api/billing/checkout -- create a Stripe Checkout session.
   // ENTERPRISE-POLISH s8b: supports interval=monthly|annual for annual billing toggle.
   // Body: { plan: PlanTier, interval: 'monthly' | 'annual', seat_count?: number }
-  app.post('/billing/checkout', authMiddleware, async (c) => {
+  // DD-10: no paid plan is bought on an unproven address.
+  app.post('/billing/checkout', authMiddleware, requireVerifiedEmail, async (c) => {
     if (!stripePaymentsEnabled(c.env)) {
       logEvent({ event: 'stripe.disabled', route: '/api/billing/checkout', trace_id: c.get('trace_id') })
       return errorResponse(c, 503, STRIPE_DISABLED_CODE, 'Stripe payments are disabled for this deployment')

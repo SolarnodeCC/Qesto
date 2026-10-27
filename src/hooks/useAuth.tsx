@@ -18,6 +18,8 @@ export type AuthUser = {
    * and hide upgrade CTAs, never to decide what is unlocked.
    */
   free_access?: FreeAccessStatus
+  /** DD-10: false until the address is proven (magic link / Google). */
+  email_verified?: boolean
 }
 
 export type FreeAccessStatus = {

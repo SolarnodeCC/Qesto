@@ -1,0 +1,27 @@
+id = "0083_users_email_verified"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "additive"
+stage = "expand"
+
+[approval]
+# Additive nullable column plus a backfill that only ever sets NULL -> timestamp
+# from existing magic_links evidence; no row is deleted or overwritten.
+approved_by = ""
+approval_date = ""
+
+[rollback]
+strategy = "drop-column"
+procedure = "Set EMAIL_VERIFICATION_ENFORCED=\"false\" first (instant, no deploy of code needed beyond vars), then ALTER TABLE users DROP COLUMN email_verified_at."
+
+[backup]
+required = false
+note = "Additive; the backfill writes only previously-NULL values of the new column."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "60s"
+
+[verification]
+post_check = "0083_users_email_verified.verify.sql"
+verify = true

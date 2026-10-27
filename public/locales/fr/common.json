@@ -280,5 +280,13 @@
     "daysLeft_other": "Encore {{count}} jours",
     "endsToday": "Se termine aujourd’hui",
     "ctaSuppressed": "Gratuit pour tous en ce moment — rien à mettre à niveau."
+  },
+  "verifyEmail": {
+    "title": "Confirmez votre adresse e-mail.",
+    "body": "Nous avons envoyé un lien à {{email}}. Tant que vous ne l’avez pas ouvert, vous ne pouvez pas rejoindre d’équipe, acheter une offre ni créer de clés API.",
+    "resend": "Renvoyer le lien",
+    "sending": "Envoi…",
+    "sent": "Lien envoyé — vérifiez votre boîte de réception.",
+    "error": "Échec de l’envoi. Réessayez plus tard."
   }
 }

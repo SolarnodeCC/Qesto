@@ -27,6 +27,7 @@ import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-dom
 import { errorResponse } from '../../lib/error-handler'
 import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
+import { sendVerificationLink } from '../../lib/email-verification'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
   app.post('/password/signup', async (c) => {
@@ -107,6 +108,17 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         // Non-fatal: session creation falls back to ensurePersonalTeam as well
       }
 
+      // DD-10: the session is a personal sandbox until the mailbox is proven.
+      // Send the verification link off the response path.
+      const verification = sendVerificationLink(c.env, normalEmail, signupIp).catch((err) =>
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] signup/verify-email', errorClass: 'VerificationEmailError' }),
+      )
+      try {
+        c.executionCtx.waitUntil(verification)
+      } catch {
+        await verification
+      }
+
       const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
       void recordAuthAuditEvent(c.env.DB, {
@@ -117,7 +129,10 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         subject_id: userId,
         outcome: 'success',
       })
-      return c.json({ ok: true, data: { id: userId, email: normalEmail, token: jwt }, trace_id: c.get('trace_id') }, 201)
+      return c.json(
+        { ok: true, data: { id: userId, email: normalEmail, token: jwt, email_verified: false }, trace_id: c.get('trace_id') },
+        201,
+      )
     } catch (err) {
       return authJsonInternalError(c, err, '[auth] password signup')
     }

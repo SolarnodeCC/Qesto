@@ -11,7 +11,9 @@ import { townhallEnabled } from '../../realtime'
 import { isPlatformAdmin } from '../../lib/platform-admin'
 import { freeAccessStatus } from '../../lib/free-access'
 import { recordAuthAuditEvent } from '../../lib/audit'
-import { JWT_TTL_SECONDS } from './constants'
+import { JWT_TTL_SECONDS, MAGIC_LINK_MAX_PER_EMAIL, MAGIC_LINK_WINDOW_SECONDS } from './constants'
+import { isEmailVerified, sendVerificationLink } from '../../lib/email-verification'
+import { atomicRateLimitDual } from '../../lib/atomic-rate-limit'
 import { setAuthSessionCookie } from './cookie'
 import type { AuthApp } from './types'
 
@@ -26,6 +28,12 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
     // the /admin route on this flag, so the page gate and the API gate
     // (adminMiddleware) can never drift apart.
     const isAdmin = await isPlatformAdmin(c.env, user.sub, user.email)
+    // DD-10: drives the "confirm your email" banner. A lookup failure reports
+    // verified so a D1 blip never nags; the server-side gate still fails closed.
+    const emailVerified = await isEmailVerified(c.env.DB, user.sub).catch((err) => {
+      logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: '/api/auth/me', operation: 'email.verified_lookup' })
+      return true
+    })
     return c.json({
       ok: true,
       data: {
@@ -36,6 +44,7 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
         // off this. `plan` above is already the effective tier.
         free_access: freeAccessStatus(c.env),
         isAdmin,
+        email_verified: emailVerified,
         townhallEnabled: townhallEnabled(c.env),
         ...(impersonatorId ? { impersonating: { email: user.email, impersonator_id: impersonatorId } } : {}),
       },
@@ -100,6 +109,29 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
     deleteCookie(c, SESSION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     deleteCookie(c, IMPERSONATION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     return c.json({ ok: true, data: { cleared: true }, trace_id: c.get('trace_id') })
+  })
+
+  // DD-10 (#883): re-send the verification link. Same per-email budget as
+  // magic-link requests so it cannot be used to mail-bomb an inbox.
+  app.post('/verify-email/resend', authMiddleware, async (c) => {
+    const user = c.get('user')
+    if (c.get('impersonator_id')) {
+      return errorResponse(c, 403, 'forbidden', 'Not available while impersonating')
+    }
+    if (await isEmailVerified(c.env.DB, user.sub)) {
+      return c.json({ ok: true, data: { alreadyVerified: true }, trace_id: c.get('trace_id') })
+    }
+    const gate = await atomicRateLimitDual(c.env, {
+      key: `email:${user.email}`,
+      burst: 'auth_burst',
+      sustained: { max: MAGIC_LINK_MAX_PER_EMAIL, windowSeconds: MAGIC_LINK_WINDOW_SECONDS, prefix: 'auth-verify' },
+      profileLabel: 'auth_verify_resend',
+    })
+    if (!gate.allowed) {
+      return errorResponse(c, 429, 'rate_limited', 'Too many requests. Try again later.')
+    }
+    await sendVerificationLink(c.env, user.email, c.req.header('cf-connecting-ip') ?? null)
+    return c.json({ ok: true, data: { sent: true }, trace_id: c.get('trace_id') }, 202)
   })
 
   // DD-09 follow-up (#882): "sign out of all other devices". Bumps the session

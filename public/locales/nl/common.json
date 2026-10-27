@@ -280,5 +280,13 @@
     "daysLeft_other": "Nog {{count}} dagen",
     "endsToday": "Eindigt vandaag",
     "ctaSuppressed": "Nu gratis voor iedereen — niets om te upgraden."
+  },
+  "verifyEmail": {
+    "title": "Bevestig je e-mailadres.",
+    "body": "We hebben een link gestuurd naar {{email}}. Tot je die opent, kun je geen teams joinen, geen abonnement kopen en geen API-sleutels maken.",
+    "resend": "Link opnieuw sturen",
+    "sending": "Versturen…",
+    "sent": "Link verstuurd — kijk in je inbox.",
+    "error": "Versturen mislukt. Probeer het later opnieuw."
   }
 }

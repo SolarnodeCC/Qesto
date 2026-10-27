@@ -83,5 +83,7 @@
   "wordCloud.submit": "Versturen",
   "wordCloud.submitted": "Jouw woord: {word}. Verstuur een ander woord om het te vervangen.",
   "wordCloud.single_word_hint": "Alleen losse woorden — geen spaties.",
-  "wordCloud.top_words": "Topwoorden"
+  "wordCloud.top_words": "Topwoorden",
+  "inviteNeedsVerifiedEmail": "Bevestig eerst je e-mailadres via de link die we je stuurden, en open daarna deze uitnodiging opnieuw.",
+  "inviteWrongAccount": "Deze uitnodiging is naar een ander e-mailadres gestuurd. Log in met dat adres om haar te accepteren."
 }

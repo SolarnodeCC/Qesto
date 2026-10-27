@@ -145,6 +145,8 @@ export type Env = {
   IMPERSONATION_SECRET?: string
   /** DD-36: `"hibp"` adds the HIBP k-anonymity lookup to the bundled common-password denylist. */
   BREACHED_PASSWORD_CHECK?: string
+  /** DD-10: `"false"` disables the verified-email gate (kill-switch). Default enforced. */
+  EMAIL_VERIFICATION_ENFORCED?: string
   MULTI_REGION_WRITES_ENABLED?: string
   /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
   CLOUDFLARE_AI_GATEWAY_ID?: string

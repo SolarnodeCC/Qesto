@@ -20,6 +20,7 @@ import {
   type ApiKeyRecord,
 } from '../lib/api-keys'
 import type { Env } from '../types'
+import { requireVerifiedEmail } from '../lib/email-verification'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -34,7 +35,8 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
 
-  app.post('/', async (c) => {
+  // DD-10: minting a credential for a team requires a proven mailbox.
+  app.post('/', requireVerifiedEmail, async (c) => {
     if (c.get('plan') !== 'team') {
       return errorResponse(c, 403, 'upgrade_required', 'API keys require Team plan')
     }
@@ -93,7 +95,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
     return c.json({ ok: true, data: { revoked: true, record: updated }, trace_id: c.get('trace_id') })
   })
 
-  app.post('/:keyId/rotate', async (c) => {
+  app.post('/:keyId/rotate', requireVerifiedEmail, async (c) => {
     if (c.get('plan') !== 'team') {
       return errorResponse(c, 403, 'upgrade_required', 'API keys require Team plan')
     }
