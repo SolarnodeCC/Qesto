@@ -42,5 +42,22 @@
   "security.revokeOthers": "Auf allen anderen Geräten abmelden",
   "security.revokeOthersPending": "Abmeldung läuft…",
   "security.revokeOthersDone": "Alle anderen Sitzungen wurden abgemeldet.",
-  "security.revokeOthersError": "Andere Sitzungen konnten nicht abgemeldet werden. Versuche es erneut."
+  "security.revokeOthersError": "Andere Sitzungen konnten nicht abgemeldet werden. Versuche es erneut.",
+  "mfa.title": "Zwei-Faktor-Authentifizierung",
+  "mfa.offDescription": "Füge jeder Anmeldung einen Code aus einer Authenticator-App hinzu.",
+  "mfa.setUp": "Zwei-Faktor-Authentifizierung einrichten",
+  "mfa.scan": "Scanne diesen QR-Code mit deiner Authenticator-App und gib den 6-stelligen Code ein.",
+  "mfa.qrLabel": "QR-Code für deine Authenticator-App",
+  "mfa.manualKey": "Scannen klappt nicht? Gib diesen Schlüssel manuell ein:",
+  "mfa.codeLabel": "6-stelliger Code",
+  "mfa.enable": "Aktivieren",
+  "mfa.enabledNow": "Zwei-Faktor-Authentifizierung ist aktiv.",
+  "mfa.recoveryIntro": "Bewahre diese Wiederherstellungscodes sicher auf. Jeder funktioniert einmal, falls du dein Gerät verlierst — sie werden nicht erneut angezeigt.",
+  "mfa.savedCodes": "Ich habe sie gespeichert",
+  "mfa.onDescription_one": "Aktiv. Noch {{count}} Wiederherstellungscode.",
+  "mfa.onDescription_other": "Aktiv. Noch {{count}} Wiederherstellungscodes.",
+  "mfa.disableLabel": "Gib einen aktuellen Code ein, um sie zu deaktivieren",
+  "mfa.disable": "Deaktivieren",
+  "mfa.invalidCode": "Dieser Code ist ungültig. Versuche den neuesten aus deiner App.",
+  "mfa.error": "Etwas ist schiefgelaufen. Versuche es erneut."
 }

@@ -28,6 +28,7 @@ import { errorResponse } from '../../lib/error-handler'
 import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
 import { sendVerificationLink } from '../../lib/email-verification'
+import { isMfaEnabled, mintMfaPendingToken } from '../../lib/mfa'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
   app.post('/password/signup', async (c) => {
@@ -229,6 +230,13 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         } catch {
           /* best-effort: a failed rehash must not block login */
         }
+      }
+
+      // DD-04: with MFA on, the password is only the first factor — hand back a
+      // short-lived pending token; POST /api/auth/mfa/verify issues the session.
+      if (await isMfaEnabled(c.env, user!.id)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: user!.id, email: normalEmail })
+        return c.json({ ok: true, data: { mfa_required: true, mfa_token: mfaToken }, trace_id: c.get('trace_id') })
       }
 
       const jwt = await signJwt({ sub: user!.id, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)

@@ -36,7 +36,9 @@ type AuthState =
 
 type AuthApi = AuthState & {
   requestMagicLink: (email: string) => Promise<'sent' | 'invalid' | 'error'>
-  loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error'>
+  loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error' | { mfaToken: string }>
+  /** DD-04: second sign-in step when two-factor authentication is on. */
+  verifyMfa: (mfaToken: string, factor: { code: string } | { recoveryCode: string }) => Promise<'ok' | 'invalid' | 'expired' | 'error'>
   signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'password_breached' | 'error'>
   requestPasswordReset: (email: string) => Promise<'sent' | 'invalid' | 'error'>
   confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'>
@@ -73,14 +75,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loginWithPassword = useCallback(
-    async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error'> => {
-      const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/login', { method: 'POST', body: { email, password } })
+    async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error' | { mfaToken: string }> => {
+      const result = await api<{ id: string; email: string; token: string } | { mfa_required: true; mfa_token: string }>(
+        '/api/auth/password/login',
+        { method: 'POST', body: { email, password } },
+      )
       if (result.ok) {
+        if ('mfa_required' in result.data) return { mfaToken: result.data.mfa_token }
         setAuthToken(result.data.token)
         await refresh()
         return 'ok'
       }
       if (result.status === 401) return 'invalid_credentials'
+      return 'error'
+    },
+    [refresh],
+  )
+
+  const verifyMfa = useCallback(
+    async (
+      mfaToken: string,
+      factor: { code: string } | { recoveryCode: string },
+    ): Promise<'ok' | 'invalid' | 'expired' | 'error'> => {
+      const body = 'code' in factor ? { mfa_token: mfaToken, code: factor.code } : { mfa_token: mfaToken, recovery_code: factor.recoveryCode }
+      const result = await api<{ token: string }>('/api/auth/mfa/verify', { method: 'POST', body })
+      if (result.ok) {
+        setAuthToken(result.data.token)
+        await refresh()
+        return 'ok'
+      }
+      if (result.error.code === 'mfa_token_invalid') return 'expired'
+      if (result.status === 401 || result.status === 400) return 'invalid'
       return 'error'
     },
     [refresh],
@@ -138,13 +163,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...state,
       requestMagicLink,
       loginWithPassword,
+      verifyMfa,
       signupWithPassword,
       requestPasswordReset,
       confirmPasswordReset,
       refresh,
       logout,
     }),
-    [state, requestMagicLink, loginWithPassword, signupWithPassword, requestPasswordReset, confirmPasswordReset, refresh, logout],
+    [state, requestMagicLink, loginWithPassword, verifyMfa, signupWithPassword, requestPasswordReset, confirmPasswordReset, refresh, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

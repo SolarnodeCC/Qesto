@@ -16,6 +16,8 @@ export type AuthClaims = {
   sub: string
   email: string
   jti?: string | undefined
+  /** DD-04: unix seconds of the last verified second factor. */
+  mfa_at?: number | undefined
   iat: number
   exp: number
 }

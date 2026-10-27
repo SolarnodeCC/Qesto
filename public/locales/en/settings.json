@@ -42,5 +42,22 @@
   "security.revokeOthers": "Sign out of all other devices",
   "security.revokeOthersPending": "Signing out…",
   "security.revokeOthersDone": "All other sessions have been signed out.",
-  "security.revokeOthersError": "Could not sign out other sessions. Try again."
+  "security.revokeOthersError": "Could not sign out other sessions. Try again.",
+  "mfa.title": "Two-factor authentication",
+  "mfa.offDescription": "Add a code from an authenticator app to every sign-in.",
+  "mfa.setUp": "Set up two-factor authentication",
+  "mfa.scan": "Scan this QR code with your authenticator app, then enter the 6-digit code it shows.",
+  "mfa.qrLabel": "QR code for your authenticator app",
+  "mfa.manualKey": "Can’t scan? Enter this key manually:",
+  "mfa.codeLabel": "6-digit code",
+  "mfa.enable": "Turn on",
+  "mfa.enabledNow": "Two-factor authentication is on.",
+  "mfa.recoveryIntro": "Save these recovery codes somewhere safe. Each works once if you lose your device — they will not be shown again.",
+  "mfa.savedCodes": "I’ve saved them",
+  "mfa.onDescription_one": "On. {{count}} recovery code left.",
+  "mfa.onDescription_other": "On. {{count}} recovery codes left.",
+  "mfa.disableLabel": "Enter a current code to turn it off",
+  "mfa.disable": "Turn off",
+  "mfa.invalidCode": "That code is not valid. Try the latest one from your app.",
+  "mfa.error": "Something went wrong. Try again."
 }

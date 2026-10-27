@@ -23,6 +23,7 @@ import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
 import { isPlatformAdmin } from '../lib/platform-admin'
+import { hasRecentMfa } from '../lib/mfa'
 
 const ADMIN_PREFIX = '/api/admin/'
 
@@ -68,6 +69,11 @@ export const platformAdminGuard: MiddlewareHandler<{
   // never from a team-scoped owner/admin role (#586).
   if (!(await isPlatformAdmin(c.env, user.sub, user.email))) {
     return deny(c, 403, 'forbidden', 'Platform admin access required')
+  }
+  // DD-04 step-up: once every admin has enrolled, ADMIN_MFA_REQUIRED="true"
+  // makes the console demand a second factor verified in the last 15 minutes.
+  if (c.env.ADMIN_MFA_REQUIRED === 'true' && !hasRecentMfa(user)) {
+    return deny(c, 403, 'mfa_step_up_required', 'Confirm with your authenticator code to continue')
   }
   c.set('platformAdminVerified', true)
   await next()

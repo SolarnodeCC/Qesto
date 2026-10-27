@@ -7,6 +7,7 @@ import { useT } from '../i18n'
 import { api, setAuthToken } from '../api/client'
 import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import MfaSettings from '../components/settings/MfaSettings'
 import { AppearanceThemeControl } from '../components/AppearanceThemeControl'
 import { HighContrastToggle } from '../components/HighContrastToggle'
 import { createBillingPortalSession, fetchBillingInvoices, type InvoiceRow } from '../lib/account-billing'
@@ -356,6 +357,7 @@ export default function AccountSettings() {
                 {t('security.revokeOthersError')}
               </p>
             )}
+            <MfaSettings />
           </div>
         </SettingsSection>
 

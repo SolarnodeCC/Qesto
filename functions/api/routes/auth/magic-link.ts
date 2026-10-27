@@ -22,6 +22,7 @@ import { isDisposableEmail, DISPOSABLE_EMAIL_MESSAGE } from '../../lib/email-dom
 import { isLocalDevHost } from '../../lib/origin'
 import type { AuthApp } from './types'
 import { markEmailVerified } from '../../lib/email-verification'
+import { isMfaEnabled, mintMfaPendingToken } from '../../lib/mfa'
 
 export function registerMagicLinkRoutes(app: AuthApp): void {
   app.post('/request', async (c) => {
@@ -178,6 +179,12 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         // Login must not fail over the flag; the user can re-verify later.
         logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] callback', operation: 'email.mark_verified' }),
       )
+
+      // DD-04: the magic link is only the first factor when MFA is on.
+      if (await isMfaEnabled(c.env, userId)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: userId, email: row.email })
+        return c.redirect(`${c.env.PAGES_URL}/login?mfa=${encodeURIComponent(mfaToken)}`, 302)
+      }
 
       const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)

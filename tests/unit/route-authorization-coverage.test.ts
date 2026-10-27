@@ -25,6 +25,7 @@ const PUBLIC_ROUTES: Record<string, string> = {
   'POST /api/auth/password/reset-request': 'password reset request',
   'POST /api/auth/password/reset-confirm': 'password reset confirm (single-use token)',
   'POST /api/auth/logout': 'idempotent; revokes whatever tokens are presented',
+  'POST /api/auth/mfa/verify': 'second login step; authenticated by the short-lived MFA pending token (DD-04)',
   'GET /api/auth/saml/init': 'SAML SP (kill-switched, DD-39)',
   'GET /api/auth/saml/metadata': 'SAML SP metadata (kill-switched, DD-39)',
   'POST /api/auth/saml/callback': 'SAML ACS (kill-switched, DD-39)',

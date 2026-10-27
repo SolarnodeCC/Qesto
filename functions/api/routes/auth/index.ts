@@ -5,6 +5,7 @@ import { registerMagicLinkRoutes } from './magic-link'
 import { registerOAuthRoutes } from './oauth'
 import { registerPasswordAuthRoutes } from './password'
 import { registerSamlRoutes } from './saml'
+import { registerMfaRoutes } from './mfa'
 import { registerAuthSessionRoutes } from './session-routes'
 import type { AuthVars } from './types'
 import type { ParentApp } from '../parent-app'
@@ -19,6 +20,7 @@ export function mountAuthRoutes(parent: ParentApp): void {
   registerPasswordAuthRoutes(app)
   registerOAuthRoutes(app)
   registerSamlRoutes(app)
+  registerMfaRoutes(app)
 
   parent.route('/api/auth', app)
 }

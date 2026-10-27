@@ -42,5 +42,22 @@
   "security.revokeOthers": "Se déconnecter de tous les autres appareils",
   "security.revokeOthersPending": "Déconnexion…",
   "security.revokeOthersDone": "Toutes les autres sessions ont été déconnectées.",
-  "security.revokeOthersError": "Impossible de déconnecter les autres sessions. Réessayez."
+  "security.revokeOthersError": "Impossible de déconnecter les autres sessions. Réessayez.",
+  "mfa.title": "Authentification à deux facteurs",
+  "mfa.offDescription": "Ajoutez un code d’une application d’authentification à chaque connexion.",
+  "mfa.setUp": "Configurer l’authentification à deux facteurs",
+  "mfa.scan": "Scannez ce QR code avec votre application d’authentification, puis saisissez le code à 6 chiffres.",
+  "mfa.qrLabel": "QR code pour votre application d’authentification",
+  "mfa.manualKey": "Impossible de scanner ? Saisissez cette clé manuellement :",
+  "mfa.codeLabel": "Code à 6 chiffres",
+  "mfa.enable": "Activer",
+  "mfa.enabledNow": "L’authentification à deux facteurs est activée.",
+  "mfa.recoveryIntro": "Conservez ces codes de récupération en lieu sûr. Chacun fonctionne une fois si vous perdez votre appareil — ils ne seront plus affichés.",
+  "mfa.savedCodes": "Je les ai enregistrés",
+  "mfa.onDescription_one": "Activée. {{count}} code de récupération restant.",
+  "mfa.onDescription_other": "Activée. {{count}} codes de récupération restants.",
+  "mfa.disableLabel": "Saisissez un code actuel pour la désactiver",
+  "mfa.disable": "Désactiver",
+  "mfa.invalidCode": "Ce code n’est pas valide. Essayez le plus récent de votre application.",
+  "mfa.error": "Une erreur est survenue. Réessayez."
 }

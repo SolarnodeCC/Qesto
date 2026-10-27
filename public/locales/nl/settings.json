@@ -42,5 +42,22 @@
   "security.revokeOthers": "Uitloggen op alle andere apparaten",
   "security.revokeOthersPending": "Bezig met uitloggen…",
   "security.revokeOthersDone": "Alle andere sessies zijn uitgelogd.",
-  "security.revokeOthersError": "Andere sessies konden niet worden uitgelogd. Probeer het opnieuw."
+  "security.revokeOthersError": "Andere sessies konden niet worden uitgelogd. Probeer het opnieuw.",
+  "mfa.title": "Tweestapsverificatie",
+  "mfa.offDescription": "Voeg bij elke aanmelding een code uit een authenticator-app toe.",
+  "mfa.setUp": "Tweestapsverificatie instellen",
+  "mfa.scan": "Scan deze QR-code met je authenticator-app en voer de 6-cijferige code in.",
+  "mfa.qrLabel": "QR-code voor je authenticator-app",
+  "mfa.manualKey": "Lukt scannen niet? Voer deze sleutel handmatig in:",
+  "mfa.codeLabel": "6-cijferige code",
+  "mfa.enable": "Inschakelen",
+  "mfa.enabledNow": "Tweestapsverificatie staat aan.",
+  "mfa.recoveryIntro": "Bewaar deze herstelcodes op een veilige plek. Elke code werkt één keer als je je toestel kwijt bent — ze worden niet opnieuw getoond.",
+  "mfa.savedCodes": "Ik heb ze bewaard",
+  "mfa.onDescription_one": "Aan. Nog {{count}} herstelcode.",
+  "mfa.onDescription_other": "Aan. Nog {{count}} herstelcodes.",
+  "mfa.disableLabel": "Voer een actuele code in om uit te schakelen",
+  "mfa.disable": "Uitschakelen",
+  "mfa.invalidCode": "Die code is niet geldig. Probeer de nieuwste uit je app.",
+  "mfa.error": "Er ging iets mis. Probeer het opnieuw."
 }
