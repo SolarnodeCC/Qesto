@@ -133,14 +133,11 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
       }),
     )
     // Off the response path when a Worker ctx exists; Vitest app.request() has none.
-    let deferred = false
     try {
       c.executionCtx.waitUntil(write)
-      deferred = true
     } catch {
-      deferred = false
+      await write
     }
-    if (!deferred) await write
   }
 
   writeEvent(c.env.METRICS_AE, {

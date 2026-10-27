@@ -29,7 +29,7 @@ import { ESLint } from 'eslint'
 const BASELINE = {
   'react-hooks/set-state-in-effect': 59,
   'no-useless-assignment': 15,
-  '@typescript-eslint/no-unused-vars': 14,
+  '@typescript-eslint/no-unused-vars': 13,
   'no-control-regex': 6,
   'react-hooks/refs': 5,
   'no-useless-escape': 4,
