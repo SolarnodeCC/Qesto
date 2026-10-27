@@ -104,7 +104,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     if (token.length !== 64) return errorResponse(c, 400, 'invalid_token', 'Invite link invalid or expired')
 
     const tokenHash = await hashMagicLinkToken(token)
-    const invite = validateKvJson(await c.env.TEAMS_KV.get(teamInviteKey(tokenHash)), TeamInviteTokenSchema)
+    const invite = validateKvJson(await readKvText(c.env.TEAMS_KV, teamInviteKey(tokenHash)), TeamInviteTokenSchema)
     if (!invite) return errorResponse(c, 404, 'invalid_token', 'Invite link invalid or expired')
     if (invite.email.toLowerCase() !== user.email.toLowerCase()) {
       // Do not consume: the rightful invitee may still open it.
@@ -113,12 +113,12 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const team = await loadTeam(c.env.TEAMS_KV, invite.teamId)
     if (!team) return errorResponse(c, 404, 'not_found', 'Team no longer exists')
     if (team.members.some((m) => m.userId === user.sub)) {
-      await c.env.TEAMS_KV.delete(teamInviteKey(tokenHash))
+      await deleteKv(c.env.TEAMS_KV, teamInviteKey(tokenHash))
       return errorResponse(c, 409, 'already_member', 'You are already a member of this team')
     }
 
     // Single use: delete before granting so a replay cannot grant twice.
-    await c.env.TEAMS_KV.delete(teamInviteKey(tokenHash))
+    await deleteKv(c.env.TEAMS_KV, teamInviteKey(tokenHash))
     await attachUserToTeam(c.env.TEAMS_KV, c.env.DB, team.id, user.sub, user.email, invite.role as Role)
     await recordAuditEvent(c, {
       action: 'role.assigned',

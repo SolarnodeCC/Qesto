@@ -12,6 +12,7 @@
  */
 import type { Env, PlanTier } from '../types'
 import { logBestEffort } from './log'
+import { deleteKv, readKvText, writeKvText } from './kv'
 
 export const PLAN_CACHE_TTL_SECONDS = 60
 
@@ -26,7 +27,7 @@ function isPlanTier(v: unknown): v is PlanTier {
 export async function readCachedPlan(env: Pick<Env, 'ACTIONS_KV'>, userId: string): Promise<PlanTier | null> {
   if (!env.ACTIONS_KV) return null
   try {
-    const raw = await env.ACTIONS_KV.get(planCacheKey(userId))
+    const raw = await readKvText(env.ACTIONS_KV, planCacheKey(userId))
     return isPlanTier(raw) ? raw : null
   } catch (err) {
     // A cache fault must never fail the request — fall through to D1.
@@ -41,14 +42,14 @@ export async function writeCachedPlan(
   plan: PlanTier,
 ): Promise<void> {
   if (!env.ACTIONS_KV) return
-  await env.ACTIONS_KV.put(planCacheKey(userId), plan, { expirationTtl: PLAN_CACHE_TTL_SECONDS })
+  await writeKvText(env.ACTIONS_KV, planCacheKey(userId), plan, { expirationTtl: PLAN_CACHE_TTL_SECONDS })
 }
 
 /** Call after every `UPDATE users SET plan`. */
 export async function invalidatePlanCache(env: Pick<Env, 'ACTIONS_KV'>, userId: string): Promise<void> {
   if (!env.ACTIONS_KV) return
   try {
-    await env.ACTIONS_KV.delete(planCacheKey(userId))
+    await deleteKv(env.ACTIONS_KV, planCacheKey(userId))
   } catch (err) {
     // Bounded by the TTL; log so a stuck invalidation is visible.
     logBestEffort(err, { traceId: 'plan-cache', route: 'lib/plan-cache', operation: 'plan_cache.invalidate' })

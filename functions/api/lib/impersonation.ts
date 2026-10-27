@@ -21,7 +21,7 @@
  */
 import { signJwt, verifyJwtWithSecrets, type AuthClaims } from './jwt'
 import { hmacSign } from './shared/crypto'
-import { readKvJson, writeKvJson } from './kv'
+import { readKvJson, writeKvJson, deleteKv } from './kv'
 import { isPlatformAdmin } from './platform-admin'
 import { ulid } from './ulid'
 import type { Env } from '../types'
@@ -102,5 +102,5 @@ export async function endImpersonation(env: Env, token: string): Promise<void> {
   if (!env.ACTIONS_KV) return
   const claims = await verifyJwtWithSecrets(token, await impersonationSecrets(env))
   if (!claims?.jti?.startsWith(JTI_PREFIX)) return
-  await env.ACTIONS_KV.delete(activeImpersonationKey(claims.jti))
+  await deleteKv(env.ACTIONS_KV, activeImpersonationKey(claims.jti))
 }

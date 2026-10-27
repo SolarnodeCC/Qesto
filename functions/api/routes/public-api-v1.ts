@@ -29,7 +29,7 @@ export function mountPublicApiV1Routes(parent: Hono<{ Bindings: Env; Variables: 
     // DD-14: keyset pages. Default 100 keeps the pre-pagination response size
     // for integrators that never send a cursor; nextCursor fetches the rest.
     const q = parsePageQuery(c.req.query(), 100)
-    if (!q.ok) return c.json({ ok: false, error: { code: 'bad_request', message: q.error } }, 400)
+    if (!q.ok) return errorResponse(c, 400, 'bad_request', q.error)
     const { items, nextCursor } = await listSessionsForTeamPage(c.env.DB, c.get('apiKey').teamId, q.page)
     return c.json({ ok: true, data: { sessions: items, nextCursor } })
   })

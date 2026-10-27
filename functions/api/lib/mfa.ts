@@ -19,7 +19,7 @@
  */
 import type { Env } from '../types'
 import { hmacSign } from './shared/crypto'
-import { readKvJson, writeKvJson } from './kv'
+import { readKvJson, writeKvJson, deleteKv } from './kv'
 import { signJwt, verifyJwtWithSecrets, type AuthClaims } from './jwt'
 import { generateTotpSecret, verifyTotp } from './totp'
 import { ulid } from './ulid'
@@ -192,7 +192,7 @@ export async function verifySecondFactor(
 }
 
 export async function disableMfa(env: Pick<Env, 'USERS_KV'>, userId: string): Promise<void> {
-  await env.USERS_KV.delete(mfaKvKey(userId))
+  await deleteKv(env.USERS_KV, mfaKvKey(userId))
 }
 
 export async function recoveryCodesRemaining(env: Pick<Env, 'USERS_KV'>, userId: string): Promise<number> {
