@@ -99,6 +99,8 @@ export type Env = {
   SENTIMENT_ENABLED?: string
   /** SEC-RATELIMIT-01: return 503 when ACTIONS_KV rate limiter fails. */
   RATE_LIMIT_FAIL_CLOSED?: string
+  /** DD-06: comma-separated limiter profile labels allowed to fail OPEN (never `auth*`). */
+  RATE_LIMIT_FAIL_OPEN_PROFILES?: string
   /**
    * ADR-0073 / WS-1: prefer Workers Rate Limiting bindings via
    * `atomicRateLimit()`. MUST stay off until WS-2 canary is staged.

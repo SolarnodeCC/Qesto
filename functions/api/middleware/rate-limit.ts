@@ -16,6 +16,7 @@ import {
 } from '../lib/atomic-rate-limit'
 import { writeEvent } from '../lib/observability'
 import { getFlag } from '../lib/flags'
+import { safeLogContext } from '../lib/log'
 import { isLocalDevHost } from '../lib/origin'
 
 export type RateLimitOptions =
@@ -42,6 +43,19 @@ async function hashIp(req: Request): Promise<string> {
 
 type LimiterVariables = { trace_id: string }
 
+/**
+ * DD-06 (#879): fail closed (503) on a limiter fault unless this profile is
+ * listed in RATE_LIMIT_FAIL_OPEN_PROFILES (comma-separated labels) — an escape
+ * hatch for genuinely non-security limiters. Auth profiles can never fail open:
+ * an unlimited PBKDF2 login path is a CPU-exhaustion DoS.
+ */
+export function failsClosed(env: Pick<Env, 'RATE_LIMIT_FAIL_CLOSED' | 'RATE_LIMIT_FAIL_OPEN_PROFILES'>, label: string): boolean {
+  if (!getFlag(env as Env, 'RATE_LIMIT_FAIL_CLOSED')) return false
+  if (label.startsWith('auth')) return true
+  const open = (env.RATE_LIMIT_FAIL_OPEN_PROFILES ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  return !open.includes(label)
+}
+
 function profileLabelOf(options: RateLimitOptions): string {
   if ('profile' in options) return options.profile
   return options.profileLabel ?? options.burst ?? options.sustained.prefix
@@ -58,7 +72,7 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
     const ipHash = await hashIp(c.req.raw)
     const label = profileLabelOf(options)
 
-    if (getFlag(c.env, 'RATE_LIMIT_FAIL_CLOSED') && !c.env.ACTIONS_KV) {
+    if (failsClosed(c.env, label) && !c.env.ACTIONS_KV) {
       return c.json(
         {
           ok: false,
@@ -108,7 +122,15 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
         )
       }
     } catch (err) {
-      if (getFlag(c.env, 'RATE_LIMIT_FAIL_CLOSED')) {
+      // Never silent: a limiter fault is an availability AND a security event.
+      safeLogContext(err, {
+        traceId: c.get('trace_id') ?? 'unknown',
+        route: c.req.path,
+        errorClass: 'RateLimiterFault',
+        level: 'warn',
+        details: { profile: label, failClosed: failsClosed(c.env, label) },
+      })
+      if (failsClosed(c.env, label)) {
         return c.json(
           {
             ok: false,
@@ -118,7 +140,6 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
           503,
         )
       }
-      void err
     }
 
     await next()
