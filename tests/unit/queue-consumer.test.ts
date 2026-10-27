@@ -16,8 +16,8 @@ function msg(body: Partial<PostSessionWorkMessage>) {
 describe('handlePostSessionQueue', () => {
   it('retries the failing message and keeps processing the batch', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    const a = msg({ sessionId: 's1', taskType: 'insights' } as Partial<PostSessionWorkMessage>)
-    const b = msg({ sessionId: 's2', taskType: 'insights' } as Partial<PostSessionWorkMessage>)
+    const a = msg({ sessionId: 's1', idempotencyKey: 's1:a' })
+    const b = msg({ sessionId: 's2', idempotencyKey: 's2:a' })
     const process = vi.fn(async (_env: Env, body: PostSessionWorkMessage) => {
       if (body.sessionId === 's1') throw new Error('ai down')
     })
