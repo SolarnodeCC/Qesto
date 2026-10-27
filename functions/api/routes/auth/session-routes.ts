@@ -1,6 +1,7 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
 import { signJwt } from '../../lib/jwt'
-import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
+import { bumpSessionEpoch, hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
+import { errorResponse } from '../../lib/error-handler'
 import { writeKvText } from '../../lib/kv'
 import { authMiddleware, IMPERSONATION_COOKIE, SESSION_COOKIE } from '../../middleware/auth'
 import { endImpersonation } from '../../lib/impersonation'
@@ -99,6 +100,35 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
     deleteCookie(c, SESSION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     deleteCookie(c, IMPERSONATION_COOKIE, { path: '/', secure: true, sameSite: 'None' })
     return c.json({ ok: true, data: { cleared: true }, trace_id: c.get('trace_id') })
+  })
+
+  // DD-09 follow-up (#882): "sign out of all other devices". Bumps the session
+  // epoch — which invalidates every outstanding token for this user at once —
+  // then re-issues a cookie for THIS device so the caller stays signed in.
+  app.post('/sessions/revoke-others', authMiddleware, async (c) => {
+    const user = c.get('user')
+    if (c.get('impersonator_id')) {
+      return errorResponse(c, 403, 'forbidden', 'Not available while impersonating')
+    }
+    if (!c.env.ACTIONS_KV) {
+      return errorResponse(c, 503, 'unavailable', 'Session store unavailable')
+    }
+    await bumpSessionEpoch(c.env, user.sub, JWT_TTL_SECONDS)
+    const jwt = await signJwt(
+      { sub: user.sub, email: user.email, jti: crypto.randomUUID() },
+      c.env.JWT_SECRET,
+      JWT_TTL_SECONDS,
+    )
+    setAuthSessionCookie(c, jwt)
+    void recordAuthAuditEvent(c.env.DB, {
+      action: 'auth.sessions_revoked',
+      actor_id: user.sub,
+      actor_ip: c.req.header('cf-connecting-ip') ?? null,
+      trace_id: c.get('trace_id'),
+      subject_id: user.sub,
+      outcome: 'success',
+    })
+    return c.json({ ok: true, data: { revoked: true, token: jwt }, trace_id: c.get('trace_id') })
   })
 
   app.post('/refresh', authMiddleware, async (c) => {

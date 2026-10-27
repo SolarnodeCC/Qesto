@@ -36,5 +36,11 @@
   "teams.title": "Equipos",
   "teams.description": "Miembros, roles y SAML se gestionan por equipo.",
   "teams.empty": "Aún no perteneces a ningún equipo.",
-  "teams.openSettings": "Ajustes del equipo"
+  "teams.openSettings": "Ajustes del equipo",
+  "security.title": "Seguridad",
+  "security.description": "¿Sesión iniciada en un dispositivo que ya no usas? Cierra esas sesiones aquí.",
+  "security.revokeOthers": "Cerrar sesión en todos los demás dispositivos",
+  "security.revokeOthersPending": "Cerrando sesión…",
+  "security.revokeOthersDone": "Se han cerrado todas las demás sesiones.",
+  "security.revokeOthersError": "No se pudieron cerrar las demás sesiones. Inténtalo de nuevo."
 }

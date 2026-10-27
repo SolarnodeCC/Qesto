@@ -36,5 +36,11 @@
   "teams.title": "Teams",
   "teams.description": "Mitglieder, Rollen und SAML verwalten Sie pro Team.",
   "teams.empty": "Sie sind noch in keinem Team.",
-  "teams.openSettings": "Team-Einstellungen"
+  "teams.openSettings": "Team-Einstellungen",
+  "security.title": "Sicherheit",
+  "security.description": "Auf einem Gerät angemeldet, das du nicht mehr nutzt? Beende diese Sitzungen hier.",
+  "security.revokeOthers": "Auf allen anderen Geräten abmelden",
+  "security.revokeOthersPending": "Abmeldung läuft…",
+  "security.revokeOthersDone": "Alle anderen Sitzungen wurden abgemeldet.",
+  "security.revokeOthersError": "Andere Sitzungen konnten nicht abgemeldet werden. Versuche es erneut."
 }

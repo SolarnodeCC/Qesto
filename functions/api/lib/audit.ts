@@ -30,6 +30,7 @@ export type AuditAction =
   | 'auth.login'
   | 'auth.login_failed'
   | 'auth.logout'
+  | 'auth.sessions_revoked'
   | 'auth.signup'
   | 'auth.magic_link_requested'
   | 'auth.magic_link_consumed'

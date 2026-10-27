@@ -36,5 +36,11 @@
   "teams.title": "Teams",
   "teams.description": "Leden, rollen en SAML beheer je per team.",
   "teams.empty": "Je zit nog in geen teams.",
-  "teams.openSettings": "Teaminstellingen"
+  "teams.openSettings": "Teaminstellingen",
+  "security.title": "Beveiliging",
+  "security.description": "Ingelogd op een apparaat dat je niet meer gebruikt? Beëindig die sessies hier.",
+  "security.revokeOthers": "Uitloggen op alle andere apparaten",
+  "security.revokeOthersPending": "Bezig met uitloggen…",
+  "security.revokeOthersDone": "Alle andere sessies zijn uitgelogd.",
+  "security.revokeOthersError": "Andere sessies konden niet worden uitgelogd. Probeer het opnieuw."
 }

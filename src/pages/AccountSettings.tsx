@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useQuotaUsage } from '../hooks/useQuotaUsage'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useT } from '../i18n'
-import { api } from '../api/client'
+import { api, setAuthToken } from '../api/client'
 import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { AppearanceThemeControl } from '../components/AppearanceThemeControl'
@@ -59,6 +59,7 @@ export default function AccountSettings() {
   const [hasBillingProfile, setHasBillingProfile] = useState<boolean | null>(null)
   const [invoicesLoading, setInvoicesLoading] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [revokeState, setRevokeState] = useState<'idle' | 'pending' | 'done' | 'error'>('idle')
   const [billingError, setBillingError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -112,6 +113,18 @@ export default function AccountSettings() {
         document.getElementById(`section-${section}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     }
+  }
+
+  async function handleRevokeOtherSessions() {
+    setRevokeState('pending')
+    const result = await api<{ revoked: boolean; token: string }>('/api/auth/sessions/revoke-others', { method: 'POST' })
+    if (!result.ok) {
+      setRevokeState('error')
+      return
+    }
+    // The epoch bump invalidated our in-memory bearer token too; adopt the fresh one.
+    setAuthToken(result.data.token)
+    setRevokeState('done')
   }
 
   async function handleManageBilling() {
@@ -317,6 +330,33 @@ export default function AccountSettings() {
               </div>
             </div>
           )}
+        </SettingsSection>
+
+        <SettingsSection
+          id="settings-security"
+          title={t('security.title')}
+          description={t('security.description')}
+        >
+          <div className="space-y-3">
+            <button
+              type="button"
+              disabled={revokeState === 'pending'}
+              onClick={() => void handleRevokeOtherSessions()}
+              className="inline-flex items-center rounded-lg border border-pulse-200 dark:border-[#2A3858] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            >
+              {revokeState === 'pending' ? t('security.revokeOthersPending') : t('security.revokeOthers')}
+            </button>
+            {revokeState === 'done' && (
+              <p className="text-sm text-teal-700 dark:text-teal-300" role="status">
+                {t('security.revokeOthersDone')}
+              </p>
+            )}
+            {revokeState === 'error' && (
+              <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                {t('security.revokeOthersError')}
+              </p>
+            )}
+          </div>
         </SettingsSection>
 
         <SettingsSection

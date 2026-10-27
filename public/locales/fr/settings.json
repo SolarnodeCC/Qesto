@@ -36,5 +36,11 @@
   "teams.title": "Équipes",
   "teams.description": "Membres, rôles et SAML se gèrent par équipe.",
   "teams.empty": "Vous n'êtes dans aucune équipe pour l'instant.",
-  "teams.openSettings": "Paramètres d'équipe"
+  "teams.openSettings": "Paramètres d'équipe",
+  "security.title": "Sécurité",
+  "security.description": "Connecté sur un appareil que vous n’utilisez plus ? Mettez fin à ces sessions ici.",
+  "security.revokeOthers": "Se déconnecter de tous les autres appareils",
+  "security.revokeOthersPending": "Déconnexion…",
+  "security.revokeOthersDone": "Toutes les autres sessions ont été déconnectées.",
+  "security.revokeOthersError": "Impossible de déconnecter les autres sessions. Réessayez."
 }

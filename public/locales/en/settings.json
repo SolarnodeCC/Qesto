@@ -36,5 +36,11 @@
   "teams.title": "Teams",
   "teams.description": "Workspace members, roles, and SAML are managed per team.",
   "teams.empty": "You are not on any teams yet.",
-  "teams.openSettings": "Team settings"
+  "teams.openSettings": "Team settings",
+  "security.title": "Security",
+  "security.description": "Signed in on a device you no longer use? End those sessions here.",
+  "security.revokeOthers": "Sign out of all other devices",
+  "security.revokeOthersPending": "Signing out…",
+  "security.revokeOthersDone": "All other sessions have been signed out.",
+  "security.revokeOthersError": "Could not sign out other sessions. Try again."
 }
