@@ -138,12 +138,12 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
  * non-revoked session token is present, and otherwise falls through untouched.
  * It NEVER returns 401.
  *
- * This exists to fix a middleware-ordering defect: `rbacMiddleware` is registered
+ * This exists to fix a middleware-ordering defect: `platformAdminGuard` is registered
  * at the parent `/api/*` scope, but the strict `authMiddleware` only runs inside
  * the feature sub-apps mounted afterwards. Without this pass, RBAC always executed
  * before any auth ran, saw no `user`, and short-circuited to `canAccess: true` —
  * silently disabling the permission matrix in production. Registering this pass
- * immediately before `rbacMiddleware` lets RBAC see the authenticated principal
+ * immediately before `platformAdminGuard` lets the guard see the authenticated principal
  * and enforce roles. The strict `authMiddleware` mounted inside each sub-app
  * remains the control that rejects unauthenticated access (this pass is additive,
  * not a replacement). It is idempotent — a subsequent `authMiddleware` pass

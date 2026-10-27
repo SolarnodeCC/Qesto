@@ -83,7 +83,7 @@ import { authMiddleware, softAuthMiddleware, type AuthVariables } from './middle
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
 import type { AdminVariables } from './middleware/admin'
-import { rbacMiddleware, type RbacVariables } from './middleware/rbac'
+import { platformAdminGuard, type RbacVariables } from './middleware/rbac'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import { writeEvent } from './lib/observability'
@@ -244,18 +244,18 @@ export function createApp() {
   mountDeveloperPortalRoutes(app)
   mountScimRoutes(app)
 
-  // Populate the authenticated principal BEFORE RBAC so the permission matrix
+  // Populate the authenticated principal BEFORE the platform-admin guard so it
   // can actually see it. `authMiddleware` runs inside the feature sub-apps
-  // mounted below (after this point), so without this non-rejecting pass RBAC
-  // executed before any auth and silently no-op'd (treating every request as an
-  // unauthenticated guest). This pass never rejects — the strict authMiddleware
+  // mounted below (after this point), so without this non-rejecting pass the
+  // guard would execute before any auth and see every request as anonymous. This pass never rejects — the strict authMiddleware
   // in each sub-app remains the control that enforces authentication — and is
   // idempotent, so the JWT is verified once per request.
   app.use('/api/*', softAuthMiddleware)
 
-  // RBAC enforcement — role-based access control for all API routes (Phase 8).
-  // Checks user roles against permission matrix; defaults to viewer if no explicit role.
-  app.use('/api/*', rbacMiddleware)
+  // DD-07: platform-admin guard for /api/admin/*. Every other route authorizes
+  // in-route (requireTeamPermission / requireSessionAccess / adminMiddleware);
+  // see middleware/rbac.ts and tests/unit/route-authorization-coverage.test.ts.
+  app.use('/api/*', platformAdminGuard)
 
   app.onError((err, c) => {
     const trace_id = c.get('trace_id') ?? 'unknown'
