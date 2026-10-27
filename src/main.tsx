@@ -28,6 +28,23 @@ function mount() {
   )
 }
 
+// After a deploy, an already-open tab still references the previous build's
+// hashed chunks, which no longer exist — Pages answers them with the SPA
+// fallback HTML and the lazy import fails. Reload once to pick up the new
+// build; the timestamp guard stops a reload loop if the chunk is truly broken.
+const CHUNK_RELOAD_KEY = 'qesto:chunk-reload-at'
+window.addEventListener('vite:preloadError', (event) => {
+  try {
+    const last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? 0)
+    if (Date.now() - last < 10_000) return
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()))
+  } catch {
+    // Storage unavailable — fall through and reload once without the guard.
+  }
+  event.preventDefault()
+  window.location.reload()
+})
+
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   navigator.serviceWorker.register('/sw.js').catch(() => {})
 }
