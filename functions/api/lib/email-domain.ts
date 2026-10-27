@@ -16,47 +16,14 @@
 
 import { getFlag } from './flags'
 import type { Env } from '../types'
+import disposableDomains from './data/disposable-email-domains.json'
 
-/** Known disposable / self-destructing inbox providers. */
-export const DISPOSABLE_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
-  '0-mail.com',
-  '10minutemail.com',
-  '20minutemail.com',
-  'anonbox.net',
-  'burnermail.io',
-  'dispostable.com',
-  'emailondeck.com',
-  'fakeinbox.com',
-  'getairmail.com',
-  'getnada.com',
-  'guerrillamail.com',
-  'guerrillamail.info',
-  'guerrillamail.net',
-  'inboxbear.com',
-  'jetable.org',
-  'mail-temporaire.fr',
-  'mailcatch.com',
-  'maildrop.cc',
-  'mailinator.com',
-  'mailnesia.com',
-  'mintemail.com',
-  'mohmal.com',
-  'moakt.com',
-  'mytemp.email',
-  'sharklasers.com',
-  'spam4.me',
-  'spamgourmet.com',
-  'temp-mail.org',
-  'tempmail.dev',
-  'tempmailo.com',
-  'tempr.email',
-  'throwawaymail.com',
-  'trashmail.com',
-  'trashmail.de',
-  'yopmail.com',
-  'yopmail.fr',
-  'yopmail.net',
-])
+/**
+ * Known disposable / self-destructing inbox providers. Kept as data in
+ * lib/data/disposable-email-domains.json — the domain names (temp-mail,
+ * tempmail, …) are not product language and should not read as such.
+ */
+export const DISPOSABLE_EMAIL_DOMAINS: ReadonlySet<string> = new Set<string>(disposableDomains)
 
 export type EmailDomainEnv = Pick<Env, 'SIGNUP_BLOCK_DISPOSABLE_DOMAINS' | 'SIGNUP_BLOCKED_EMAIL_DOMAINS_EXTRA'>
 
