@@ -1,5 +1,5 @@
 /* MOBILE-PWA-02 — app shell cache + offline join fallback */
-const CACHE = 'qesto-pwa-v5'
+const CACHE = 'qesto-pwa-v6'
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -30,7 +30,10 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request).then((cached) => {
         if (cached) return cached
         return fetch(event.request).then((response) => {
-          if (response.ok) {
+          // A removed chunk comes back as the SPA fallback (200 text/html). Never
+          // cache that under an immutable asset URL or the tab stays broken.
+          const type = response.headers.get('content-type') ?? ''
+          if (response.ok && !type.includes('text/html')) {
             const copy = response.clone()
             caches.open(CACHE).then((c) => c.put(event.request, copy))
           }
