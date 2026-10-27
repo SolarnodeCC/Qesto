@@ -8,9 +8,12 @@
 
 | Path | Role |
 |------|------|
-| `openapi/qesto-api.yaml` | Primary OpenAPI source |
-| `openapi-v3.json` | Public v3 draft surface (tracked; zone in `agent/generated-zones.toml`) |
+| `../functions/api/lib/openapi-v3-spec.ts` | **Single source** for the public API (v1/v2/v3) — edit here |
+| `openapi-v3.json` | Generated from the spec constant (`npm run contracts:generate`); served by the developer portal |
 | `generated/api.d.ts` | Generated TypeScript client types |
+
+Coverage gate: `tests/unit/openapi-coverage.test.ts` fails if a registered `/api/v1|v2|v3` route is
+undocumented, or a documented operation does not exist (DD-05, #878).
 
 ## References
 

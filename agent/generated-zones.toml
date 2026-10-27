@@ -3,7 +3,7 @@
 
 [[zone]]
 path = "contracts/generated/api.d.ts"
-source = "contracts/openapi/qesto-api.yaml"
+source = "contracts/openapi-v3.json"
 command = "npm run contracts:generate"
 read_only = true
 

@@ -15,7 +15,7 @@ report_success "Generating OpenAPI-derived types"
 npm run contracts:generate
 
 report_success "Checking generated drift"
-git diff --exit-code -- contracts/generated
+git diff --exit-code -- contracts/generated contracts/openapi-v3.json
 
 # HLT-007 gate for the second contract surface: contracts/openapi-v3.json is
 # generated from functions/api/lib/openapi-v3-spec.ts. docs/ci-local.md listed

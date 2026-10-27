@@ -68,7 +68,7 @@
     "help:sync": "npx tsx scripts/sync-help-docs.ts",
     "help:seed:build": "node scripts/generate-help-seed.mjs",
     "check:help-seed": "node scripts/generate-help-seed.mjs --check",
-    "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts",
+    "contracts:generate": "npx tsx scripts/check-contract-drift.ts --write && openapi-typescript contracts/openapi-v3.json -o contracts/generated/api.d.ts",
     "check:contracts": "npx tsx scripts/check-contract-drift.ts",
     "check:migrations": "node scripts/check-migration-gaps.mjs && node scripts/verify-migration-metadata.mjs",
     "check:kv-access": "node scripts/check-kv-access.mjs",
