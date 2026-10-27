@@ -137,6 +137,12 @@ export type Env = {
   JWT_SECRET: string
   /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
   JWT_SECRET_PREV?: string
+  /**
+   * DD-23: dedicated signing key for admin impersonation tokens. Optional —
+   * when unset a key is derived from JWT_SECRET under a fixed domain label, so
+   * session tokens can never verify as impersonation tokens either way.
+   */
+  IMPERSONATION_SECRET?: string
   MULTI_REGION_WRITES_ENABLED?: string
   /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
   CLOUDFLARE_AI_GATEWAY_ID?: string

@@ -5,6 +5,7 @@ import { hashSessionToken, revokedSessionTokenKey, isSessionSuperseded } from '.
 import { readKvText } from '../lib/kv'
 import { isPublicApiPath } from '../lib/public-api-paths'
 import { timingSafeEqual } from '../lib/shared/crypto'
+import { resolveImpersonation } from '../lib/impersonation'
 import type { Env } from '../types'
 
 /** ARCH-HONO-02 — session cookie not required on documented public prefixes (v1/v2 use API keys). */
@@ -77,12 +78,15 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   // normal session, so a stale/garbage cookie can never lock an admin out.
   let impersonatorId: string | null = null
   let activeToken: string | null = null
+  let impersonationClaims: AuthClaims | null = null
   const impCookie = getCookie(c, IMPERSONATION_COOKIE)
   if (impCookie) {
-    const impClaims = await verifyJwtWithSecrets(impCookie, jwtVerificationSecrets(c.env))
-    if (impClaims && typeof impClaims.jti === 'string' && impClaims.jti.startsWith('imp:')) {
+    // DD-23: separate signing key, registry entry and live admin check.
+    const imp = await resolveImpersonation(c.env, impCookie)
+    if (imp) {
       activeToken = impCookie
-      impersonatorId = impClaims.jti.split(':')[1] ?? null
+      impersonatorId = imp.impersonatorId
+      impersonationClaims = imp.claims
     }
   }
 
@@ -93,7 +97,9 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
       401,
     )
   }
-  const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
+  // Impersonation tokens are signed with their own key (DD-23) and were
+  // already verified by resolveImpersonation; sessions verify under JWT_SECRET.
+  const claims = impersonationClaims ?? (await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env)))
   if (!claims) {
     return c.json(
       { ok: false, error: { code: 'unauthenticated', message: 'Invalid or expired session' }, trace_id: c.get('trace_id') },
@@ -151,12 +157,15 @@ export const softAuthMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: A
 
   let impersonatorId: string | null = null
   let activeToken: string | null = null
+  let impersonationClaims: AuthClaims | null = null
   const impCookie = getCookie(c, IMPERSONATION_COOKIE)
   if (impCookie) {
-    const impClaims = await verifyJwtWithSecrets(impCookie, jwtVerificationSecrets(c.env))
-    if (impClaims && typeof impClaims.jti === 'string' && impClaims.jti.startsWith('imp:')) {
+    // DD-23: separate signing key, registry entry and live admin check.
+    const imp = await resolveImpersonation(c.env, impCookie)
+    if (imp) {
       activeToken = impCookie
-      impersonatorId = impClaims.jti.split(':')[1] ?? null
+      impersonatorId = imp.impersonatorId
+      impersonationClaims = imp.claims
     }
   }
 
@@ -167,7 +176,9 @@ export const softAuthMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: A
     await next()
     return
   }
-  const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
+  // Impersonation tokens are signed with their own key (DD-23) and were
+  // already verified by resolveImpersonation; sessions verify under JWT_SECRET.
+  const claims = impersonationClaims ?? (await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env)))
   if (!claims) {
     await next()
     return

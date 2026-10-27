@@ -3,6 +3,8 @@ import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { writeKvText } from '../../lib/kv'
 import { authMiddleware, IMPERSONATION_COOKIE, SESSION_COOKIE } from '../../middleware/auth'
+import { endImpersonation } from '../../lib/impersonation'
+import { logBestEffort } from '../../lib/log'
 import { planMiddleware } from '../../middleware/plan'
 import { townhallEnabled } from '../../realtime'
 import { isPlatformAdmin } from '../../lib/platform-admin'
@@ -55,6 +57,13 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
     )
     const token = cookieToken ?? headerToken
     let logoutUserId: string | null = null
+    // DD-23: drop the impersonation registry entry too, not only the token.
+    if (impersonationToken) {
+      await endImpersonation(c.env, impersonationToken).catch((err) =>
+        // Logout must still succeed; the token itself is revoked just below.
+        logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, operation: 'impersonation.end' }),
+      )
+    }
     if (c.env.ACTIONS_KV) {
       await Promise.all(
         Array.from(new Set(tokens)).map(async (t) => {

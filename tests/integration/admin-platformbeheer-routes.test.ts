@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
+import { mintImpersonationToken } from '../../functions/api/lib/impersonation'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
@@ -148,9 +149,13 @@ describe('Platformbeheer — impersonation', () => {
 
   it('an impersonation cookie wins over the session and surfaces on /me', async () => {
     const env = makeEnv(new D1Mock())
-    // Admin's real session cookie + an impersonation cookie for a target user.
+    // Admin's real session cookie + a registered impersonation for a target user.
     const sessionCk = await cookie(ADMIN_ID, ADMIN_EMAIL)
-    const impToken = await signJwt({ sub: 'target-7', email: 'target@example.com', jti: `imp:${ADMIN_ID}:abc` }, TEST_JWT_SECRET, 900)
+    const { token: impToken } = await mintImpersonationToken(env, {
+      adminId: ADMIN_ID,
+      adminEmail: ADMIN_EMAIL,
+      target: { id: 'target-7', email: 'target@example.com' },
+    })
     const res = await createApp().fetch(
       new Request('http://local/api/auth/me', {
         headers: { 'cf-connecting-ip': '127.0.0.1', 'x-qesto-client': 'web', cookie: `${sessionCk}; qesto_impersonation=${impToken}` },
