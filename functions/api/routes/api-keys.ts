@@ -6,11 +6,7 @@ import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import {
-  API_KEY_HASH_INDEX_TTL_SECONDS,
-  API_KEY_RECORD_TTL_SECONDS,
-  API_KEY_REVOKED_TTL_SECONDS,
-} from '../lib/constants'
+import { API_KEY_REVOKED_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson, writeKvText } from '../lib/kv'
 import { ulid } from '../lib/ulid'
 import { validateBody } from '../lib/request-validation'
@@ -59,16 +55,12 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       prefix,
     }
     const hash = await hashApiKey(raw)
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(id), record, { expirationTtl: API_KEY_RECORD_TTL_SECONDS })
-    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), id, {
-      expirationTtl: API_KEY_HASH_INDEX_TTL_SECONDS,
-    })
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(id), record)
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), id)
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId))) ?? []
     if (!index.includes(id)) {
       index.push(id)
-      await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId), index, {
-        expirationTtl: API_KEY_RECORD_TTL_SECONDS,
-      })
+      await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId), index)
     }
     return c.json({ ok: true, data: { key: raw, record }, trace_id: c.get('trace_id') }, 201)
   })
@@ -128,16 +120,12 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       lastUsedAt: undefined,
     }
     const hash = await hashApiKey(raw)
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement, { expirationTtl: API_KEY_RECORD_TTL_SECONDS })
-    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), newId, {
-      expirationTtl: API_KEY_HASH_INDEX_TTL_SECONDS,
-    })
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement)
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), newId)
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId))) ?? []
     const nextIndex = index.filter((id) => id !== keyId)
     nextIndex.push(newId)
-    await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId), nextIndex, {
-      expirationTtl: API_KEY_RECORD_TTL_SECONDS,
-    })
+    await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId), nextIndex)
     return c.json({ ok: true, data: { key: raw, record: replacement, previousKeyId: keyId }, trace_id: c.get('trace_id') }, 201)
   })
 

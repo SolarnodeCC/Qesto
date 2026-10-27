@@ -49,9 +49,8 @@ export const SESSION_SEED_TTL_SECONDS = SEVEN_DAYS_SECONDS
 export const PARTNER_SECRET_TTL_SECONDS = ONE_YEAR_SECONDS
 /** Partner app registry metadata TTL. */
 export const PARTNER_APP_TTL_SECONDS = ONE_YEAR_SECONDS
-/** Team API key record TTL (active keys; refreshed on use). */
-export const API_KEY_RECORD_TTL_SECONDS = ONE_YEAR_SECONDS
 /** Revoked API key tombstone TTL. */
 export const API_KEY_REVOKED_TTL_SECONDS = THIRTY_DAYS_SECONDS
-/** API key hash→id index TTL (matches active key lifetime). */
-export const API_KEY_HASH_INDEX_TTL_SECONDS = ONE_YEAR_SECONDS
+// DD-17 (#890): active API key records, the hash→id index and the team index
+// carry NO KV TTL. A TTL silently expired unused keys into `unauthenticated`;
+// a key's lifetime is `expiresAt` / explicit revocation, not cache eviction.
