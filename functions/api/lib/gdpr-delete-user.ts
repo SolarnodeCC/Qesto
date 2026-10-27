@@ -63,7 +63,6 @@ export async function deleteUserGdprData(
     if (deleted) sessionsDeleted++
   }
 
-  await env.DB.prepare(`DELETE FROM sprint19_events WHERE user_id = ?1`).bind(userId).run()
   await env.DB.prepare(`DELETE FROM audit_events WHERE actor_id = ?1`).bind(userId).run().catch((err) => {
     // Best-effort: audit table may be absent on older deploys.
     logBestEffort(err, {
@@ -74,7 +73,14 @@ export async function deleteUserGdprData(
       reason: 'audit_events_cleanup_non_blocking',
     })
   })
-  const userDelete = await env.DB.prepare(`DELETE FROM users WHERE id = ?1`).bind(userId).run()
+  // DD-40 (#912): the user's analytics rows and the user row go in one batch,
+  // so erasure never leaves orphaned per-user events behind a deleted account.
+  // Sessions are hard-deleted above (each in its own batch) and the users row
+  // goes last, so a partial failure stays re-runnable.
+  const [, userDelete] = await env.DB.batch([
+    env.DB.prepare(`DELETE FROM sprint19_events WHERE user_id = ?1`).bind(userId),
+    env.DB.prepare(`DELETE FROM users WHERE id = ?1`).bind(userId),
+  ])
 
   await deleteKv(env.USERS_KV, userPrefsKey(userId))
   await deleteKv(env.USERS_KV, `user-teams:${userId}`).catch((err) => {

@@ -2,10 +2,14 @@
  * Requirement: issue #876 (DD-03) — the per-session voter salt is destroyed at
  * close, in the same write that closes the session, so stored voter ids become
  * permanently un-invertible. It is replaced (not NULLed) so the pre-0082 legacy
- * derivation can never be triggered for a post-0082 session.
+ * derivation can never be triggered for a post-0082 session. Also covers
+ * issue #912 (DD-40): the close is one atomic batch with the final votes.
  */
 import { describe, expect, it } from 'vitest'
-import { markSessionClosed } from '../../functions/api/repositories/sessionLifecycleRepository'
+import {
+  closeSessionWithVotes,
+  markSessionClosed,
+} from '../../functions/api/repositories/sessionLifecycleRepository'
 
 function captureDb() {
   const calls: Array<{ sql: string; binds: unknown[] }> = []
@@ -44,5 +48,35 @@ describe('markSessionClosed (DD-03)', () => {
     await markSessionClosed(a.db, 's1', 'o', 1)
     await markSessionClosed(b.db, 's1', 'o', 1)
     expect(a.calls[0]!.binds[3]).not.toBe(b.calls[0]!.binds[3])
+  })
+})
+
+// DD-40 (issue #912): final votes and the closed status are one atomic batch.
+describe('closeSessionWithVotes (DD-40)', () => {
+  it('submits vote inserts and the close UPDATE in a single db.batch', async () => {
+    const batches: Array<Array<{ sql: string; binds: unknown[] }>> = []
+    const db = {
+      prepare(sql: string) {
+        return { bind: (...binds: unknown[]) => ({ sql, binds }) }
+      },
+      async batch(stmts: Array<{ sql: string; binds: unknown[] }>) {
+        batches.push(stmts)
+        return stmts.map(() => ({ meta: { changes: 1 } }))
+      },
+    } as unknown as D1Database
+    await closeSessionWithVotes(db, {
+      sessionId: 's1',
+      ownerId: 'o1',
+      closedAt: 5,
+      questionId: 'q1',
+      votes: [
+        { voterId: 'v1', optionId: 'a' },
+        { voterId: 'v2', optionId: 'b' },
+      ],
+    })
+    expect(batches).toHaveLength(1)
+    const sqls = batches[0]!.map((s) => s.sql)
+    expect(sqls.filter((s) => s.includes('INSERT OR IGNORE INTO votes'))).toHaveLength(2)
+    expect(sqls[sqls.length - 1]).toMatch(/UPDATE sessions SET status = 'closed'/)
   })
 })

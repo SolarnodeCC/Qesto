@@ -79,6 +79,20 @@ export async function countNonDraftSessions(db: D1Database, ownerId: string): Pr
  * Persist per-voter rows on close. `INSERT OR IGNORE` + UNIQUE(question_id, voter_id)
  * guards against replay.
  */
+function closeVoteStatements(
+  db: D1Database,
+  sessionId: string,
+  questionId: string,
+  votes: Array<{ voterId: string; optionId: string }>,
+  submittedAt: number,
+): D1PreparedStatement[] {
+  const stmt = db.prepare(
+    `INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+  )
+  return votes.map((v) => stmt.bind(ulid(), sessionId, questionId, v.voterId, v.optionId, submittedAt))
+}
+
 export async function insertCloseVotes(
   db: D1Database,
   sessionId: string,
@@ -87,12 +101,30 @@ export async function insertCloseVotes(
   submittedAt: number,
 ): Promise<void> {
   if (votes.length === 0) return
-  const stmt = db.prepare(
-    `INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
-  )
-  const batch = votes.map((v) => stmt.bind(ulid(), sessionId, questionId, v.voterId, v.optionId, submittedAt))
-  await db.batch(batch)
+  await db.batch(closeVoteStatements(db, sessionId, questionId, votes, submittedAt))
+}
+
+/**
+ * DD-40 (#912): persist the DO's final per-voter rows AND close the session in
+ * one D1 batch, so a failure cannot leave votes written for a session that is
+ * still marked live (or a closed session missing its final votes).
+ */
+export async function closeSessionWithVotes(
+  db: D1Database,
+  args: {
+    sessionId: string
+    ownerId: string
+    closedAt: number
+    questionId: string | null
+    votes: Array<{ voterId: string; optionId: string }>
+  },
+): Promise<void> {
+  const statements =
+    args.questionId && args.votes.length > 0
+      ? closeVoteStatements(db, args.sessionId, args.questionId, args.votes, args.closedAt)
+      : []
+  statements.push(markSessionClosedStatement(db, args.sessionId, args.ownerId, args.closedAt))
+  await db.batch(statements)
 }
 
 /**
@@ -112,14 +144,22 @@ export async function markSessionClosed(
   ownerId: string,
   closedAt: number,
 ): Promise<void> {
-  await db
+  await markSessionClosedStatement(db, id, ownerId, closedAt).run()
+}
+
+function markSessionClosedStatement(
+  db: D1Database,
+  id: string,
+  ownerId: string,
+  closedAt: number,
+): D1PreparedStatement {
+  return db
     .prepare(
       `UPDATE sessions SET status = 'closed', closed_at = ?1,
          voter_salt = CASE WHEN voter_salt IS NULL THEN NULL ELSE ?4 END
        WHERE id = ?2 AND owner_id = ?3`,
     )
     .bind(closedAt, id, ownerId, generateVoterSalt())
-    .run()
 }
 
 /** Count a session's questions (marketing webhook payload). */

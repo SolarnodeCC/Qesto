@@ -20,8 +20,7 @@ import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/pro
 import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
 import { persistRetroHealthSnapshot } from '../../lib/workspace-trends'
 import {
-  insertCloseVotes,
-  markSessionClosed,
+  closeSessionWithVotes,
   countSessionQuestions,
 } from '../../repositories/sessionLifecycleRepository'
 
@@ -114,14 +113,16 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
       )
     }
 
-    // Persist per-voter rows to D1. UNIQUE(question_id, voter_id) guards
-    // against replay.
-    if (questionId && voteList.length > 0) {
-      await insertCloseVotes(c.env.DB, id, questionId, voteList, Date.now())
-    }
-
+    // Persist per-voter rows and the closed status in ONE batch (DD-40).
+    // UNIQUE(question_id, voter_id) + INSERT OR IGNORE guard against replay.
     const closedAt = Date.now()
-    await markSessionClosed(c.env.DB, id, user.sub, closedAt)
+    await closeSessionWithVotes(c.env.DB, {
+      sessionId: id,
+      ownerId: user.sub,
+      closedAt,
+      questionId,
+      votes: voteList,
+    })
     session.status = 'closed'
     session.closed_at = closedAt
 
