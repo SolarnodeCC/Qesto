@@ -36,7 +36,8 @@
 /chunks/*
   Cache-Control: public, max-age=31536000, immutable
 
-# DD-15 — source maps build as 'hidden' (no sourceMappingURL), so nothing
-# requests these. Kept out of indexes in case one is ever emitted.
+# DD-15 — source maps build as 'hidden' (no sourceMappingURL) and the build
+# moves them out of dist/ (vite.config.ts privateSourcemaps), so none deploy.
+# Kept out of indexes as belt and braces in case one is ever emitted.
 /*.map
   X-Robots-Tag: noindex

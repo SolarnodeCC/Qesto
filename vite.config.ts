@@ -5,6 +5,8 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { mkdirSync, readdirSync, renameSync, statSync } from 'node:fs'
+import type { Plugin } from 'vite'
 
 function getFrontendCommit(): string {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12)
@@ -23,12 +25,43 @@ const frontendBuildTime = new Date().toISOString()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+/**
+ * DD-15 (#888) follow-up: 'hidden' maps carry no sourceMappingURL, but the
+ * .map files themselves were still deployed and fetchable by guessing the URL
+ * (`/assets/<chunk>.js.map`). After the bundle is written, move every map out
+ * of `dist/` into `sourcemaps/` (gitignored, same relative layout) so nothing
+ * that ships can serve them; CI can upload that folder to an error tracker.
+ * This runs inside `vite build`, so every build path (CI, Pages Git builds,
+ * local deploys) gets it.
+ */
+function privateSourcemaps(): Plugin {
+  const outDir = path.resolve(__dirname, 'dist')
+  const mapsDir = path.resolve(__dirname, 'sourcemaps')
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => {
+      const full = path.join(dir, name)
+      return statSync(full).isDirectory() ? walk(full) : [full]
+    })
+  return {
+    name: 'qesto-private-sourcemaps',
+    apply: 'build',
+    closeBundle() {
+      for (const file of walk(outDir)) {
+        if (!file.endsWith('.map')) continue
+        const dest = path.join(mapsDir, path.relative(outDir, file))
+        mkdirSync(path.dirname(dest), { recursive: true })
+        renameSync(file, dest)
+      }
+    },
+  }
+}
+
 export default defineConfig(() => {
   // VITE_API_BASE_URL is optional: empty string means relative URLs (co-located Pages + Functions).
   // Set it explicitly only when the API lives on a different origin.
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), privateSourcemaps()],
     define: {
       __QESTO_FRONTEND_COMMIT__: JSON.stringify(frontendCommit),
       __QESTO_FRONTEND_BUILD_TIME__: JSON.stringify(frontendBuildTime),
