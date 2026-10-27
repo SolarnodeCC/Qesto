@@ -60,6 +60,9 @@ export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_model TEXT`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_edited_at INTEGER`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
+  // DD-03 (migration 0082): /start writes the per-session voter salt. Without the
+  // column the start UPDATE throws and every launch 500s, so self-heal it here too.
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN voter_salt TEXT`).run().catch((err) => ignoreSchemaPatchError(err, 'sessions.patchSchemaIfNeeded'))
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS sprint19_events (
       id TEXT PRIMARY KEY,
