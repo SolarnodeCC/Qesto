@@ -220,4 +220,31 @@ describe('flushVotesToD1AndKV — multi-vote persistence', () => {
     expect(db.batchCalls).toBe(3)
     expect(db.statementsRun).toBe(250)
   })
+  // DD-18 (issue #891): the plan-cap case DD-12 promised — 500 concurrent
+  // voters plus 100 vote changes in one flush window stays a handful of
+  // batched round-trips and keeps exactly one row per voter.
+  it('DD-18: a 500-voter flush at the starter plan cap stays batched and correct', async () => {
+    const db = new FakeD1()
+    const first: BufferedVote[] = Array.from({ length: 500 }, (_, i) => ({
+      sessionId: 's1',
+      questionId: 'q1',
+      voterId: `v${i}`,
+      optionId: 'a',
+      submittedAt: i,
+    }))
+    const changes: BufferedVote[] = Array.from({ length: 100 }, (_, i) => ({
+      sessionId: 's1',
+      questionId: 'q1',
+      voterId: `v${i}`,
+      optionId: 'b',
+      submittedAt: 1000 + i,
+      supersedesOptionId: 'a',
+    }))
+    await flushVotesToD1AndKV(makeStorage(), envWith(db), makeState([...first, ...changes]))
+    expect(db.rows).toHaveLength(500)
+    expect(optionsFor(db, 'v0')).toEqual(['b'])
+    expect(optionsFor(db, 'v499')).toEqual(['a'])
+    // 500 inserts + 100 deletes + 100 re-inserts = 700 statements → 7 batches.
+    expect(db.batchCalls).toBeLessThanOrEqual(7)
+  })
 })

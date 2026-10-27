@@ -124,10 +124,34 @@ export default defineConfig(() => {
         // 85/85/75/85; raise these as coverage grows — never lower one to
         // make a build pass.
         thresholds: {
-          statements: 41,
-          branches: 30,
-          functions: 37,
-          lines: 42,
+          // Re-measured 2026-10 (DD-18, #891): 43.42 / 32.22 / 39.22 / 44.70.
+          statements: 42,
+          branches: 31,
+          functions: 38,
+          lines: 43,
+          // DD-18: the global number averages security-critical code with UI.
+          // Ratchet the small files where a regression is a breach, each group
+          // set just under its measured aggregate (2026-10) — raise, never lower.
+          // Measured: auth libs 98.1 L / 83.7 B; middleware 91.9 L / 78.2 B;
+          // vote path 67.4 L / 64.0 B.
+          'functions/api/lib/{jwt,password,authz,embed-token,session-token,impersonation,breached-password}.ts': {
+            lines: 97,
+            branches: 82,
+            functions: 97,
+            statements: 91,
+          },
+          'functions/api/middleware/{auth,csrf,admin,rbac,plan,rate-limit,public-api-auth,widget-token,security-headers}.ts': {
+            lines: 90,
+            branches: 77,
+            functions: 89,
+            statements: 89,
+          },
+          'functions/api/lib/session-room-vote*.ts': {
+            lines: 66,
+            branches: 63,
+            functions: 76,
+            statements: 63,
+          },
         },
       },
     },
