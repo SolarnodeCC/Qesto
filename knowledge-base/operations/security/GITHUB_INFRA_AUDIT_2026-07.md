@@ -120,7 +120,13 @@ project, so two-person review is structurally impossible today.
 **Priority:** Medium · **Effort:** low
 
 #### ❌ Branch protection absent — CRITICAL
-**Status:** ❌ (see C1)
+> **Correction (2026-10, DD-31 / issue #903):** stale. Since this audit the GitHub
+> API reports `main` as `"protected": true`. Which rules are active (required
+> checks, Code Owner review) is still not readable from the repository; the
+> required-status-check setup is recorded in [`docs/branch-protection.md`](../../../docs/branch-protection.md).
+> Treat the text below as the July 2026 baseline, not current state.
+
+**Status:** ❌ at time of audit (see C1) — superseded, see correction above
 **Current state:** All 20 branches sampled report `protected: false`; the
 jankurai.yml comment on #612 confirms required checks are not yet enforced on
 `main`.
