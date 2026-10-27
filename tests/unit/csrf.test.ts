@@ -114,18 +114,46 @@ describe('CSRF / Origin validation', () => {
     expect(res.status).toBe(200)
   })
 
-  it('allows POST with no Origin / Referer (non-browser client)', async () => {
-    const db = new D1Mock()
+  // DD-24 (issue #896): header-less cookie mutations need the SPA marker.
+  async function headerlessPost(extra: Record<string, string>) {
     const app = createApp()
-    const env = makeEnv(db)
+    const env = makeEnv(new D1Mock())
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
+    return app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: `qesto_session=${jwt}`, ...extra },
+        body: JSON.stringify({ title: 'cli' }),
+      }),
+      env,
+    )
+  }
+
+  it('rejects a cookie-authenticated POST with no Origin, Referer or marker header', async () => {
+    const res = await headerlessPost({})
+    expect(res.status).toBe(403)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('forbidden_origin')
+  })
+
+  it('allows a header-less cookie POST that carries the SPA marker header', async () => {
+    const res = await headerlessPost({ 'x-qesto-client': 'web' })
+    expect(res.status).toBe(201)
+  })
+
+  it('rejects a wrong marker value', async () => {
+    const res = await headerlessPost({ 'x-qesto-client': 'evil' })
+    expect(res.status).toBe(403)
+  })
+
+  it('does not apply the marker rule to Bearer-authenticated callers', async () => {
+    const app = createApp()
+    const env = makeEnv(new D1Mock())
     const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          cookie: `qesto_session=${jwt}`,
-        },
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${jwt}` },
         body: JSON.stringify({ title: 'cli' }),
       }),
       env,

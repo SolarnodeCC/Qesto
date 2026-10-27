@@ -94,7 +94,7 @@ describe('admin routes reject malformed JSON with 400 (EH-08)', () => {
     const res = await app.fetch(
       new Request('http://local/api/admin/metrics/export', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await adminCookie() },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await adminCookie() },
         body: 'this is not json',
       }),
       makeEnv(new D1Mock()),
@@ -110,7 +110,7 @@ describe('admin routes reject malformed JSON with 400 (EH-08)', () => {
     const res = await app.fetch(
       new Request('http://local/api/admin/users', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await adminCookie() },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await adminCookie() },
         body: '{not json',
       }),
       makeEnv(new D1Mock()),
@@ -125,7 +125,7 @@ describe('admin routes reject malformed JSON with 400 (EH-08)', () => {
     const res = await app.fetch(
       new Request('http://local/api/admin/users/some_user', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: await adminCookie() },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await adminCookie() },
         body: 'oops',
       }),
       makeEnv(new D1Mock()),

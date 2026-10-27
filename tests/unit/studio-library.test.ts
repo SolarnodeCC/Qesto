@@ -87,7 +87,7 @@ function req(env: Env, path: string, method: string, c: string | null, body?: un
   return createApp().fetch(
     new Request(`http://local/api/studio/${path}`, {
       method,
-      headers: { 'content-type': 'application/json', ...(c ? { cookie: c } : {}) },
+      headers: { 'content-type': 'application/json', ...(c ? { 'x-qesto-client': 'web', cookie: c } : {}) },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
     env,

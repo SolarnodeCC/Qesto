@@ -63,7 +63,7 @@ const post = (env: Env, c: string, body: unknown) =>
   createApp().fetch(
     new Request('http://local/api/sessions/sess_ideate/ideate/config', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', cookie: c },
+      headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: c },
       body: JSON.stringify(body),
     }),
     env,
@@ -102,7 +102,7 @@ describe('POST /api/sessions/:id/ideate/config', () => {
     await post(env, await cookie(), { dotVoteLimit: 4, clusterDebounceMs: 2000 })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_ideate/ideate/config', {
-        headers: { cookie: await cookie() },
+        headers: { 'x-qesto-client': 'web', cookie: await cookie() },
       }),
       env,
     )

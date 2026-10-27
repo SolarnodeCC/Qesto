@@ -181,7 +181,7 @@ export function createApp() {
         return null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'x-parent-trace-id', 'idempotency-key'],
+      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'x-parent-trace-id', 'idempotency-key', 'x-qesto-client'],
       credentials: true,
       maxAge: 600,
     }),

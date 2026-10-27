@@ -61,7 +61,7 @@ describe('event presenter routes (FE-STAGE-PRES-01)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({ kind: 'event', title: 'Hybrid Summit' }),
       }),
       env,
@@ -69,7 +69,7 @@ describe('event presenter routes (FE-STAGE-PRES-01)', () => {
     const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
 
     const getRes = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/present`, { headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/present`, { headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     expect(getRes.status).toBe(200)
@@ -79,7 +79,7 @@ describe('event presenter routes (FE-STAGE-PRES-01)', () => {
     const putRes = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/present`, {
         method: 'PUT',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({
           slideDeckUrl: 'https://docs.google.com/presentation/d/abc/edit',
           activeSlotId: null,

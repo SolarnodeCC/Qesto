@@ -116,7 +116,7 @@ const start = (env: Env, c: string) =>
   createApp().fetch(
     new Request(`http://local/api/sessions/${SESSION_ID}/start`, {
       method: 'POST',
-      headers: { cookie: c },
+      headers: { 'x-qesto-client': 'web', cookie: c },
     }),
     env,
   )

@@ -93,7 +93,7 @@ describe('DELETE /api/sessions/:id', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_del', {
         method: 'DELETE',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       makeEnv(db),
     )

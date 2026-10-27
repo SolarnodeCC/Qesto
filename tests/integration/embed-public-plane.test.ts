@@ -142,7 +142,7 @@ describe('embed public read plane (integration)', () => {
     const res = await app.fetch(
       new Request('http://local/api/embed/widgets', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: await cookie() },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: await cookie() },
         body: JSON.stringify({ session_id: 'sess_1', allowed_origins: [ORIGIN] }),
       }),
       makeEnv(db),

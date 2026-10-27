@@ -46,6 +46,7 @@ describe('LEARN instructor analytics API (FE-LEARN-INSTRUCTOR-01)', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
+          'x-qesto-client': 'web',
           cookie: await cookieFor(userId, 'instructor@example.com'),
         },
         body: JSON.stringify({
@@ -106,6 +107,7 @@ describe('LEARN instructor analytics API (FE-LEARN-INSTRUCTOR-01)', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
+          'x-qesto-client': 'web',
           cookie: await cookieFor(userId, 'csv@example.com'),
         },
         body: JSON.stringify({

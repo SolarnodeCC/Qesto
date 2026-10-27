@@ -27,7 +27,7 @@ describe('Plan Enforcement (BILL-04)', () => {
       const res = await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `free-${i}` },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': `free-${i}` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -41,7 +41,7 @@ describe('Plan Enforcement (BILL-04)', () => {
     const failRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'free-6' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'free-6' },
         body: JSON.stringify({ title: 'Session 6' }),
       }),
       env,
@@ -75,7 +75,7 @@ describe('Plan Enforcement (BILL-04)', () => {
       const res = await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `starter-${i}`, 'cf-connecting-ip': `10.${i}.0.1` },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': `starter-${i}`, 'cf-connecting-ip': `10.${i}.0.1` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -87,7 +87,7 @@ describe('Plan Enforcement (BILL-04)', () => {
     const failRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'starter-51', 'cf-connecting-ip': '10.51.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'starter-51', 'cf-connecting-ip': '10.51.0.1' },
         body: JSON.stringify({ title: 'Session 51' }),
       }),
       env,
@@ -117,7 +117,7 @@ describe('Plan Enforcement (BILL-04)', () => {
       const res = await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `team-${i}`, 'cf-connecting-ip': `10.${Math.floor(i / 255)}.${i % 255}.1` },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': `team-${i}`, 'cf-connecting-ip': `10.${Math.floor(i / 255)}.${i % 255}.1` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -129,7 +129,7 @@ describe('Plan Enforcement (BILL-04)', () => {
     const failRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'team-501', 'cf-connecting-ip': '10.1.255.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'team-501', 'cf-connecting-ip': '10.1.255.1' },
         body: JSON.stringify({ title: 'Session 501' }),
       }),
       env,
@@ -158,7 +158,7 @@ describe('Plan Enforcement (BILL-04)', () => {
       await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `quota-${i}` },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': `quota-${i}` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -167,7 +167,7 @@ describe('Plan Enforcement (BILL-04)', () => {
 
     // Check quota usage
     const usageRes = await app.fetch(
-      new Request(`http://local/api/plans/${userId}/usage`, { headers: { cookie } }),
+      new Request(`http://local/api/plans/${userId}/usage`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(usageRes.status).toBe(200)
@@ -203,7 +203,7 @@ describe('Plan Enforcement (BILL-04)', () => {
 
     // Try to access another user's quota
     const failRes = await app.fetch(
-      new Request(`http://local/api/plans/${userId2}/usage`, { headers: { cookie } }),
+      new Request(`http://local/api/plans/${userId2}/usage`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(failRes.status).toBe(403)

@@ -45,7 +45,7 @@ describe('User Preferences CRUD', () => {
 
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -64,7 +64,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'comfortable' }),
       }),
       env,
@@ -85,7 +85,7 @@ describe('User Preferences CRUD', () => {
     const update1 = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'compact' }),
       }),
       env,
@@ -95,7 +95,7 @@ describe('User Preferences CRUD', () => {
     // Verify it was saved
     const get1 = await app.fetch(
       new Request('http://local/api/users/preferences', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -106,7 +106,7 @@ describe('User Preferences CRUD', () => {
     const update2 = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({}),
       }),
       env,
@@ -124,7 +124,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'invalid' }),
       }),
       env,
@@ -143,7 +143,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: 'not json',
       }),
       env,
@@ -185,7 +185,7 @@ describe('User Preferences CRUD', () => {
     await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'compact' }),
       }),
       env,
@@ -194,7 +194,7 @@ describe('User Preferences CRUD', () => {
     // User 2 gets empty preferences
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
-        headers: { cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -207,7 +207,7 @@ describe('User Preferences CRUD', () => {
     await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'spacious' }),
       }),
       env,
@@ -216,7 +216,7 @@ describe('User Preferences CRUD', () => {
     // User 1 still has their preference
     const user1Get = await app.fetch(
       new Request('http://local/api/users/preferences', {
-        headers: { cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -233,7 +233,7 @@ describe('User Preferences CRUD', () => {
       const res = await app.fetch(
         new Request('http://local/api/users/preferences', {
           method: 'PATCH',
-          headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
           body: JSON.stringify({ density }),
         }),
         env,
@@ -252,7 +252,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ colorScheme: 'dark', highContrast: true }),
       }),
       env,
@@ -272,7 +272,7 @@ describe('User Preferences CRUD', () => {
     await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ density: 'compact' }),
       }),
       env,
@@ -280,7 +280,7 @@ describe('User Preferences CRUD', () => {
     await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ colorScheme: 'light' }),
       }),
       env,
@@ -288,7 +288,7 @@ describe('User Preferences CRUD', () => {
 
     const get = await app.fetch(
       new Request('http://local/api/users/preferences', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -304,7 +304,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ colorScheme: 'sepia' }),
       }),
       env,
@@ -323,7 +323,7 @@ describe('User Preferences CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/users/preferences', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ highContrast: 'yes' }),
       }),
       env,

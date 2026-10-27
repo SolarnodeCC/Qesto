@@ -46,7 +46,7 @@ describe('sessions response contracts', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'contract-1' },
         body: JSON.stringify({ title: 'Contract Test' }),
       }),
       env,
@@ -80,7 +80,7 @@ describe('sessions response contracts', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-2' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'contract-2' },
         body: JSON.stringify({ title: 'Before' }),
       }),
       env,
@@ -92,7 +92,7 @@ describe('sessions response contracts', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'After' }),
       }),
       env,
@@ -120,7 +120,7 @@ describe('sessions response contracts', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-3' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'contract-3' },
         body: JSON.stringify({ title: 'Get Test' }),
       }),
       env,
@@ -130,7 +130,7 @@ describe('sessions response contracts', () => {
 
     // Get it
     const getRes = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}`, { headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(getRes.status).toBe(200)
@@ -162,7 +162,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'key-1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'key-1' },
         body: JSON.stringify({ title: 'Retro Q2' }),
       }),
       env,
@@ -183,7 +183,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     //    ACTIONS_KV is undefined in this test, so we skip the replay assertion and just
     //    check list shows exactly one session (not two).
     const listRes = await app.fetch(
-      new Request('http://local/api/sessions', { headers: { cookie } }),
+      new Request('http://local/api/sessions', { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(listRes.status).toBe(200)
@@ -195,7 +195,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           title: 'Retro Q2 — final',
           question: {
@@ -222,7 +222,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
 
     // 4. GET /:id returns hydrated session.
     const getRes = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}`, { headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(getRes.status).toBe(200)
@@ -253,7 +253,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: ownerCookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: ownerCookie },
         body: JSON.stringify({ title: 'Private' }),
       }),
       env,
@@ -261,7 +261,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const { data } = (await createRes.json()) as { data: { session: { id: string } } }
 
     const getRes = await app.fetch(
-      new Request(`http://local/api/sessions/${data.session.id}`, { headers: { cookie: intruderCookie } }),
+      new Request(`http://local/api/sessions/${data.session.id}`, { headers: { 'x-qesto-client': 'web', cookie: intruderCookie } }),
       env,
     )
     expect(getRes.status).toBe(404)
@@ -276,7 +276,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: '' }),
       }),
       env,
@@ -310,7 +310,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const res1 = await app.fetch(
       new Request('http://local/api/sessions/sess_closed', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'New' }),
       }),
       env,
@@ -321,7 +321,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     const res2 = await app.fetch(
       new Request('http://local/api/sessions/sess_closed', {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ anonymity: 'none' }),
       }),
       env,
@@ -343,7 +343,7 @@ describe('POST /api/sessions/:id/questions — response contract + malformed JSO
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'q-contract' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'q-contract' },
         body: JSON.stringify({ title: 'Question Test' }),
       }),
       env,
@@ -355,7 +355,7 @@ describe('POST /api/sessions/:id/questions — response contract + malformed JSO
     const addQRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/questions`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           kind: 'poll',
           prompt: 'What is your preference?',
@@ -396,7 +396,7 @@ describe('POST /api/sessions/:id/questions — response contract + malformed JSO
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'q-bad' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'idempotency-key': 'q-bad' },
         body: JSON.stringify({ title: 'Bad JSON Test' }),
       }),
       env,
@@ -407,7 +407,7 @@ describe('POST /api/sessions/:id/questions — response contract + malformed JSO
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/questions`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: '{not-json',
       }),
       env,

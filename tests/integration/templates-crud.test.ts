@@ -142,7 +142,7 @@ describe('Templates CRUD', () => {
 
     const res = await app.fetch(
       new Request('http://local/api/templates/mine', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -193,7 +193,7 @@ describe('Templates CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({
           sessionId,
           name: 'My Custom Template',
@@ -239,7 +239,7 @@ describe('Templates CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({
           sessionId,
           name: 'Template A',
@@ -253,7 +253,7 @@ describe('Templates CRUD', () => {
     // List templates
     const listRes = await app.fetch(
       new Request('http://local/api/templates/mine', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -290,7 +290,7 @@ describe('Templates CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({
           sessionId,
           name: 'Delete Me',
@@ -306,7 +306,7 @@ describe('Templates CRUD', () => {
     const deleteRes = await app.fetch(
       new Request(`http://local/api/templates/mine/${templateId}`, {
         method: 'DELETE',
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -318,7 +318,7 @@ describe('Templates CRUD', () => {
     // Verify template is gone
     const listRes = await app.fetch(
       new Request('http://local/api/templates/mine', {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -345,7 +345,7 @@ describe('Templates CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ sessionId, name, description: 'desc' }),
       }),
       env,
@@ -364,7 +364,7 @@ describe('Templates CRUD', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/templates/mine/${templateId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Renamed' }),
       }),
       env,
@@ -392,7 +392,7 @@ describe('Templates CRUD', () => {
     const res = await app.fetch(
       new Request(`http://local/api/templates/mine/${templateId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'X', expectedVersion: 99 }),
       }),
       env,
@@ -411,7 +411,7 @@ describe('Templates CRUD', () => {
     const res = await app.fetch(
       new Request(`http://local/api/templates/mine/${templateId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({}),
       }),
       env,
@@ -430,14 +430,14 @@ describe('Templates CRUD', () => {
     await app.fetch(
       new Request(`http://local/api/templates/mine/${templateId}`, {
         method: 'DELETE',
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
 
     // Gone from the listing…
     const listRes = await app.fetch(
-      new Request('http://local/api/templates/mine', { headers: { cookie, 'cf-connecting-ip': '127.0.0.1' } }),
+      new Request('http://local/api/templates/mine', { headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' } }),
       env,
     )
     expect((await listRes.json() as any).data.templates).toHaveLength(0)
@@ -476,7 +476,7 @@ describe('Templates CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({
           name: 'Test',
           description: 'Missing sessionId',
@@ -529,7 +529,7 @@ describe('Templates CRUD', () => {
     await app.fetch(
       new Request('http://local/api/templates/mine', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({
           sessionId,
           name: 'User 1 Template',
@@ -542,7 +542,7 @@ describe('Templates CRUD', () => {
     // User 2 should see empty list
     const user2List = await app.fetch(
       new Request('http://local/api/templates/mine', {
-        headers: { cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )

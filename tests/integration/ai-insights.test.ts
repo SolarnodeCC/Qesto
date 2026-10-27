@@ -109,7 +109,7 @@ describe('insights governance guard (REV-06)', () => {
     const { app, env, sessionId, cookie } = await seededApp({ anonymity: 'zero_knowledge' })
     const response = await app.fetch(
       new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -122,7 +122,7 @@ describe('insights governance guard (REV-06)', () => {
     const { app, env, sessionId, cookie } = await seededApp({ ai_generated: 1, ai_consent_at: null })
     const response = await app.fetch(
       new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -138,7 +138,7 @@ describe('insights governance guard (REV-06)', () => {
     })
     const response = await app.fetch(
       new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -150,7 +150,7 @@ describe('insights governance guard (REV-06)', () => {
     const response = await app.fetch(
       new Request(`http://localhost/api/sessions/${sessionId}/insights/analyze`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )

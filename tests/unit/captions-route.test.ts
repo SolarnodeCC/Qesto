@@ -110,7 +110,7 @@ function ingest(
   return createApp().fetch(
     new Request(`http://local/api/sessions/sess_1/captions/ingest?${qs}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/octet-stream', ...(c ? { cookie: c } : {}) },
+      headers: { 'content-type': 'application/octet-stream', ...(c ? { 'x-qesto-client': 'web', cookie: c } : {}) },
       body: audio as unknown as BodyInit,
     }),
     env,

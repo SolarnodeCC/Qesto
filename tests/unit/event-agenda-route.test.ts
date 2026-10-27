@@ -61,7 +61,7 @@ describe('event agenda routes (STAGE-AGENDA-01)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({ kind: 'event', title: 'Hybrid Summit' }),
       }),
       env,
@@ -71,7 +71,7 @@ describe('event agenda routes (STAGE-AGENDA-01)', () => {
     const wsId = wsBody.data.workspace.id
 
     const agendaSeed = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     expect(agendaSeed.status).toBe(200)
@@ -81,7 +81,7 @@ describe('event agenda routes (STAGE-AGENDA-01)', () => {
     const instance = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, {
         method: 'POST',
-        headers: { cookie: auth },
+        headers: { 'x-qesto-client': 'web', cookie: auth },
       }),
       env,
     )
@@ -92,7 +92,7 @@ describe('event agenda routes (STAGE-AGENDA-01)', () => {
     const put = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, {
         method: 'PUT',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({
           tracks: [
             {
@@ -115,7 +115,7 @@ describe('event agenda routes (STAGE-AGENDA-01)', () => {
     expect(put.status).toBe(200)
 
     const organizerGet = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     expect(organizerGet.status).toBe(200)

@@ -61,7 +61,7 @@ describe('event suite routes (STAGE-SUITE-01)', () => {
     const createWs = await app.fetch(
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({ kind: 'event', title: 'Summit 2026' }),
       }),
       env,
@@ -70,13 +70,13 @@ describe('event suite routes (STAGE-SUITE-01)', () => {
     const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
 
     const agendaRes = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/agenda`, { headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     const eventCode = ((await agendaRes.json()) as { data: { eventCode: string } }).data.eventCode
 
     const start = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/suite/start`, { method: 'POST', headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/suite/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     expect(start.status).toBe(200)
@@ -86,7 +86,7 @@ describe('event suite routes (STAGE-SUITE-01)', () => {
     const feedPost = await app.fetch(
       new Request(`http://local/api/teams/team-w/workspaces/${wsId}/suite/feed`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: auth },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: auth },
         body: JSON.stringify({ message: 'Welcome to the summit!' }),
       }),
       env,
@@ -100,7 +100,7 @@ describe('event suite routes (STAGE-SUITE-01)', () => {
     expect(pubBody.data.feed.some((f) => f.message.includes('Welcome'))).toBe(true)
 
     const close = await app.fetch(
-      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/suite/close`, { method: 'POST', headers: { cookie: auth } }),
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/suite/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie: auth } }),
       env,
     )
     expect(close.status).toBe(200)

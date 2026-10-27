@@ -50,7 +50,7 @@ describe('Teams response contracts', () => {
     const res = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Contract Team' }),
       }),
       env,
@@ -81,7 +81,7 @@ describe('Teams response contracts', () => {
     const res = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: '{bad-json',
       }),
       env,
@@ -106,7 +106,7 @@ describe('Teams CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Engineering Team' }),
       }),
       env,
@@ -133,7 +133,7 @@ describe('Teams CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Team A' }),
       }),
       env,
@@ -143,7 +143,7 @@ describe('Teams CRUD', () => {
     // user_1 should see the team
     const listRes1 = await app.fetch(
       new Request('http://local/api/teams', {
-        headers: { cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -156,7 +156,7 @@ describe('Teams CRUD', () => {
     // user_2 should see empty list
     const listRes2 = await app.fetch(
       new Request('http://local/api/teams', {
-        headers: { cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -176,7 +176,7 @@ describe('Teams CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Engineering' }),
       }),
       env,
@@ -187,7 +187,7 @@ describe('Teams CRUD', () => {
     // Fetch team
     const getRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}`, {
-        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )
@@ -209,7 +209,7 @@ describe('Teams CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Old Name' }),
       }),
       env,
@@ -221,7 +221,7 @@ describe('Teams CRUD', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'New Name' }),
       }),
       env,
@@ -242,7 +242,7 @@ describe('Teams CRUD', () => {
     const res = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: '' }),
       }),
       env,
@@ -281,7 +281,7 @@ describe('Teams CRUD', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/teams', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie1, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Team' }),
       }),
       env,
@@ -293,7 +293,7 @@ describe('Teams CRUD', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/teams/${teamId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie: cookie2, 'cf-connecting-ip': '127.0.0.1' },
         body: JSON.stringify({ name: 'Hacked' }),
       }),
       env,

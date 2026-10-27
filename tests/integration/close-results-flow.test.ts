@@ -61,7 +61,7 @@ describe('close → persist → results round-trip', () => {
     const createRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Phase 4 Retro' }),
       }),
       env,
@@ -77,7 +77,7 @@ describe('close → persist → results round-trip', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           question: {
             kind: 'poll',
@@ -98,7 +98,7 @@ describe('close → persist → results round-trip', () => {
     const startRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/start`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -123,7 +123,7 @@ describe('close → persist → results round-trip', () => {
     const closeRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/close`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -139,7 +139,7 @@ describe('close → persist → results round-trip', () => {
     // 6. GET /results — CLOSED path aggregates from D1.
     const resultsRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/results`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -167,7 +167,7 @@ describe('close → persist → results round-trip', () => {
     const created = (await (await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Votes round-trip' }),
       }),
       env,
@@ -178,7 +178,7 @@ describe('close → persist → results round-trip', () => {
     await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           question: {
             kind: 'poll',
@@ -195,7 +195,7 @@ describe('close → persist → results round-trip', () => {
     await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/start`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -216,14 +216,14 @@ describe('close → persist → results round-trip', () => {
     const closeRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/close`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
     expect(closeRes.status).toBe(200)
 
     const results = (await (await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )).json()) as ApiBody<{
       questions: Array<{ counts: Record<string, number>; total: number }>
@@ -242,7 +242,7 @@ describe('close → persist → results round-trip', () => {
     const created = (await (await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Draft only' }),
       }),
       env,
@@ -251,7 +251,7 @@ describe('close → persist → results round-trip', () => {
 
     const res = await app.fetch(
       new Request(`http://local/api/sessions/${created.data.session.id}/results`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -267,7 +267,7 @@ describe('close → persist → results round-trip', () => {
     const created = (await (await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Double close' }),
       }),
       env,
@@ -278,7 +278,7 @@ describe('close → persist → results round-trip', () => {
     await app.fetch(
       new Request(`http://local/api/sessions/${id}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           question: {
             kind: 'poll',
@@ -293,16 +293,16 @@ describe('close → persist → results round-trip', () => {
       env,
     )
     await app.fetch(
-      new Request(`http://local/api/sessions/${id}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${id}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     const close1 = await app.fetch(
-      new Request(`http://local/api/sessions/${id}/close`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${id}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(close1.status).toBe(200)
     const close2 = await app.fetch(
-      new Request(`http://local/api/sessions/${id}/close`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${id}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(close2.status).toBe(409)
@@ -318,7 +318,7 @@ describe('close → persist → results round-trip', () => {
     const created = (await (await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Votes Aggregation' }),
       }),
       env,
@@ -330,7 +330,7 @@ describe('close → persist → results round-trip', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           question: {
             kind: 'poll',
@@ -351,7 +351,7 @@ describe('close → persist → results round-trip', () => {
 
     // Start session
     await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
 
@@ -402,7 +402,7 @@ describe('close → persist → results round-trip', () => {
     const closeRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/close`, {
         method: 'POST',
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -417,7 +417,7 @@ describe('close → persist → results round-trip', () => {
     // 4. GET /results and verify votes are aggregated from D1
     const resultsRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/results`, {
-        headers: { cookie },
+        headers: { 'x-qesto-client': 'web', cookie },
       }),
       env,
     )
@@ -446,7 +446,7 @@ describe('close → persist → results round-trip', () => {
     const created = (await (await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({ title: 'Multi-question recap' }),
       }),
       env,
@@ -458,7 +458,7 @@ describe('close → persist → results round-trip', () => {
     const patchRes = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', cookie },
+        headers: { 'content-type': 'application/json', 'x-qesto-client': 'web', cookie },
         body: JSON.stringify({
           question: {
             kind: 'poll',
@@ -513,18 +513,18 @@ describe('close → persist → results round-trip', () => {
 
     // 5. Start + close.
     await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     const closeRes = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(closeRes.status).toBe(200)
 
     // 6. GET /results — expect BOTH questions, each with its own tally.
     const resultsRes = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/results`, { headers: { 'x-qesto-client': 'web', cookie } }),
       env,
     )
     expect(resultsRes.status).toBe(200)

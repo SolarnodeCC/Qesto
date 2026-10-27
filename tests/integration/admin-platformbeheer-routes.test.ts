@@ -48,7 +48,7 @@ function adminReq(path: string, init: RequestInit & { cookie: string }): Request
   const { cookie: ck, ...rest } = init
   return new Request(`http://local${path}`, {
     ...rest,
-    headers: { 'cf-connecting-ip': '127.0.0.1', cookie: ck, ...(rest.headers ?? {}) },
+    headers: { 'cf-connecting-ip': '127.0.0.1', 'x-qesto-client': 'web', cookie: ck, ...(rest.headers ?? {}) },
   })
 }
 
@@ -153,7 +153,7 @@ describe('Platformbeheer — impersonation', () => {
     const impToken = await signJwt({ sub: 'target-7', email: 'target@example.com', jti: `imp:${ADMIN_ID}:abc` }, TEST_JWT_SECRET, 900)
     const res = await createApp().fetch(
       new Request('http://local/api/auth/me', {
-        headers: { 'cf-connecting-ip': '127.0.0.1', cookie: `${sessionCk}; qesto_impersonation=${impToken}` },
+        headers: { 'cf-connecting-ip': '127.0.0.1', 'x-qesto-client': 'web', cookie: `${sessionCk}; qesto_impersonation=${impToken}` },
       }),
       env,
     )
@@ -171,7 +171,7 @@ describe('Platformbeheer — impersonation', () => {
     const bogus = await signJwt({ sub: 'attacker', email: 'attacker@example.com' }, TEST_JWT_SECRET, 900)
     const res = await createApp().fetch(
       new Request('http://local/api/auth/me', {
-        headers: { 'cf-connecting-ip': '127.0.0.1', cookie: `${sessionCk}; qesto_impersonation=${bogus}` },
+        headers: { 'cf-connecting-ip': '127.0.0.1', 'x-qesto-client': 'web', cookie: `${sessionCk}; qesto_impersonation=${bogus}` },
       }),
       env,
     )

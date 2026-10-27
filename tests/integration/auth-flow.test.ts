@@ -102,7 +102,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(claims?.email).toBe('host@example.com')
 
     const meRes = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${jwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${jwt}` } }),
       env,
     )
     expect(meRes.status).toBe(200)
@@ -167,7 +167,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       3600,
     )
     const res = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${jwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${jwt}` } }),
       env,
     )
     expect(res.status).toBe(200)
@@ -179,7 +179,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     const db = new D1Mock()
     const app = createApp()
     const res = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: 'qesto_session=not.a.valid.jwt' } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: 'qesto_session=not.a.valid.jwt' } }),
       makeEnv(db),
     )
     expect(res.status).toBe(401)
@@ -249,7 +249,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     const refreshRes = await app.fetch(
       new Request('http://local/api/auth/refresh', {
         method: 'POST',
-        headers: { cookie: `qesto_session=${oldJwt}` },
+        headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${oldJwt}` },
       }),
       env,
     )
@@ -259,13 +259,13 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(newJwt).toBeTruthy()
 
     const oldMe = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${oldJwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${oldJwt}` } }),
       env,
     )
     expect(oldMe.status).toBe(401)
 
     const newMe = await app.fetch(
-      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${newJwt}` } }),
+      new Request('http://local/api/auth/me', { headers: { 'x-qesto-client': 'web', cookie: `qesto_session=${newJwt}` } }),
       env,
     )
     expect(newMe.status).toBe(200)
