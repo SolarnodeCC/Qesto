@@ -17,10 +17,42 @@ const ANALYSIS_COOLDOWN_MS = 30_000
 
 type DistilbertLabel = { label: string; score?: number }
 
+// SENTIMENT_MODEL is DistilBERT fine-tuned on English (SST-2). A Latin-script
+// check alone let Dutch, German, French and Spanish responses through, and the
+// English model then scored them as noise (issue #528). So a response must also
+// not be dominated by those languages' function words. Words shared with
+// English ("in", "is", "was", "no", "die", "a") are deliberately in neither
+// list; a short reply with no function words at all is still treated as English.
+const EN_FUNCTION_WORDS = new Set([
+  'the', 'and', 'to', 'of', 'it', 'this', 'that', 'i', 'we', 'you', 'they', 'for', 'not', 'very',
+  'but', 'with', 'my', 'our', 'are', 'be', 'have', 'has', 'so', 'too', 'really', 'were', 'what',
+])
+const NON_EN_FUNCTION_WORDS = new Set([
+  // nl
+  'het', 'een', 'niet', 'ik', 'wij', 'jij', 'zijn', 'heel', 'goed', 'maar', 'ook', 'dat', 'voor',
+  'met', 'wel', 'geen', 'erg', 'leuk', 'en', 'je', 'wat', 'nog', 'veel',
+  // de
+  'der', 'das', 'und', 'ist', 'nicht', 'ich', 'wir', 'sehr', 'gut', 'aber', 'auch', 'mit', 'ein',
+  'eine', 'war', 'es', 'zu',
+  // fr
+  'le', 'la', 'les', 'est', 'et', 'pas', 'nous', 'très', 'bien', 'mais', 'aussi', 'avec', 'pour',
+  'une', 'un', 'des', 'du', 'ce', 'était',
+  // es
+  'el', 'los', 'las', 'y', 'muy', 'bueno', 'buena', 'pero', 'también', 'con', 'para', 'una', 'del',
+  'que', 'fue', 'por',
+])
+
 function isMostlyEnglish(text: string): boolean {
   if (!text.trim()) return false
   const latin = (text.match(/[a-zA-Z\s.,!?'"-]/g) ?? []).length
-  return latin / text.length >= 0.85
+  if (latin / text.length < 0.85) return false
+  let en = 0
+  let other = 0
+  for (const word of text.toLowerCase().match(/\p{L}+/gu) ?? []) {
+    if (EN_FUNCTION_WORDS.has(word)) en++
+    else if (NON_EN_FUNCTION_WORDS.has(word)) other++
+  }
+  return other <= en
 }
 
 function moodFromLabels(labels: DistilbertLabel[]): SessionMood {

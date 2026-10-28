@@ -1,0 +1,26 @@
+{
+  "description": "Golden corpus for the sentiment input gate (issue #528). SENTIMENT_MODEL is English-only (DistilBERT SST-2), so only English responses may reach it. `english` must pass; `other` must be filtered out.",
+  "english": [
+    "Great session, very helpful",
+    "The facilitator kept us on track and it was really useful.",
+    "I did not like the pace, it was too fast for our team.",
+    "Loved it",
+    "Too long",
+    "Clear agenda, good energy",
+    "We need more time for questions next week.",
+    "This was a waste of my afternoon.",
+    "Honestly the best retro we have had this quarter"
+  ],
+  "other": [
+    "Het was een hele goede sessie, ik vond het erg leuk.",
+    "Niet duidelijk wat de bedoeling was, maar wel gezellig.",
+    "Goed georganiseerd en ook leuk om mee te doen",
+    "Das war eine sehr gute Sitzung und ich habe viel gelernt.",
+    "Nicht gut, aber auch nicht schlecht.",
+    "La session était très bien et les questions étaient claires.",
+    "Ce n'est pas mal mais un peu long pour nous.",
+    "La sesión fue muy buena y también útil para el equipo.",
+    "Pero no fue claro para los participantes",
+    "很好，非常有帮助"
+  ]
+}

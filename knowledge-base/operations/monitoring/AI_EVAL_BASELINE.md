@@ -17,6 +17,7 @@ additionally be smoke-checked manually against Workers AI before merge.
 | `insights-output.eval.test.ts` | `fixtures/golden-outputs.json` (5 accept / 8 reject), `fixtures/pii-outputs.json` (6 cases) | 100% schema acceptance of the valid corpus; 100% `InsightsValidationError` rejection of the invalid corpus (no raw pass-through); PII-bearing theme examples (emails, voter-ids, phones, @handles) dropped when `anonymity != 'none'`, retained when `'none'`. |
 | `insights-guards.eval.test.ts` | inline matrix | `checkInsightsAllowed`: zero-knowledge always blocked (`zk_not_supported`); AI-generated without `ai_consent_at` blocked (`consent_required`); plain/consented sessions allowed. |
 | `facilitation-prompt.eval.test.ts` | `fixtures/facilitation-injection.json` (10 attacks) | AGENT-FACILITATE-GA-01: the live facilitation prompt (`copilot-suggest.buildSuggestMessages`) confines the host-authored current-question text inside the `<<<UNTRUSTED_SESSION_DATA>>>` fence exactly once; embedded fence markers cannot escape; no control/zero-width chars survive; fenced field length-capped; system prompt carries the untrusted-data rule; no fence emitted when no question is active. |
+| `sentiment-language-gate.eval.test.ts` | `fixtures/sentiment-language.json` (9 English / 10 other) | Issue #528: only English responses reach the English-only `SENTIMENT_MODEL` (DistilBERT SST-2). Every English sample passes the input gate; every Dutch, German, French, Spanish and non-Latin sample is filtered out. |
 
 ## Pass criteria (hard gate)
 
@@ -36,6 +37,13 @@ Added `facilitation-prompt.eval.test.ts` (+1 suite, +13 cases) covering the live
 facilitation prompt fence. Suite total: **51 → 64 green (4 suites)**. The live
 facilitation surface (`copilot-suggest.ts`) is now inside the REV-10 gate; its
 host-authored current-question text is fenced + sanitized like participant data.
+
+## Update (2026-10-28) — sentiment language gate (#528)
+
+Added `sentiment-language-gate.eval.test.ts` (+1 suite, +19 cases). The old
+Latin-script check passed all 9 Latin-script non-English samples to the English
+sentiment model; the new function-word gate filters them and keeps all 9 English
+samples. `npm run test:eval`: **194 → 213 green**.
 
 ## How to extend (required with every AI change)
 
