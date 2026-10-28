@@ -88,7 +88,12 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   let plan: PlanTier
   try {
     // DD-16: KV cache in front of the per-request D1 read (lib/plan-cache.ts).
-    const cached = await readCachedPlan(c.env, user.sub)
+    // Playwright sets ENVIRONMENT=development and then upgrades `users.plan`
+    // with a direct D1 write (tests/e2e/helpers/plan.ts), which does not call
+    // invalidatePlanCache. Serving the signup-time "free" entry hides ranking
+    // and town-hall entitlements for the cache TTL. Production leaves this var
+    // unset, so the cache stays on there.
+    const cached = c.env.ENVIRONMENT === 'development' ? null : await readCachedPlan(c.env, user.sub)
     if (cached) {
       plan = cached
     } else {
