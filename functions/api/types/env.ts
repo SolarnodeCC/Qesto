@@ -153,6 +153,8 @@ export type Env = {
   MFA_ENCRYPTION_KEY?: string
   /** DD-04: `"true"` requires a second factor verified within 15 min on platform-admin routes. */
   ADMIN_MFA_REQUIRED?: string
+  /** DD-04: `"false"` disables step-up on sensitive team/API-key actions for MFA-enrolled users. */
+  MFA_STEP_UP_ENFORCED?: string
   MULTI_REGION_WRITES_ENABLED?: string
   /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
   CLOUDFLARE_AI_GATEWAY_ID?: string

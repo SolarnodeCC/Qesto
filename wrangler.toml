@@ -123,6 +123,10 @@ EMAIL_VERIFICATION_ENFORCED = "true"
 # last 15 min (POST /api/auth/mfa/step-up). Keep "false" until EVERY platform
 # admin has enrolled in Settings → Security, or admins are locked out.
 ADMIN_MFA_REQUIRED = "false"
+# DD-04 (#877): users who have turned two-factor ON must re-confirm a code
+# (within 15 min) before deleting a team, changing SAML, managing members/roles
+# or API keys. Users without MFA are unaffected. "false" = kill-switch.
+MFA_STEP_UP_ENFORCED = "true"
 
 # ADR-0074 — temporary all-users free access.
 # SHIPS OFF. Enabling requires BOTH: FREE_ACCESS_ALL="true" AND a

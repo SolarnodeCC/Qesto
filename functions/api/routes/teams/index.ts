@@ -59,6 +59,7 @@ import {
 } from './shared'
 import { registerRoleRoutes } from './roles'
 import { registerMemberRoutes } from './members'
+import { requireStepUp } from '../../middleware/step-up'
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
@@ -246,6 +247,8 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     if (parsed.data.samlConfig !== undefined) {
       const denied = await requireTeamPermission(c, team, 'team:manage_auth', 'Manage authentication permission required')
       if (denied) return denied
+      const stepUp = await requireStepUp(c)
+      if (stepUp) return stepUp
       const plan = c.get('plan')
       const quotas = c.get('planQuotas')
       if (parsed.data.samlConfig !== null && !featureAllowed(quotas, 'samlSso')) {
@@ -310,6 +313,8 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         403,
       )
     }
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
     await deleteKv(c.env.TEAMS_KV, teamDocumentKey(team.id))
     for (const m of team.members) {
       await removeUserTeam(c.env.TEAMS_KV, m.userId, team.id)
