@@ -31,6 +31,8 @@ concurrency:
   group: dependabot-automerge-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
+# Inline by design: this pull_request_target workflow must never check out
+# code, so it cannot delegate to an ops/ci/*.sh lane (jankurai HLT-042, #688).
 jobs:
   auto-merge:
     if: github.event.pull_request.user.login == 'dependabot[bot]'

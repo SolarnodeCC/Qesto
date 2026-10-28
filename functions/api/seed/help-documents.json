@@ -101,7 +101,7 @@
     "topic": "billing",
     "scope": "starter",
     "excerpt": "Numeric limits hydrate from the same source as in-app enforcement (PLANQUOTAS via GET /api/plans/catalog).",
-    "content": "## Feature Comparison\n\n| Feature | Pulse | Signal | Chorus |\n|---------|-------|--------|--------|\n| New sessions / month | 5 | 50 | 500 |\n| Participants / session | 50 | 500 | 5,000 |\n| Retention | 30 days | 365 days | Custom |\n| AI Insights | — | — | ✓ |\n| CSV Export | — | ✓ | ✓ |\n| SAML SSO | — | — | ✓ |\n| Webhooks | — | — | ✓ |\n| Support | Email | Priority Email | Dedicated |\n\nNumeric limits hydrate from the same source as in-app enforcement (`PLAN_QUOTAS` via `GET /api/plans/catalog`)."
+    "content": "## Feature Comparison\n\n| Feature | Pulse | Signal | Chorus |\n|---------|-------|--------|--------|\n| New sessions / month | 5 | 50 | 500 |\n| Participants / session | 50 | 500 | 5,000 |\n| Retention | 30 days | 365 days | 7 days – 7 years (configurable) |\n| AI Insights | — | — | ✓ |\n| CSV Export | — | ✓ | ✓ |\n| SAML SSO | — | — | ✓ |\n| Webhooks | — | — | ✓ |\n| Support | Email | Priority Email | Dedicated |\n\nNumeric limits hydrate from the same source as in-app enforcement (`PLAN_QUOTAS` via `GET /api/plans/catalog`)."
   },
   {
     "id": "billing-006",
@@ -285,7 +285,7 @@
     "topic": "faq",
     "scope": "free",
     "excerpt": "A: Yes, all data is encrypted in transit (HTTPS) and at rest.",
-    "content": "## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Signal+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Retention depends on your plan — Pulse targets 30 days, Signal 365 days, and Chorus offers configurable retention from 7 days up to 7 years. Sessions persist until you delete them; automatic age-based purges are not yet enforced for ordinary session data. See the Data Retention help article for details."
+    "content": "## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Signal+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Data is retained for 1 year after a session closes. You can manually delete earlier."
   },
   {
     "id": "faq-004",
@@ -741,7 +741,7 @@
     "topic": "faq",
     "scope": "free",
     "excerpt": "We respond within 30 days for verified requests.",
-    "content": "## Your Rights (GDPR / CCPA)\n\nYou can request:\n\n- **Access** — copy of your personal data\n- **Correction** — fix inaccurate account data\n- **Deletion** — erase your account or specific responses\n- **Export** — machine-readable copy (CSV for session results)\n- **Objection** — restrict certain processing\n\n### How to request\n\n- **Account holders:** email support@qesto.cc from your registered address\n- **Participants:** contact the session host; they can erase respondent data from their session\n- **Team admins:** use audit log and session management tools; contact support for bulk erasure\n\nWe respond within 30 days for verified requests."
+    "content": "## Your Rights (GDPR / CCPA)\n\nYou can request:\n\n- **Access** — copy of your personal data\n- **Correction** — fix inaccurate account data\n- **Deletion** — erase your account or specific responses\n- **Export** — machine-readable copy (CSV for session results)\n- **Objection** — restrict certain processing\n\n### How to request\n\n- **Account holders:** email support@qesto.cc from your registered address\n- **Participants:** contact the session host; they can erase respondent data from their session\n- **Team admins:** use audit log and session management tools; contact support for bulk erasure\n\nWe respond within 30 days for verified requests. Self-service account deletion via `DELETE /api/users/me/gdpr-delete` is processed within 72 hours."
   },
   {
     "id": "privacy-gdpr-008",

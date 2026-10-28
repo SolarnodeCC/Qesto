@@ -19,6 +19,7 @@ import {
   PatchCustomRoleSchema,
   AssignRoleSchema,
 } from './shared'
+import { requireStepUp } from '../../middleware/step-up'
 
 export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
   // ───────────────────────────────────────────────────────────────────────────
@@ -75,6 +76,8 @@ export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = CreateCustomRoleSchema.safeParse(body)
@@ -125,6 +128,8 @@ export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     const current = await c.env.DB
       .prepare(`SELECT id, team_id, name, permissions_json, created_by, created_at, updated_at FROM custom_roles WHERE id = ?1 AND team_id = ?2`)
@@ -187,6 +192,8 @@ export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     const current = await c.env.DB
       .prepare(`SELECT id, team_id, name, permissions_json, created_by, created_at, updated_at FROM custom_roles WHERE id = ?1 AND team_id = ?2`)
@@ -223,6 +230,8 @@ export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     const role = await c.env.DB
       .prepare(`SELECT id, team_id, name, permissions_json, created_by, created_at, updated_at FROM custom_roles WHERE id = ?1 AND team_id = ?2`)
@@ -289,6 +298,8 @@ export function registerRoleRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     await c.env.DB
       .prepare(`DELETE FROM team_role_assignments WHERE team_id = ?1 AND role_id = ?2 AND user_id = ?3`)

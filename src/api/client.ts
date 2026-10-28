@@ -35,7 +35,41 @@ type Options = {
   signal?: AbortSignal
 }
 
+// DD-04 (#877): sensitive actions answer 403 `mfa_step_up_required` when the
+// user has two-factor on but has not confirmed a code in the last 15 minutes.
+// A UI component (MfaStepUpPrompt) registers a handler that asks for the code;
+// api() then retries the original request once. Concurrent requests share a
+// single prompt.
+export const STEP_UP_REQUIRED_CODE = 'mfa_step_up_required'
+const STEP_UP_PATH = '/api/auth/mfa/step-up'
+type StepUpHandler = () => Promise<boolean>
+let _stepUpHandler: StepUpHandler | null = null
+let _stepUpInFlight: Promise<boolean> | null = null
+
+export function setStepUpHandler(handler: StepUpHandler | null): void {
+  _stepUpHandler = handler
+}
+
 export async function api<T>(path: string, opts: Options = {}): Promise<ApiResult<T>> {
+  const result = await request<T>(path, opts)
+  if (
+    result.ok ||
+    result.status !== 403 ||
+    result.error.code !== STEP_UP_REQUIRED_CODE ||
+    !_stepUpHandler ||
+    path === STEP_UP_PATH
+  ) {
+    return result
+  }
+  const handler = _stepUpHandler
+  _stepUpInFlight ??= handler().finally(() => {
+    _stepUpInFlight = null
+  })
+  const confirmed = await _stepUpInFlight.catch(() => false)
+  return confirmed ? request<T>(path, opts) : result
+}
+
+async function request<T>(path: string, opts: Options): Promise<ApiResult<T>> {
   const headers: Record<string, string> = {}
   if (opts.body !== undefined) headers['content-type'] = 'application/json'
   if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey

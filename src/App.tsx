@@ -10,6 +10,7 @@ import ImpersonationBanner from './components/ImpersonationBanner'
 // chunk fetch. Every other page (and the authenticated-only help widget) is lazy so
 // it stays out of the critical entry chunk an anonymous visitor parses on first load.
 import Home from './pages/Home'
+import MfaStepUpPrompt from './components/auth/MfaStepUpPrompt'
 
 // Core app + auth/entry pages — lazy so they load on navigation, not on `/`.
 const Login = lazy(() => import('./pages/Login'))
@@ -137,6 +138,7 @@ export default function App() {
         {/* Skip link is rendered by MainLayout on each page that uses it. */}
         <RouteAnnouncer />
         <ImpersonationBanner />
+        <MfaStepUpPrompt />
         <AuthenticatedHelpWidget />
         <CookieConsentBanner />
         <Routes>

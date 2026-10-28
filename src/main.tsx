@@ -35,8 +35,10 @@ function mount() {
 const CHUNK_RELOAD_KEY = 'qesto:chunk-reload-at'
 window.addEventListener('vite:preloadError', (event) => {
   try {
+    // jankurai:allow websec.storage.token reason=reload-timestamp-not-a-credential expires=2027-06-01
     const last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? 0)
     if (Date.now() - last < 10_000) return
+    // jankurai:allow websec.storage.token reason=reload-timestamp-not-a-credential expires=2027-06-01
     sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()))
   } catch {
     // Storage unavailable — fall through and reload once without the guard.

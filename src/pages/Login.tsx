@@ -217,6 +217,7 @@ export default function Login() {
             ) : (
               <form onSubmit={onMagicSubmit} className="space-y-4" noValidate>
                 <FormField
+                  id="magic-email"
                   label={t('emailLabel')}
                   error={magicStatus === 'invalid' ? t('errorInvalidEmail') : null}
                   controlClassName={inputClass}

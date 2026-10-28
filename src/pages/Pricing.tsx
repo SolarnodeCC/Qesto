@@ -190,7 +190,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/login" className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
+              <Link to="/login?tab=signup" className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                 Start free
               </Link>
             </div>
@@ -249,7 +249,7 @@ export default function Pricing() {
               </ul>
               <RoadmapStrip items={['Webhook integrations']} />
               <Link
-                to="/login"
+                to="/login?tab=signup"
                 className={btnPrimary + ' w-full justify-center !bg-white !text-pulse-900 hover:shadow-lg'}
               >
                 {promoActive ? 'Create a free account' : 'Start 14-day trial'}
@@ -432,7 +432,7 @@ export default function Pricing() {
             Pulse stays within published monthly and room limits. Upgrade when you need longer retention, consent
             logs, or richer exports.
           </p>
-          <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+          <Link to="/login?tab=signup" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
             Create your workspace
           </Link>
         </div>

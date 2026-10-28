@@ -92,7 +92,7 @@ import { securityHeadersMiddleware } from './middleware/security-headers'
 import { sanitizeError } from './lib/error-handler'
 import { safeLogContext } from './lib/log'
 import { alertCritical } from './lib/alerts'
-import { resolveExpectedOrigin } from './lib/origin'
+import { normaliseOrigin, resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
 import type { Env } from './types'
@@ -174,8 +174,10 @@ export function createApp() {
         const allowed = resolveExpectedOrigin(c.env, c.req.url)
         if (!origin) return null
         if (origin === allowed) return origin
-        // Allow Cloudflare Pages preview deployments (<hash>.qesto.pages.dev).
-        if (/^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)) return origin
+        // Same-origin (e.g. a Pages preview calling its own co-located
+        // Functions). DD-25 (#897): no `*.qesto.pages.dev` wildcard — a preview
+        // must never be a trusted credentialed origin against production.
+        if (origin === normaliseOrigin(c.req.url)) return origin
         // Allow localhost in dev (Vite dev server).
         if (c.env.ENV === 'dev' && origin.startsWith('http://localhost:')) return origin
         return null

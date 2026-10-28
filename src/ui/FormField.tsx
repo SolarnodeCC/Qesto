@@ -21,6 +21,8 @@ type FormFieldProps = {
   className?: string
   /** Override default input class on the rendered control wrapper. */
   controlClassName?: string
+  /** Stable control id (deep links, E2E selectors); defaults to a generated one. */
+  id?: string
   children: (props: FormFieldControlProps) => ReactNode
 }
 
@@ -36,10 +38,11 @@ export function FormField({
   labelSrOnly = false,
   className = '',
   controlClassName = LOGIN_FIELD_CLASS,
+  id,
   children,
 }: FormFieldProps) {
   const reactId = useId()
-  const fieldId = `ff-${reactId}`
+  const fieldId = id ?? `ff-${reactId}`
   const hintId = hint ? `${fieldId}-hint` : undefined
   const errorId = error ? `${fieldId}-error` : undefined
   const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined

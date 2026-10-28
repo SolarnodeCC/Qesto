@@ -19,6 +19,7 @@ import {
   requireTeamPermission,
   InviteMemberSchema,
 } from './shared'
+import { requireStepUp } from '../../middleware/step-up'
 
 export function registerMemberRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
   // ───────────────────────────────────────────────────────────────────────────
@@ -36,6 +37,8 @@ export function registerMemberRoutes(app: Hono<{ Bindings: Env; Variables: Vars 
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
 
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = InviteMemberSchema.safeParse(body)
@@ -125,6 +128,8 @@ export function registerMemberRoutes(app: Hono<{ Bindings: Env; Variables: Vars 
     }
     const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
     if (denied) return denied
+    const stepUp = await requireStepUp(c)
+    if (stepUp) return stepUp
     if (targetId === team.ownerId) {
       return c.json(
         { ok: false, error: { code: 'invalid_target', message: 'Cannot remove the team owner' }, trace_id: c.get('trace_id') },

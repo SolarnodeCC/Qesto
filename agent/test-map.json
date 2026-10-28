@@ -220,6 +220,21 @@
       "command": "just check",
       "purpose": "compliance matrix integrity",
       "lane": "check"
+    },
+    ".gitleaks.toml": {
+      "command": "just security",
+      "purpose": "secret-scanning allowlist integrity",
+      "lane": "security"
+    },
+    "DOCS_INDEX.md": {
+      "command": "just check",
+      "purpose": "documentation index integrity",
+      "lane": "check"
+    },
+    "eslint.config.js": {
+      "command": "just check",
+      "purpose": "lint config integrity (lint ratchet)",
+      "lane": "check"
     }
   }
 }

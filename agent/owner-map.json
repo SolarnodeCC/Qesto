@@ -45,6 +45,9 @@
     "docs/": "standard",
     "knowledge-base/": "standard",
     "tests/": "tools",
-    "contracts/": "tools"
+    "contracts/": "tools",
+    ".gitleaks.toml": "ops",
+    "DOCS_INDEX.md": "standard",
+    "eslint.config.js": "tools"
   }
 }
