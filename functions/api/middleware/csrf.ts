@@ -107,7 +107,14 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     return next()
   }
 
-  const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
+  // DD-25 (#897): a request whose Origin is this API's OWN origin is not
+  // cross-site, so it is always acceptable. This is what keeps Pages preview
+  // deploys working — a preview SPA calls its co-located Functions on the same
+  // <hash>.qesto.pages.dev host. It used to be done with a `*.qesto.pages.dev`
+  // regex instead, which also made every preview (including from unreviewed
+  // branches) a trusted credentialed origin against PRODUCTION.
+  const selfOrigin = normaliseOrigin(c.req.url)
+  const isSameOrigin = candidate !== null && candidate === selfOrigin
   const isLocalDevOrigin = candidate ? /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate) : false
   // SECURITY: localhost is a CSRF *attacker* origin against a deployed API, not
   // a dev convenience. The previous condition allowed it whenever PAGES_URL was
@@ -125,10 +132,10 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // unreachable there regardless of how ENV is configured — which matters,
   // because wrangler.toml ships `ENV = "production"` and local `wrangler dev`
   // inherits it.
-  const apiIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normaliseOrigin(c.req.url) ?? '')
+  const apiIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(selfOrigin ?? '')
   const allowLocalDev =
     isLocalDevOrigin && (c.env.ENV === 'dev' || c.env.ENV === 'staging' || apiIsLocal)
-  if (candidate && candidate !== expected && !isPreview && !allowLocalDev) {
+  if (candidate && candidate !== expected && !isSameOrigin && !allowLocalDev) {
     return c.json(
       {
         ok: false,

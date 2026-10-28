@@ -1,6 +1,6 @@
 import type { Env } from '../types'
 
-function normaliseOrigin(url: string | null | undefined): string | null {
+export function normaliseOrigin(url: string | null | undefined): string | null {
   if (!url) return null
   try {
     return new URL(url).origin

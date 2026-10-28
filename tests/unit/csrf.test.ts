@@ -236,4 +236,43 @@ describe('CSRF / Origin validation', () => {
     expect(res.status).toBe(403)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('forbidden_origin')
   })
+
+  // DD-25 (#897): Pages previews used to be trusted by a `*.qesto.pages.dev`
+  // regex, so any preview build could drive credentialed requests against
+  // production. Only the API's own origin is trusted now.
+  describe('preview origins (DD-25)', () => {
+    function prodEnv(db: D1Mock): Env {
+      return { ...makeEnv(db), ENV: 'production', PAGES_URL: 'https://qesto.cc', API_URL: 'https://qesto.cc' } as Env
+    }
+
+    async function post(url: string, origin: string, env: Env) {
+      const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
+      return createApp().fetch(
+        new Request(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', cookie: `qesto_session=${jwt}`, origin },
+          body: JSON.stringify({ title: 't' }),
+        }),
+        env,
+      )
+    }
+
+    it('rejects a preview origin calling the production API', async () => {
+      const res = await post('https://qesto.cc/api/sessions', 'https://69bd9913.qesto.pages.dev', prodEnv(new D1Mock()))
+      expect(res.status).toBe(403)
+      expect(((await res.json()) as { error: { code: string } }).error.code).toBe('forbidden_origin')
+      expect(res.headers.get('access-control-allow-origin')).toBeNull()
+    })
+
+    it('accepts a preview calling its own co-located Functions (same origin)', async () => {
+      const res = await post('https://69bd9913.qesto.pages.dev/api/sessions', 'https://69bd9913.qesto.pages.dev', prodEnv(new D1Mock()))
+      expect(res.status).not.toBe(403)
+      expect(res.headers.get('access-control-allow-origin')).toBe('https://69bd9913.qesto.pages.dev')
+    })
+
+    it('rejects one preview calling another preview', async () => {
+      const res = await post('https://aaaa1111.qesto.pages.dev/api/sessions', 'https://bbbb2222.qesto.pages.dev', prodEnv(new D1Mock()))
+      expect(res.status).toBe(403)
+    })
+  })
 })
