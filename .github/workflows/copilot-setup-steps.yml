@@ -11,6 +11,8 @@ concurrency:
   group: copilot-setup-${{ github.ref }}
   cancel-in-progress: true
 
+# Inline by design: Copilot agent environment setup, not a CI lane, so there
+# is nothing to share with ops/ci/*.sh (jankurai HLT-042, #688).
 jobs:
   # The job MUST be called 'copilot-setup-steps' to be recognized by GitHub Copilot Agent
   copilot-setup-steps:

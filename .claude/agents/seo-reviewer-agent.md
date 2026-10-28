@@ -29,7 +29,7 @@ reassuring: your job is to expose ranking loss and missed search traffic.
 | Trigger | Scope |
 |---|---|
 | New/changed SEO or landing page in `src/pages/` | Crawl/index, title/meta, H1 hierarchy, intent fit, internal links |
-| `/vs/[competitor]` comparison page added/edited | On-page SEO + content↔intent + no fabricated claims + canonical |
+| `/vs/[competitor]` comparison page added/edited | On-page SEO + content↔intent + every claim cited to a source + canonical |
 | robots.txt / sitemap / public route config changed | Crawlability & indexability first (Critical gate) |
 | Content roadmap / programmatic SEO batch | Thin-content risk, keyword cannibalisation, internal link depth |
 | Standalone organic-visibility audit | Full category sweep per `seo-reviewer.md` |

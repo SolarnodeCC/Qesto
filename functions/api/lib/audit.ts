@@ -266,7 +266,7 @@ export type AuditQueryFilters = {
 
 /**
  * Build WHERE clause fragments with numbered D1 placeholders (?1…?n).
- * COUNT and SELECT reuse the same fragment + bind order; LIMIT/OFFSET are appended separately (never via string replace).
+ * The count and page queries share this fragment and its parameter order; paging values are numbered parameters too.
  */
 export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
   whereSql: string

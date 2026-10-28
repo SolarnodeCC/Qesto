@@ -20,6 +20,8 @@ concurrency:
   group: codeql-${{ github.ref }}
   cancel-in-progress: true
 
+# Inline by design: CodeQL is the init/analyze actions pair with no shell
+# step to extract into ops/ci/*.sh (jankurai HLT-042, #688).
 jobs:
   analyze:
     name: analyze · javascript-typescript
@@ -32,13 +34,11 @@ jobs:
       # Pin to full commit SHA — tag refs can change without review.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Advisory (non-blocking), matching the jankurai.yml lanes. Code scanning on a
-      # PRIVATE repo requires GitHub Advanced Security (or the private-repo "default
-      # setup"); without it the init/analyze upload fails. continue-on-error keeps
-      # this check from reddening the PR until GHAS is enabled — drop it to make
-      # CodeQL a hard gate once Advanced Security is on.
+      # DD-02 (#875): a hard gate. Code scanning results upload on this repository
+      # (GitHub Advanced Security is enabled; verified on PR #972: "Successfully
+      # uploaded results"), so the advisory `continue-on-error` is gone — a
+      # CodeQL failure now fails the check instead of passing silently.
       - name: Initialize CodeQL
-        continue-on-error: true
         uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           languages: javascript-typescript
@@ -46,7 +46,6 @@ jobs:
           build-mode: none
 
       - name: Perform CodeQL Analysis
-        continue-on-error: true
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           category: "/language:javascript-typescript"

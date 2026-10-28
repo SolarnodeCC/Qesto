@@ -120,4 +120,4 @@ hold (~1.5 s) on a neutral dashboard between the two segments to give editors a 
   Tune them there rather than scattering `waitForTimeout` calls through each spec.
 
 After each run, Playwright leaves per-test copies at `tests/artifacts/output/<test-name>/video.webm`.
-The npm script copies them to stable names in `marketing-videos/` (`scripts/copy-marketing-videos.mjs`).
+The npm script copies them to stable names in `marketing-videos/` (`scripts/collect-marketing-videos.mjs`).
