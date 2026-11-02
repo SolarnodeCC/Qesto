@@ -1,6 +1,6 @@
 import { createApp } from './api/app'
 import type { Env } from './api/types'
-import { injectRouteSeo } from './seo-meta'
+import { injectNotFoundSeo, injectRouteSeo } from './seo-meta'
 
 const app = createApp()
 
@@ -33,11 +33,19 @@ const validSpaRoutes = [
   '/marketplace',
   '/partner',
   '/developers',
+  '/compare',
 ]
+
+/** Published competitor comparison slugs (must match src/pages/vs/compareData.ts). */
+const VS_COMPETITOR_SLUGS = new Set(['mentimeter', 'slido', 'parabol'])
 
 function isValidSpaRoute(pathname: string): boolean {
   const parts = pathname.split('/').filter(Boolean)
   if (parts.length === 0) return true // root
+
+  if (parts[0] === 'vs') {
+    return parts.length === 2 && VS_COMPETITOR_SLUGS.has(parts[1])
+  }
 
   const firstSegment = '/' + parts[0]
   return validSpaRoutes.some((route) => {
@@ -108,15 +116,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return injectRouteSeo(response, pathname, context.env)
   }
 
-  // Return 404 for invalid routes
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: { code: 'not_found', message: 'Page not found' },
-    }),
-    {
-      status: 404,
-      headers: { 'content-type': 'application/json' },
-    },
-  )
+  // Unknown paths: HTML 404 with SPA shell (noindex + fallback body), not JSON.
+  // JSON 404s look like API errors to crawlers (audit C2).
+  const response = await context.next()
+  return injectNotFoundSeo(response)
 }

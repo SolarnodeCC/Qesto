@@ -63,7 +63,11 @@ export default function PageSeo({
     upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image')
     upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, title)
     upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, description)
-    upsertMeta('meta[name="robots"]', { name: 'robots' }, noindex ? 'noindex, nofollow' : 'index, follow')
+    upsertMeta(
+      'meta[name="robots"]',
+      { name: 'robots' },
+      noindex ? 'noindex, nofollow' : 'index, follow, noimageai',
+    )
 
     if (resolvedOgImage) {
       upsertMeta('meta[property="og:image"]', { property: 'og:image' }, resolvedOgImage)
