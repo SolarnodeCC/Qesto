@@ -98,7 +98,7 @@
     "@capacitor/app": "^7.0.1",
     "@capacitor/cli": "^7.6.9",
     "@capacitor/core": "^7.6.9",
-    "@capacitor/ios": "^7.6.9",
+    "@capacitor/ios": "^7.6.10",
     "@capacitor/preferences": "^7.0.1",
     "@capacitor/push-notifications": "^7.0.7",
     "@cloudflare/workers-types": "^4.20260702.1",
