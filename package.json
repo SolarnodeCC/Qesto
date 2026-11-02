@@ -97,7 +97,7 @@
     "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.0.1",
     "@capacitor/cli": "^7.6.9",
-    "@capacitor/core": "^7.6.9",
+    "@capacitor/core": "^7.6.10",
     "@capacitor/ios": "^7.6.9",
     "@capacitor/preferences": "^7.0.1",
     "@capacitor/push-notifications": "^7.0.7",
