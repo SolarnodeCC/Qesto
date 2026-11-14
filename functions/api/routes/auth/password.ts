@@ -391,6 +391,14 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         .bind(Date.now(), userId)
         .run()
 
+      // DD-04: resetting the password proves mailbox control, but for MFA
+      // accounts it is still only the first factor. Do not mint a session until
+      // the second factor is verified.
+      if (await isMfaEnabled(c.env, userId)) {
+        const mfaToken = await mintMfaPendingToken(c.env, { id: userId, email })
+        return c.json({ ok: true, data: { reset: true, mfa_required: true, mfa_token: mfaToken }, trace_id: c.get('trace_id') })
+      }
+
       const jwt = await signJwt({ sub: userId, email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
       return c.json({ ok: true, data: { reset: true, token: jwt }, trace_id: c.get('trace_id') })

@@ -9,7 +9,7 @@ import { createApp } from '../../functions/api/app'
 import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'
 import { hashPassword } from '../../functions/api/lib/password'
 import { base32Decode, hotp, totpStep } from '../../functions/api/lib/totp'
-import { pwdKey } from '../../functions/api/routes/auth'
+import { pwdKey, resetKey } from '../../functions/api/routes/auth'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../functions/api/lib/tokens'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
@@ -142,6 +142,39 @@ describe('MFA (DD-04)', () => {
     expect(res.headers.get('location')).toMatch(/^http:\/\/local\/login\?mfa=/)
     expect(res.headers.get('set-cookie') ?? '').not.toContain('qesto_session=')
   })
+
+  it('password reset with MFA on returns a pending token, not a session', async () => {
+    const { env, app, auth } = await setup()
+    const { secret } = await enrol(app, env, auth)
+    const raw = 'b'.repeat(64)
+    const tokenHash = await hashMagicLinkToken(raw)
+    await env.ACTIONS_KV.put(resetKey(tokenHash), JSON.stringify({ userId: 'u1', email: EMAIL }))
+
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/reset-confirm', {
+        method: 'POST',
+        headers: json,
+        body: JSON.stringify({ token: raw, password: 'new correct horse battery' }),
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('set-cookie')).toBeNull()
+    const { mfa_required, mfa_token, token } = ((await res.json()) as { data: { mfa_required: boolean; mfa_token: string; token?: string } }).data
+    expect(mfa_required).toBe(true)
+    expect(token).toBeUndefined()
+
+    // The reset pending token is not a session.
+    const asSession = await app.fetch(new Request('http://local/api/auth/me', { headers: { authorization: `Bearer ${mfa_token}` } }), env)
+    expect(asSession.status).toBe(401)
+
+    const ok = await verify(app, env, { mfa_token, code: await codeFor(secret) })
+    expect(ok.status).toBe(200)
+    const { token: verifiedToken } = ((await ok.json()) as { data: { token: string } }).data
+    const claims = await verifyJwt(verifiedToken, SECRET)
+    expect(claims?.mfa_at).toBeTypeOf('number')
+  }, 30_000)
 
   it('disabling MFA requires a valid second factor', async () => {
     const { env, app, auth } = await setup()
