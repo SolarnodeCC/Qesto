@@ -147,6 +147,20 @@ jobs:
           fi
           echo "Deployment URL: $url"
           printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+          # A new deployment URL answers 404 for a few seconds after wrangler
+          # returns (run 3182 checked it 0.6s later and failed). Wait until it
+          # serves before the verification steps run against it.
+          for attempt in $(seq 1 30); do
+            if curl -sf -o /dev/null "$url/api/version"; then
+              echo "Deployment is serving (attempt $attempt)"
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "::error::$url did not start serving within 90s"
+              exit 1
+            fi
+            sleep 3
+          done
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
