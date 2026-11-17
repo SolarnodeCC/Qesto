@@ -76,16 +76,17 @@ try {
     redirect: 'follow',
   })
   if (!res.ok) {
-    // 403 with no CF Access credentials configured → production is behind Cloudflare
-    // Access and no service token is available in this CI environment. The deploy
-    // itself already succeeded (wrangler reported success above). Skip gracefully.
-    if (res.status === 403 && !process.env.CF_ACCESS_CLIENT_ID) {
-      console.warn('⚠ Health check returned 403 — production is behind Cloudflare Access.')
-      console.warn('  Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET secrets to enable.')
-      console.warn('  Deploy was confirmed successful by wrangler. Skipping version check.')
-      process.exit(0)
+    // A 403 used to exit 0 here ("production is behind Cloudflare Access"), so the
+    // check passed on every release without verifying anything. qesto.cc has no
+    // Access app; the 403 came from Bot Fight Mode blocking GitHub's runners. CI
+    // now verifies the deployment's own *.pages.dev URL, which that zone setting
+    // does not cover, so a 403 is a real failure to verify and must say so.
+    console.error(`Version check failed: ${res.status} ${res.statusText} from ${versionUrl}`)
+    if (res.status === 403) {
+      console.error('  The request was blocked before reaching the API (Cloudflare Access, WAF or Bot Fight Mode).')
+      console.error('  Verify against the deployment URL (https://<id>.qesto.pages.dev), or set')
+      console.error('  CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET if the origin is behind Access.')
     }
-    console.error(`Health check failed: ${res.status} ${res.statusText}`)
     process.exit(1)
   }
 
@@ -113,7 +114,8 @@ try {
   if (local === 'unknown' || remote === 'unknown') {
     console.log('Result       : unknown (missing commit metadata)')
     exitCode = 2
-  } else if (local !== remote) {
+  } else if (local.slice(0, 12) !== remote.slice(0, 12)) {
+    // The Worker reports a 12-char SHA; Pages builds report up to the full 40.
     console.error('Result       : mismatch')
     exitCode = 3
   } else {

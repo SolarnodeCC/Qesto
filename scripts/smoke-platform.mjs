@@ -15,7 +15,10 @@ const platformChecks = [
   { path: '/platform/version', expect: '"api":"7.0.0"' },
   { path: '/platform/releases', expect: '"7.0.0"' },
   { path: '/platform/certification', expect: '"certifiedVersion"' },
-  { path: '/platform/v6-sunset', expect: 'sunset' },
+  // The body only says "Sunset-Date" (capital S), so the old lowercase 'sunset'
+  // expectation could never match; this step was skipped on every release until
+  // the deploy job stopped failing earlier, so the mismatch went unnoticed.
+  { path: '/platform/v6-sunset', expect: '"v6MaintenanceEnd"' },
 ]
 
 async function checkJson(path, expect) {
@@ -35,21 +38,23 @@ async function checkJson(path, expect) {
   console.log(`✓ ${path}`)
 }
 
-async function checkHealthz() {
-  const url = `${BASE}/api/healthz`
+// There was never an /api/healthz route: this check hit the auth middleware and
+// got a 401, unnoticed because the step never ran. Use the real health probe.
+async function checkHealth() {
+  const url = `${BASE}/api/admin/health`
   const res = await fetch(url)
-  const json = await res.json()
+  const json = await res.json().catch(() => null)
   if (!res.ok) {
-    console.error(`✗ /api/healthz HTTP ${res.status}`)
+    console.error(`✗ /api/admin/health HTTP ${res.status}`)
     console.error(JSON.stringify(json).slice(0, 500))
     process.exit(1)
   }
-  if (!json.status || json.status !== 'ok') {
-    console.error(`✗ /api/healthz status not 'ok'`)
+  if (json?.ok !== true) {
+    console.error(`✗ /api/admin/health ok is not true`)
     console.error(JSON.stringify(json).slice(0, 500))
     process.exit(1)
   }
-  console.log(`✓ /api/healthz`)
+  console.log(`✓ /api/admin/health`)
 }
 
 async function checkSessionDraft() {
@@ -57,8 +62,9 @@ async function checkSessionDraft() {
   // Full e2e (create → questions → WebSocket) requires auth + magic-link flow.
   const url = `${API}/sessions`
   const res = await fetch(url, { method: 'OPTIONS' })
-  // Expect either 200/OK or 401/Unauthorized (auth required) or 405/Method Not Allowed
-  if (res.status !== 200 && res.status !== 401 && res.status !== 405) {
+  // Expect 200/OK, 204 (the CORS middleware answers a preflight with No Content),
+  // 401/Unauthorized (auth required) or 405/Method Not Allowed.
+  if (![200, 204, 401, 405].includes(res.status)) {
     console.error(`✗ /api/sessions OPTIONS HTTP ${res.status}`)
     process.exit(1)
   }
@@ -74,7 +80,7 @@ for (const { path, expect } of platformChecks) {
 
 console.log()
 console.log('System Health:')
-await checkHealthz()
+await checkHealth()
 
 console.log()
 console.log('Session Endpoints:')
