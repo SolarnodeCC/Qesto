@@ -71,10 +71,19 @@ let exitCode = 0
 
 // ── Step 1: API version / commit parity check ─────────────────────────────
 try {
-  const res = await fetch(versionUrl, {
-    headers: { accept: 'application/json', ...cfAccessHeaders },
-    redirect: 'follow',
-  })
+  // A just-created *.pages.dev deployment can still answer 404 from some edge
+  // nodes (run 3188), so retry a 404 or 5xx a few times before calling it a
+  // failure. Other statuses, including 403, fail immediately.
+  let res
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    res = await fetch(versionUrl, {
+      headers: { accept: 'application/json', ...cfAccessHeaders },
+      redirect: 'follow',
+    })
+    if (res.ok || (res.status !== 404 && res.status < 500) || attempt === 6) break
+    console.warn(`  ${res.status} from ${versionUrl}; retrying (${attempt}/5)…`)
+    await new Promise((r) => setTimeout(r, 3000))
+  }
   if (!res.ok) {
     // A 403 used to exit 0 here ("production is behind Cloudflare Access"), so the
     // check passed on every release without verifying anything. qesto.cc has no
