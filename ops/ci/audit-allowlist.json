@@ -8,5 +8,66 @@
     "Remediation for all of these is already open as Dependabot PRs; the blocker is review",
     "throughput (DD-01), which the dependabot-auto-merge workflow addresses."
   ],
-  "allow": []
+  "allow": [
+    {
+      "name": "picomatch",
+      "severity": "high",
+      "reason": "GHSA-fc5q-39xc-vjpf (ReDoS via single-branch repeated extglobs), affects picomatch <=4.0.7. No patched release exists (4.0.7 is the latest). devDependency only: absent from `npm ls --omit=dev`, the Pages Functions bundle and dist/. Used by build/test/lint tooling matching repo-authored globs, so the attacker-supplied pattern the ReDoS needs is not reachable. Accepted 2026-11-17 for 30 days; upgrade picomatch as soon as a fixed version ships.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on @typescript-eslint/eslint-plugin until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on @typescript-eslint/parser until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on @typescript-eslint/type-utils until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "@typescript-eslint/typescript-estree",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on @typescript-eslint/typescript-estree until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "@typescript-eslint/utils",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on @typescript-eslint/utils until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "tinyglobby",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on tinyglobby until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "typescript-eslint",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on typescript-eslint until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "vite",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on vite until it expires.",
+      "expires": "2026-12-17"
+    },
+    {
+      "name": "vitest",
+      "severity": "high",
+      "reason": "Flagged only through picomatch (GHSA-fc5q-39xc-vjpf), not an advisory of its own; see the picomatch entry. devDependency tooling. NOTE: this name-based entry would also mask any NEW high advisory on vitest until it expires.",
+      "expires": "2026-12-17"
+    }
+  ]
 }
