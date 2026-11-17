@@ -8,6 +8,8 @@
  * Usage: node scripts/smoke-platform.mjs [BASE_URL]
  * Default: https://qesto.cc
  */
+import { fetchUntilDeployed } from './deploy-propagation.mjs'
+
 const BASE = (process.argv[2] ?? 'https://qesto.cc').replace(/\/$/, '')
 const API = `${BASE}/api`
 
@@ -23,7 +25,7 @@ const platformChecks = [
 
 async function checkJson(path, expect) {
   const url = `${API}${path}`
-  const res = await fetch(url)
+  const res = await fetchUntilDeployed(url)
   const body = await res.text()
   if (!res.ok) {
     console.error(`✗ ${path} HTTP ${res.status}`)
@@ -42,7 +44,7 @@ async function checkJson(path, expect) {
 // got a 401, unnoticed because the step never ran. Use the real health probe.
 async function checkHealth() {
   const url = `${BASE}/api/admin/health`
-  const res = await fetch(url)
+  const res = await fetchUntilDeployed(url)
   const json = await res.json().catch(() => null)
   if (!res.ok) {
     console.error(`✗ /api/admin/health HTTP ${res.status}`)
@@ -61,7 +63,7 @@ async function checkSessionDraft() {
   // Note: This test only checks unauthenticated session info endpoint (read-only).
   // Full e2e (create → questions → WebSocket) requires auth + magic-link flow.
   const url = `${API}/sessions`
-  const res = await fetch(url, { method: 'OPTIONS' })
+  const res = await fetchUntilDeployed(url, { method: 'OPTIONS' })
   // Expect 200/OK, 204 (the CORS middleware answers a preflight with No Content),
   // 401/Unauthorized (auth required) or 405/Method Not Allowed.
   if (![200, 204, 401, 405].includes(res.status)) {

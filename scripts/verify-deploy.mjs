@@ -2,6 +2,7 @@
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fetchUntilDeployed } from './deploy-propagation.mjs'
 
 const baseUrl = process.argv[2] ?? process.env.APP_URL
 
@@ -38,7 +39,7 @@ function parseDistAssets() {
 
 async function checkAssetMime(url, expectedType, label) {
   try {
-    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: cfAccessHeaders })
+    const res = await fetchUntilDeployed(url, { method: 'HEAD', headers: cfAccessHeaders })
     const ct = res.headers.get('content-type') ?? ''
     const ok = ct.includes(expectedType)
     const status = ok ? '✓' : '✗'
@@ -71,9 +72,11 @@ let exitCode = 0
 
 // ── Step 1: API version / commit parity check ─────────────────────────────
 try {
-  const res = await fetch(versionUrl, {
+  // Wrangler reports the deployment complete before <id>.qesto.pages.dev is
+  // routed. fetchUntilDeployed waits out the 404 that window produces; a 403
+  // is still a hard failure (see below).
+  const res = await fetchUntilDeployed(versionUrl, {
     headers: { accept: 'application/json', ...cfAccessHeaders },
-    redirect: 'follow',
   })
   if (!res.ok) {
     // A 403 used to exit 0 here ("production is behind Cloudflare Access"), so the
