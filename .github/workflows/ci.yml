@@ -137,10 +137,22 @@ jobs:
       # benefit. Static assets are content-hashed (`/assets/[name]-[hash]`) and
       # served `immutable`, so they never need purging. Only the HTML shell,
       # which carries `s-maxage=60`, has a stable URL.
+      #
+      # An unset CLOUDFLARE_ZONE_ID used to turn this into `zones//purge_cache`,
+      # which failed the job AFTER both deploys had shipped and skipped the deploy
+      # verification and health checks below on every release. Without the purge
+      # the shell still refreshes within its 60s s-maxage, so skip with a warning
+      # rather than fail. Set the secret on the `production` environment to purge.
       - name: Purge Cloudflare cache (HTML shell only)
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
+          if [ -z "$CLOUDFLARE_ZONE_ID" ]; then
+            echo "::warning::CLOUDFLARE_ZONE_ID is not set; skipping HTML shell purge (s-maxage=60 bounds staleness)."
+            exit 0
+          fi
           curl -sf -X POST \
-            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"files":["https://qesto.cc/","https://qesto.cc/index.html"]}'

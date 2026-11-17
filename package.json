@@ -85,8 +85,8 @@
     "check:circular": "node scripts/check-circular-deps.mjs"
   },
   "dependencies": {
-    "hono": "^4.13.7",
-    "lucide-react": "^1.62.0",
+    "hono": "^4.13.18",
+    "lucide-react": "^1.65.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-qr-code": "^2.2.0",
@@ -96,9 +96,9 @@
   "devDependencies": {
     "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.0.1",
-    "@capacitor/cli": "^7.6.9",
-    "@capacitor/core": "^7.6.9",
-    "@capacitor/ios": "^7.6.9",
+    "@capacitor/cli": "^7.6.10",
+    "@capacitor/core": "^7.6.10",
+    "@capacitor/ios": "^7.6.10",
     "@capacitor/preferences": "^7.0.1",
     "@capacitor/push-notifications": "^7.0.7",
     "@cloudflare/workers-types": "^4.20260702.1",
@@ -111,14 +111,14 @@
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
     "@types/better-sqlite3": "^9.6.0",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^4.3.0",
     "@vitest/coverage-v8": "^4.1.12",
     "axe-core": "^4.14.0",
     "better-sqlite3": "^13.0.3",
-    "eslint": "^10.10.0",
+    "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
@@ -126,9 +126,9 @@
     "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.0",
+    "typescript-eslint": "^8.72.1",
     "vite": "^7.3.6",
     "vitest": "^4.1.12",
-    "wrangler": "^4.153.0"
+    "wrangler": "^4.156.0"
   }
 }
