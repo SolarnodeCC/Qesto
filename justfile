@@ -32,11 +32,11 @@ setup:
     npm ci
     echo "Configuring git hooks..."
     git config core.hooksPath ops/git-hooks
-    echo "Installing jankurai audit CLI (v1.6.10)..."
+    echo "Installing jankurai audit CLI (pinned in agent/standard-version.toml)..."
     bash scripts/install-jankurai.sh
     echo "Setup complete. Run 'just doctor' to verify environment."
 
-# Install/refresh the jankurai audit CLI (v1.6.10, pinned via package-lock.json)
+# Install/refresh the jankurai audit CLI (auditor_version in agent/standard-version.toml; hub locked in package-lock.json)
 install-jankurai:
     bash scripts/install-jankurai.sh
 

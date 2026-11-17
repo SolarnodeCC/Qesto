@@ -17,27 +17,41 @@ cp -f agent/baselines/main.repo-score.json target/jankurai/accepted-baseline.jso
   || echo '{}' > target/jankurai/accepted-baseline.json
 
 # Pinned auditor version — single source of truth is agent/standard-version.toml,
-# which records the full commit SHA the auditor is locked to (issue #613).
+# which records the full commit SHA of the jankurai hub the lockfile vendors (#613).
 EXPECTED_JANKURAI_VERSION="$(grep -E '^auditor_version' agent/standard-version.toml | sed -E 's/[^"]*"([^"]+)".*/\1/')"
+JANKURAI_HUB="node_modules/jankurai-workspace"
 
 install_jankurai() {
-  if command -v jankurai >/dev/null 2>&1; then
+  if command -v jankurai >/dev/null 2>&1 \
+     && jankurai version 2>/dev/null | grep -q "$EXPECTED_JANKURAI_VERSION"; then
     return 0
   fi
-  # Build the auditor from the SHA-locked workspace that `npm ci` vendored:
-  # package-lock.json pins jankurai-workspace to a full commit SHA, and
-  # `cargo install --locked` builds exactly that. There is deliberately NO
-  # mutable-tag / network fallback (issue #613) — installing the security tool
-  # that gates the repo from a movable tag with `|| true` is the supply-chain
-  # fail-open this lane must not have. If the locked workspace is missing, fail.
-  if [ ! -d node_modules/jankurai-workspace/crates/jankurai ]; then
-    echo -e "${RED}✗ FAIL${NC}: node_modules/jankurai-workspace not found — run 'npm ci' first (issue #613: no unpinned fallback install)" >&2
+  # Since v1.7.x jankurai is a split family: the `jankurai-workspace` npm dep is
+  # now the `jankurai-hub` (installer + family.lock), not a Cargo workspace, so
+  # there is no crates/jankurai to `cargo install --path` any more. The CLI
+  # source lives in jankurai-core, whose kernel dependency is on an
+  # authenticated forge, so it cannot be built from source in CI.
+  #
+  # Instead run the hub's own installer from the SHA-locked copy `npm ci`
+  # vendored (package-lock.json pins the hub commit). It downloads the release
+  # tarball for the pinned tag and verifies its checksum, its signature against
+  # a release key whose SHA-256 is pinned inside the locked installer, the
+  # provenance (tag, version, family.lock/Cargo.lock hashes) and the binary's
+  # reported version before installing. There is deliberately NO unverified /
+  # mutable-tag fallback (issue #613); if the locked hub is missing, fail.
+  if [ ! -f "$JANKURAI_HUB/jankurai-installer.sh" ]; then
+    echo -e "${RED}✗ FAIL${NC}: $JANKURAI_HUB/jankurai-installer.sh not found — run 'npm ci' first (issue #613: no unpinned fallback install)" >&2
     return 1
   fi
-  assert_tool cargo
-  report_success "Installing jankurai via cargo from SHA-locked workspace"
-  cargo install --path node_modules/jankurai-workspace/crates/jankurai --locked --force
-  export PATH="$HOME/.cargo/bin:$PATH"
+  # The vendored hub and the recorded pin must name the same release.
+  if [ "$(tr -d '[:space:]' < "$JANKURAI_HUB/VERSION")" != "$EXPECTED_JANKURAI_VERSION" ]; then
+    echo -e "${RED}✗ FAIL${NC}: $JANKURAI_HUB/VERSION does not match auditor_version $EXPECTED_JANKURAI_VERSION in agent/standard-version.toml" >&2
+    return 1
+  fi
+  report_success "Installing jankurai v$EXPECTED_JANKURAI_VERSION via the SHA-locked hub installer (signature-verified release)"
+  JANKURAI_RELEASE_TAG="v$EXPECTED_JANKURAI_VERSION" JANKURAI_INSTALL_DIR="$HOME/.local/bin" \
+    bash "$JANKURAI_HUB/jankurai-installer.sh"
+  export PATH="$HOME/.local/bin:$PATH"
 }
 
 # Fail the lane if the auditor cannot be installed — do NOT write fallback
@@ -59,7 +73,7 @@ fi
 report_success "jankurai $EXPECTED_JANKURAI_VERSION present (pinned)"
 
 # Advisory (report-only) audit — parity with .github/workflows/jankurai.yml. The
-# repo's honest v1.6.10 score is below the aspirational minimum_score=85 floor and
+# repo's honest score is below the aspirational minimum_score=85 floor and
 # most hard findings are known false positives / upstream-detector gaps, so the
 # lane reports without gating on findings. Re-enable --mode ratchet once
 # remediation reaches the floor.
@@ -93,7 +107,7 @@ report_success "Running jankurai security lane"
 jankurai security run . --strict --profile ci --out target/jankurai/security/evidence.json || report_error "security lane failed (advisory, non-gating)"
 
 report_success "Running jankurai migration analyze"
-jankurai migrate . --analyze --json target/jankurai/migration-report.json || report_error "migration analyze failed (advisory, non-gating)"
+jankurai migrate . --analyze --out target/jankurai/migration-report.json || report_error "migration analyze failed (advisory, non-gating)"
 
 cp -f agent/repo-score.json target/jankurai/repo-score.json
 cp -f agent/repo-score.md target/jankurai/repo-score.md

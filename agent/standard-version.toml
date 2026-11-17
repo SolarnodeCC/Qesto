@@ -1,13 +1,15 @@
 standard = "jankurai"
 standard_version = "0.9.0"
-auditor_version = "1.6.10"
-# Supply-chain pin (issue #613): the auditor is vendored via the
+auditor_version = "1.7.6"
+# Supply-chain pin (issue #613): the jankurai hub is vendored via the
 # `jankurai-workspace` dependency in package.json and locked in package-lock.json
-# to a full commit SHA — not the mutable `v1.6.10` tag. CI builds the CLI from that
-# locked workspace with `cargo install --locked`, so this SHA is the single source
-# of truth for which auditor gates the repo. Keep in sync with package-lock.json.
+# to a full commit SHA — not the mutable `v1.7.6` tag. Since v1.7.x the hub is not
+# a Cargo workspace; CI runs the hub's installer from that locked copy, which
+# verifies the signed v<auditor_version> release (checksum, pinned release key,
+# provenance, binary version) before installing it. This SHA is the single source
+# of truth for which hub/installer gates the repo. Keep in sync with package-lock.json.
 auditor_source = "github:neverhuman/jankurai"
-auditor_commit = "3c804453e6c7a6e0e4028d95cc3bccea467277ef"
+auditor_commit = "f5f704029a9a1d0660239ac0b8a10ed6de4f8c0a"
 schema_version = "1"
 paper_edition = "2026-05-12"
 target_stack = "cloudflare-workers-typescript-react"
