@@ -47,28 +47,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # jankurai is a Rust CLI vendored via the `jankurai-workspace` dependency in
-      # package.json (pinned in package-lock.json to the v1.6.10 tag). `npm ci`
-      # above places the workspace under node_modules/; build the CLI from it with
-      # cargo so the installed version is governed by the lockfile — a single
-      # source of truth, no separate tag pin to drift. rustup/cargo are preinstalled
-      # on ubuntu-latest runners.
-      - name: Install jankurai (v1.6.10, from locked workspace)
+      # jankurai is a Rust CLI. The `jankurai-workspace` dependency in package.json
+      # is the jankurai hub (installer + family.lock), pinned in package-lock.json
+      # to a full commit SHA. Since v1.7.x the hub is no longer a Cargo workspace
+      # (the CLI moved to the split jankurai-core repo), so install the signed
+      # release with the hub's own installer from that SHA-locked copy: it checks
+      # the tarball's checksum, its signature against a release key pinned in the
+      # installer, the provenance and the binary version. The release tag comes
+      # from auditor_version in agent/standard-version.toml (single source of truth).
+      - name: Install jankurai (pinned auditor_version, from locked hub installer)
         run: |
-          cargo install --path node_modules/jankurai-workspace/crates/jankurai --locked --force
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          "$HOME/.cargo/bin/jankurai" version
+          version="$(grep -E '^auditor_version' agent/standard-version.toml | sed -E 's/[^"]*"([^"]+)".*/\1/')"
+          hub_version="$(tr -d '[:space:]' < node_modules/jankurai-workspace/VERSION)"
+          if [ "$hub_version" != "$version" ]; then
+            echo "::error::node_modules/jankurai-workspace is v$hub_version but agent/standard-version.toml pins auditor_version $version"
+            exit 1
+          fi
+          JANKURAI_RELEASE_TAG="v$version" JANKURAI_INSTALL_DIR="$HOME/.local/bin" \
+            bash node_modules/jankurai-workspace/jankurai-installer.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/jankurai" version | grep -q "$version"
+          "$HOME/.local/bin/jankurai" version
 
       - name: Prepare output dirs
         run: mkdir -p target/jankurai agent target/jankurai/proofbind target/jankurai/security
 
       # Advisory (report-only) mode: the audit reports the score and repair queue
-      # without failing CI. The repo's honest v1.6.10 score (~60) does not yet meet
-      # the aspirational minimum_score=85 floor, and most hard findings are known
-      # false positives / upstream-detector gaps (generated gh-aw lockfile, guard-hook
-      # self-matches, ownerless paths) rather than real defects. Ratchet gating will
-      # be re-enabled once remediation reaches the floor. The tracked baseline
-      # (agent/baselines/main.repo-score.json) records the current honest score.
+      # without failing CI. The repo's honest score (68 under v1.7.6; 64 under
+      # v1.6.10) does not yet meet the aspirational minimum_score=85 floor, and most
+      # hard findings are known false positives / upstream-detector gaps (generated
+      # gh-aw lockfile, guard-hook self-matches, ownerless paths) rather than real
+      # defects. Ratchet gating will be re-enabled once remediation reaches the
+      # floor. The tracked baseline (agent/baselines/main.repo-score.json) is the
+      # last accepted v1.6.10 report; re-baselining under v1.7.6 is a maintainer call.
       - name: audit-ci
         run: jankurai audit . --mode advisory --json target/jankurai/repo-score.json --md target/jankurai/repo-score.md
 
@@ -93,7 +104,7 @@ jobs:
 
       - name: db-migration-analyze
         continue-on-error: true
-        run: jankurai migrate . --analyze --json target/jankurai/migration-report.json
+        run: jankurai migrate . --analyze --out target/jankurai/migration-report.json
 
       - name: ux-qa
         continue-on-error: true

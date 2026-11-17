@@ -8,6 +8,8 @@ import { join } from 'path'
 // - Issue #613: the auditor that produces the merge witness must not fail open —
 //   no mutable-tag install, no `|| true` swallowing the auditor itself, no
 //   fabricated "green" fallback artifacts, and a version-match assertion.
+// - v1.7.6 bump (supersedes Dependabot #981): the hub is no longer a Cargo
+//   workspace, so the CLI is installed via the locked hub's verifying installer.
 
 const ROOT = process.cwd()
 const WORKFLOW = readFileSync(join(ROOT, '.github/workflows/jankurai.yml'), 'utf8')
@@ -28,10 +30,23 @@ describe('jankurai.yml runs before merge (#612)', () => {
 describe('jankurai audit lane does not fail open (#613)', () => {
   it('does not install the auditor from a mutable git tag', () => {
     // The old fail-open installed from `...jankurai.git#v1.6.10` (a movable tag).
-    // The auditor is now built from the SHA-locked workspace via cargo --locked.
+    // Since v1.7.x the auditor is installed by the hub's own installer, run from
+    // the SHA-locked copy `npm ci` vendors; it verifies the signed release.
     expect(LANE).not.toMatch(/git\+https:\/\/github\.com\/neverhuman\/jankurai\.git#/)
     expect(LANE).not.toMatch(/git clone[^\n]*neverhuman\/jankurai/)
-    expect(LANE).toContain('cargo install --path node_modules/jankurai-workspace/crates/jankurai --locked')
+    expect(LANE).not.toMatch(/cargo install --git/)
+    expect(LANE).toContain('JANKURAI_HUB="node_modules/jankurai-workspace"')
+    expect(LANE).toContain('bash "$JANKURAI_HUB/jankurai-installer.sh"')
+    expect(WORKFLOW).toContain('bash node_modules/jankurai-workspace/jankurai-installer.sh')
+  })
+
+  it('installs exactly the pinned release tag, matching the vendored hub', () => {
+    // The release tag is derived from auditor_version, never a hard-coded or default tag.
+    expect(LANE).toContain('JANKURAI_RELEASE_TAG="v$EXPECTED_JANKURAI_VERSION"')
+    expect(WORKFLOW).toContain('JANKURAI_RELEASE_TAG="v$version"')
+    // Both refuse to run when the vendored hub VERSION disagrees with the pin.
+    expect(LANE).toContain('$JANKURAI_HUB/VERSION')
+    expect(WORKFLOW).toContain('node_modules/jankurai-workspace/VERSION')
   })
 
   it('does not swallow the primary audit with `|| true`', () => {
@@ -59,7 +74,11 @@ describe('jankurai audit lane does not fail open (#613)', () => {
 
 describe('auditor supply-chain pin is recorded (#613)', () => {
   it('records the current auditor version and a full commit SHA', () => {
-    expect(STANDARD_VERSION).toMatch(/auditor_version\s*=\s*"1\.6\.10"/)
+    // auditor_version must name the hub release package-lock.json vendors.
+    const lock = JSON.parse(readFileSync(join(ROOT, 'package-lock.json'), 'utf8'))
+    const hubVersion = lock.packages?.['node_modules/jankurai-workspace']?.version
+    expect(hubVersion).toMatch(/^\d+\.\d+\.\d+$/)
+    expect(STANDARD_VERSION).toMatch(new RegExp(`auditor_version\\s*=\\s*"${hubVersion.replace(/\./g, '\\.')}"`))
     // A 40-hex-char commit SHA, not a mutable tag.
     expect(STANDARD_VERSION).toMatch(/auditor_commit\s*=\s*"[0-9a-f]{40}"/)
   })

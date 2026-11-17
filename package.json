@@ -121,7 +121,7 @@
     "eslint": "^10.10.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
-    "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
+    "jankurai-workspace": "github:neverhuman/jankurai#v1.7.6",
     "jsdom": "^29.1.1",
     "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.3",
