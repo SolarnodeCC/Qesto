@@ -118,7 +118,7 @@
     "@vitest/coverage-v8": "^4.1.12",
     "axe-core": "^4.14.0",
     "better-sqlite3": "^13.0.3",
-    "eslint": "^10.10.0",
+    "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
