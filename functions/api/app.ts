@@ -32,6 +32,7 @@ import { mountNativePushRoutes } from './routes/native-push'
 import { mountMarketplaceConnectRoutes } from './routes/marketplace-connect'
 import { mountMarketplaceListingRoutes } from './routes/marketplace-listings'
 import { mountTeamInsightsRoutes } from './routes/team-insights'
+import { resolveCommit } from './lib/build-info'
 import { mountPulseRoutes } from './routes/pulse'
 import { mountAgentDefinitionRoutes } from './routes/agent-definitions'
 import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
@@ -157,7 +158,7 @@ export function createApp() {
       c.header('x-parent-trace-id', parent_trace_id)
     }
     c.header('x-trace-id', trace_id)
-    c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
+    c.header('x-qesto-api-commit', resolveCommit(c.env))
     // Wire circuit breakers with KV — idempotent, runs once per isolate.
     const cbKv =
       getFlag(c.env, 'CIRCUIT_BREAKER_ENABLED') && c.env.CIRCUIT_BREAKER_KV
@@ -340,7 +341,7 @@ export function createApp() {
       ok: true,
       data: {
         env: c.env.ENV,
-        commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
+        commit: resolveCommit(c.env),
       },
       trace_id: c.get('trace_id')!,
     }),
@@ -378,7 +379,7 @@ export function createApp() {
           writeRegion: routing.writeRegion,
           failoverActive: routing.failoverActive,
           multiRegion: routing.config,
-          commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
+          commit: resolveCommit(c.env),
           checks,
         },
         trace_id: c.get('trace_id')!,

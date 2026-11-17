@@ -9,6 +9,7 @@ import { readKvJson } from '../lib/kv'
 import { sloCountersKvKey } from '../lib/slo'
 import type { Env } from '../types'
 import { getFlag } from '../lib/flags'
+import { resolveCommit } from '../lib/build-info'
 import { publicRegionCatalog, DEFAULT_REGION_ID } from '../lib/region-residency'
 import type { ParentApp } from './parent-app'
 
@@ -57,7 +58,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
         realtimeV3Enabled: c.env.REALTIME_V3_ENABLED === 'true',
         publicApi: { v1: 'deprecated', v2: 'maintained', v3: 'ga' },
-        commit: c.env.COMMIT_SHA ?? 'unknown',
+        commit: resolveCommit(c.env),
       },
       trace_id: c.get('trace_id'),
     }),

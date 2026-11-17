@@ -121,16 +121,35 @@ jobs:
           VITE_SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
           VITE_CHECKOUT_URL: ${{ secrets.CHECKOUT_URL }}
 
-      - name: Get commit SHA
-        id: sha
-        run: printf 'sha=%s\n' "$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      # qesto.cc/api is served by the Pages Functions bundle, whose runtime env
+      # carries a dashboard COMMIT_SHA="dev" — an env var on the deploy command
+      # never reached it. Stamp the SHA into the bundle so /api/version reports
+      # the commit actually deployed. Must run after the Worker deploy, which
+      # refuses a dirty working tree.
+      - name: Stamp commit into the Functions bundle
+        run: node scripts/stamp-build-commit.mjs "$GITHUB_SHA"
 
+      # The verification steps below target this deployment's own
+      # https://<id>.qesto.pages.dev URL: qesto.cc runs Bot Fight Mode, which
+      # answers GitHub's runners with 403, and the per-deployment URL checks
+      # exactly what was just uploaded.
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy dist --project-name=qesto
+        id: pages
+        run: |
+          set -euo pipefail
+          npx wrangler pages deploy dist --project-name=qesto --branch=main | tee "$RUNNER_TEMP/pages-deploy.log"
+          # Per-deployment URLs are https://<8 hex>.qesto.pages.dev; branch aliases
+          # (main.qesto.pages.dev) never match, so a later alias line cannot win.
+          url=$(grep -oE 'https://[0-9a-f]{8}\.qesto\.pages\.dev' "$RUNNER_TEMP/pages-deploy.log" | tail -n1 || true)
+          if [ -z "$url" ]; then
+            echo "::error::Could not find the deployment URL in the wrangler output"
+            exit 1
+          fi
+          echo "Deployment URL: $url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          COMMIT_SHA: ${{ steps.sha.outputs.sha }}
 
       # DD-37 — `purge_everything` dropped the entire global edge cache on every
       # release: a latency spike and an origin-load spike per deploy, for no
@@ -158,8 +177,9 @@ jobs:
             -d '{"files":["https://qesto.cc/","https://qesto.cc/index.html"]}'
 
       - name: Verify deploy (commit parity + asset MIME types)
-        run: node scripts/verify-deploy.mjs https://qesto.cc
+        run: node scripts/verify-deploy.mjs "$DEPLOY_URL"
         env:
+          DEPLOY_URL: ${{ steps.pages.outputs.url }}
           GITHUB_SHA: ${{ github.sha }}
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
@@ -171,11 +191,13 @@ jobs:
       # under `.data.checks`; tests/unit/health-contract.test.ts pins that shape
       # so this script and the handler cannot silently drift apart again.
       - name: Verify API health
+        env:
+          DEPLOY_URL: ${{ steps.pages.outputs.url }}
         run: |
           set -euo pipefail
           echo "Checking API health endpoint..."
           # A degraded dependency returns 503, which -f turns into a non-zero exit.
-          health=$(curl -sf https://qesto.cc/api/admin/health)
+          health=$(curl -sf "$DEPLOY_URL/api/admin/health")
 
           d1_ok=$(echo "$health" | jq -r '.data.checks.d1')
           kv_ok=$(echo "$health" | jq -r '.data.checks.kv')
@@ -192,4 +214,6 @@ jobs:
           echo "✓ All API systems healthy"
 
       - name: Platform v7 smoke (OPS-S99-CLOSEOUT-01)
-        run: node scripts/smoke-platform.mjs https://qesto.cc
+        run: node scripts/smoke-platform.mjs "$DEPLOY_URL"
+        env:
+          DEPLOY_URL: ${{ steps.pages.outputs.url }}
