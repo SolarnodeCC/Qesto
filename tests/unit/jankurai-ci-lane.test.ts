@@ -78,7 +78,8 @@ describe('auditor supply-chain pin is recorded (#613)', () => {
     const lock = JSON.parse(readFileSync(join(ROOT, 'package-lock.json'), 'utf8'))
     const hubVersion = lock.packages?.['node_modules/jankurai-workspace']?.version
     expect(hubVersion).toMatch(/^\d+\.\d+\.\d+$/)
-    expect(STANDARD_VERSION).toMatch(new RegExp(`auditor_version\\s*=\\s*"${hubVersion.replace(/\./g, '\\.')}"`))
+    const auditorVersion = STANDARD_VERSION.match(/auditor_version\s*=\s*"([^"]+)"/)?.[1]
+    expect(auditorVersion).toBe(hubVersion)
     // A 40-hex-char commit SHA, not a mutable tag.
     expect(STANDARD_VERSION).toMatch(/auditor_commit\s*=\s*"[0-9a-f]{40}"/)
   })
