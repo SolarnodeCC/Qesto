@@ -210,8 +210,11 @@ jobs:
         run: |
           set -euo pipefail
           echo "Checking API health endpoint..."
-          # A degraded dependency returns 503, which -f turns into a non-zero exit.
-          health=$(curl -sf "$DEPLOY_URL/api/admin/health")
+          # A degraded dependency returns 503 and fails this step. A brand-new
+          # *.pages.dev alias can also 404 for a few seconds after wrangler says
+          # the deploy is complete; deploy-propagation.mjs retries that window
+          # and then fails if it never clears. Stdout is the JSON body only.
+          health=$(node scripts/deploy-propagation.mjs "$DEPLOY_URL/api/admin/health")
 
           d1_ok=$(echo "$health" | jq -r '.data.checks.d1')
           kv_ok=$(echo "$health" | jq -r '.data.checks.kv')
