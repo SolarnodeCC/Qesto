@@ -148,18 +148,26 @@ jobs:
           echo "Deployment URL: $url"
           printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
           # A new deployment URL answers 404 for a few seconds after wrangler
-          # returns (run 3182 checked it 0.6s later and failed). Wait until it
-          # serves before the verification steps run against it.
-          for attempt in $(seq 1 30); do
+          # returns, and Cloudflare's edge does not switch over all at once:
+          # run 3188 got a 200 on the first probe and a 404 0.4s later. One
+          # success is not proof, so require 5 consecutive 200s (2s apart)
+          # within 120s before the verification steps run against it.
+          streak=0
+          for attempt in $(seq 1 60); do
             if curl -sf -o /dev/null "$url/api/version"; then
-              echo "Deployment is serving (attempt $attempt)"
-              break
+              streak=$((streak + 1))
+              if [ "$streak" -ge 5 ]; then
+                echo "Deployment is serving (5 consecutive 200s by attempt $attempt)"
+                break
+              fi
+            else
+              streak=0
             fi
-            if [ "$attempt" -eq 30 ]; then
-              echo "::error::$url did not start serving within 90s"
+            if [ "$attempt" -eq 60 ]; then
+              echo "::error::$url did not serve consistently within 120s"
               exit 1
             fi
-            sleep 3
+            sleep 2
           done
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
