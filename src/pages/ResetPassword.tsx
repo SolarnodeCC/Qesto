@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import MfaChallenge from '../components/auth/MfaChallenge'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 
@@ -8,11 +9,13 @@ type Status = 'idle' | 'submitting' | 'success' | 'invalid' | 'password_breached
 export default function ResetPassword() {
   const t = useT('auth')
   const { confirmPasswordReset } = useAuth()
+  const navigate = useNavigate()
   const [search] = useSearchParams()
   const token = search.get('token') ?? ''
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [mfaToken, setMfaToken] = useState<string | null>(null)
   const [status, setStatus] = useState<Status>('idle')
 
   const invalidToken = token.length !== 64
@@ -27,6 +30,11 @@ export default function ResetPassword() {
     const result = await confirmPasswordReset(token, password)
     if (result === 'ok') {
       setStatus('success')
+      return
+    }
+    if (typeof result === 'object' && typeof result.mfaToken === 'string') {
+      setStatus('idle')
+      setMfaToken(result.mfaToken)
       return
     }
     if (result === 'password_breached') {
@@ -45,7 +53,9 @@ export default function ResetPassword() {
       <section className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-12 shadow-sm">
         <h1 tabIndex={-1} className="text-2xl font-semibold">{t('setNewPassword')}</h1>
 
-        {invalidToken ? (
+        {mfaToken ? (
+          <MfaChallenge mfaToken={mfaToken} onDone={() => navigate('/dashboard', { replace: true })} />
+        ) : invalidToken ? (
           <div className="space-y-3">
             <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('resetLinkInvalid')}</p>
             <p className="text-sm text-pulse-600 dark:text-pulse-400">{t('resetLinkHint')}</p>
