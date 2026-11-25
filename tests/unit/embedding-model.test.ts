@@ -1,3 +1,7 @@
+/**
+ * Requirement: Vectorize pipeline audit (#858) findings #20, #22 — one embedding model/dimension
+ * constant (bge-m3, 1024-d) shared by KB, help and decisions indexes (SPEC_INTEGRATIONS Vectorize).
+ */
 import { describe, expect, it } from 'vitest'
 import * as fs from 'fs'
 import {

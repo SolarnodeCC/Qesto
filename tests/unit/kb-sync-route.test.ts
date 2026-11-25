@@ -180,9 +180,9 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     const db = new RecordingD1()
     // The doc used to have 4 chunks; this sync declares chunk_count = 2, so
     // ADR-040#2 and ADR-040#3 are pruned from D1 — and must go from Vectorize.
-    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [
-      { chunk_id: 'ADR-040#2' },
-      { chunk_id: 'ADR-040#3' },
+    db.selectRows.set('SELECT chunk_id, chunk_index FROM kb_chunks', [
+      { chunk_id: 'ADR-040#2', chunk_index: 2 },
+      { chunk_id: 'ADR-040#3', chunk_index: 3 },
     ])
     const vec = new RecordingVectorize()
     const env = makeEnv(db, vec)
@@ -197,7 +197,7 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
 
   it('does not fail the sync when the vector prune errors', async () => {
     const db = new RecordingD1()
-    db.selectRows.set('SELECT chunk_id FROM kb_chunks', [{ chunk_id: 'ADR-040#2' }])
+    db.selectRows.set('SELECT chunk_id, chunk_index FROM kb_chunks', [{ chunk_id: 'ADR-040#2', chunk_index: 2 }])
     const vec = new RecordingVectorize()
     vec.deleteByIds = async () => {
       throw new Error('vectorize unavailable')

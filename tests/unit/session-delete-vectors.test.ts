@@ -1,3 +1,7 @@
+/**
+ * Requirement: Vectorize pipeline audit (#858) finding #12 — deleting a session or a team
+ * purges its decision vectors (best-effort, keyset-paged per DD-14).
+ */
 import { describe, expect, it } from 'vitest'
 import {
   deleteTeamSessionVectors,
@@ -70,11 +74,19 @@ describe('hardDeleteSession — decision-vector cascade (audit #12)', () => {
 })
 
 describe('deleteTeamSessionVectors — team cascade (audit #12)', () => {
+  // Honours the keyset contract (`id > ?2 ORDER BY id LIMIT n`) so the paged
+  // read in deleteTeamSessionVectors terminates exactly as it would on D1.
   function dbWithSessions(ids: string[]) {
+    const sorted = [...ids].sort()
     return {
-      prepare() {
+      prepare(sql: string) {
+        const limit = Number(/LIMIT\s+(\d+)/i.exec(sql)?.[1] ?? Infinity)
         return {
-          bind: () => ({ all: async () => ({ results: ids.map((id) => ({ id })) }) }),
+          bind: (_teamId: string, after: string) => ({
+            all: async () => ({
+              results: sorted.filter((id) => id > after).slice(0, limit).map((id) => ({ id })),
+            }),
+          }),
         }
       },
     } as unknown as D1Database

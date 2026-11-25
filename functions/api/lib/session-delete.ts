@@ -78,15 +78,24 @@ export async function deleteTeamSessionVectors(
 ): Promise<number> {
   if (!vectorize) return 0
   try {
-    const { results } = await db
-      .prepare(`SELECT id FROM sessions WHERE team_id = ?1`)
-      .bind(teamId)
-      .all<{ id: string }>()
-    const ids = (results ?? []).map((r) => r.id)
-    for (let i = 0; i < ids.length; i += 100) {
-      await vectorize.deleteByIds(ids.slice(i, i + 100))
+    // Keyset-paged (DD-14): a team can own any number of sessions, so read
+    // and purge one page at a time instead of loading every id at once.
+    const PAGE = 100
+    let deleted = 0
+    let after = ''
+    for (;;) {
+      const { results } = await db
+        .prepare(`SELECT id FROM sessions WHERE team_id = ?1 AND id > ?2 ORDER BY id LIMIT ${PAGE}`)
+        .bind(teamId, after)
+        .all<{ id: string }>()
+      const ids = (results ?? []).map((r) => r.id)
+      if (ids.length === 0) break
+      await vectorize.deleteByIds(ids)
+      deleted += ids.length
+      if (ids.length < PAGE) break
+      after = ids[ids.length - 1]
     }
-    return ids.length
+    return deleted
   } catch {
     return 0
   }

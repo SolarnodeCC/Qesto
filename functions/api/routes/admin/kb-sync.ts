@@ -73,8 +73,6 @@ async function writeD1Rows(
       vector_id = excluded.vector_id, embedded_at = excluded.embedded_at`
 
   const PRUNE_SQL = `DELETE FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2`
-  const STALE_SQL = `SELECT chunk_id FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2`
-
   for (const r of records) {
     const docId = typeof r.metadata.doc_id === 'string' ? r.metadata.doc_id : undefined
     if (!docId || !r.document || !r.chunk) continue
@@ -138,12 +136,23 @@ async function writeD1Rows(
   // Identify the chunks the prune is about to remove, BEFORE removing them —
   // afterwards there is no record of which vector ids became orphans.
   const prunedVectorIds: string[] = []
+  // Keyset-paged by chunk_index (DD-14) so a document that shrank a lot
+  // cannot pull an unbounded row set into one read.
+  const STALE_PAGE = 500
   for (const { docId, doc } of docsById.values()) {
-    const { results } = await db
-      .prepare(STALE_SQL)
-      .bind(docId, doc.chunk_count)
-      .all<{ chunk_id: string }>()
-    for (const row of results ?? []) prunedVectorIds.push(row.chunk_id)
+    let from = doc.chunk_count
+    for (;;) {
+      const { results } = await db
+        .prepare(
+          `SELECT chunk_id, chunk_index FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2 ORDER BY chunk_index LIMIT ${STALE_PAGE}`,
+        )
+        .bind(docId, from)
+        .all<{ chunk_id: string; chunk_index: number }>()
+      const rows = results ?? []
+      for (const row of rows) prunedVectorIds.push(row.chunk_id)
+      if (rows.length < STALE_PAGE) break
+      from = rows[rows.length - 1].chunk_index + 1
+    }
   }
 
   await db.batch(pruneStatements)

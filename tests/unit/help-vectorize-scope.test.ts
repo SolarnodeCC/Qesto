@@ -1,3 +1,7 @@
+/**
+ * Requirement: Vectorize pipeline audit (#858) findings #21, #24 — help search fetches headroom
+ * for scope filtering and never promotes free/starter users to team scope.
+ */
 import { describe, expect, it } from 'vitest'
 import {
   HELP_EMBED_DIM,

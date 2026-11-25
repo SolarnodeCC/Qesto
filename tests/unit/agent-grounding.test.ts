@@ -1,3 +1,7 @@
+/**
+ * Requirement: Vectorize pipeline audit (#858) findings #4, #8, #9 — decision grounding is
+ * team-scoped, queries with v2 metadata, and reads the keys the upsert writes (SPEC_INTEGRATIONS Vectorize).
+ */
 import { describe, expect, it } from 'vitest'
 import { queryDecisionGrounding } from '../../functions/api/lib/agent-grounding'
 import { DECISIONS_EMBED_DIM, DECISIONS_EMBED_MODEL } from '../../functions/api/lib/insights-vectorize'
