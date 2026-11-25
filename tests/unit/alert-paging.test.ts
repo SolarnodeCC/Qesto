@@ -1,3 +1,7 @@
+/**
+ * Requirement: OPS-ALERTS-PAGING-01 (#845 Phase 6) — critical SLO alerts page operators via
+ * OPS_ALERT_EMAIL / OPS_ALERT_WEBHOOK, with no PII in the alert body.
+ */
 import { describe, expect, it, vi } from 'vitest'
 import { dispatchOperatorAlert } from '../../functions/api/lib/alert-paging'
 import type { AlertResult } from '../../functions/api/lib/alerts'

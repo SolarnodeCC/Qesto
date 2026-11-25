@@ -1,3 +1,7 @@
+/**
+ * Requirement: OPS-DO-BIND-VERIFY-01 (#845 Phase 0) — /api/admin/health reports SESSION_ROOM,
+ * INSIGHTS_QUEUE and INTEGRATION_ENABLED presence (ADR-042 Phase 2.1).
+ */
 import { describe, expect, it } from 'vitest'
 import {
   probeInsightsQueueBinding,

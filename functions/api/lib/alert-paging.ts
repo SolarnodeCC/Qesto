@@ -58,7 +58,7 @@ export async function dispatchOperatorAlert(
   }
 
   if (!emailed && !webhook) {
-    console.warn(JSON.stringify({ event: 'ops.alert.noop', message: alert.message }))
+    logEvent({ event: 'ops.alert.noop', detail: alert.message }, 'warn')
   }
 
   return { emailed, webhook }

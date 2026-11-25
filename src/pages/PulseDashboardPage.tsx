@@ -39,30 +39,46 @@ export default function PulseDashboardPage() {
   const auth = useAuth()
   const t = useT('pulse')
   const [window, setWindow] = useState<'30d' | '90d'>('30d')
-  const [summary, setSummary] = useState<PulseSummary | null>(null)
-  const [trends, setTrends] = useState<PulseTrends | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [planGated, setPlanGated] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // One result per (team, window) request. Loading is derived from whether the
+  // latest result matches the current request, so the effect never has to
+  // reset state synchronously, and a late response for a previous window is
+  // discarded instead of overwriting the current one.
+  const requestKey = `${teamId ?? ''}:${window}`
+  const [result, setResult] = useState<{
+    key: string
+    summary: PulseSummary | null
+    trends: PulseTrends | null
+    planGated: boolean
+    error: string | null
+  } | null>(null)
 
   useEffect(() => {
     if (!teamId || auth.status !== 'authenticated') return
-    setLoading(true)
-    setError(null)
-    setPlanGated(false)
+    let cancelled = false
     void Promise.all([
       api<PulseSummary>(`/api/teams/${teamId}/pulse/summary?window=${window}`),
       api<PulseTrends>(`/api/teams/${teamId}/pulse/trends?window=${window}`),
     ]).then(([summaryRes, trendsRes]) => {
-      if ((!summaryRes.ok && summaryRes.status === 403) || (!trendsRes.ok && trendsRes.status === 403)) {
-        setPlanGated(true)
-        return
-      }
-      if (summaryRes.ok) setSummary(summaryRes.data)
-      else setError(summaryRes.error.message)
-      if (trendsRes.ok) setTrends(trendsRes.data)
-    }).finally(() => setLoading(false))
-  }, [teamId, window, auth.status])
+      if (cancelled) return
+      const gated = (!summaryRes.ok && summaryRes.status === 403) || (!trendsRes.ok && trendsRes.status === 403)
+      setResult((prev) => ({
+        key: requestKey,
+        summary: gated ? prev?.summary ?? null : summaryRes.ok ? summaryRes.data : prev?.summary ?? null,
+        trends: gated ? prev?.trends ?? null : trendsRes.ok ? trendsRes.data : prev?.trends ?? null,
+        planGated: gated,
+        error: gated || summaryRes.ok ? null : summaryRes.error.message,
+      }))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [teamId, window, auth.status, requestKey])
+
+  const summary = result?.summary ?? null
+  const trends = result?.trends ?? null
+  const loading = result?.key !== requestKey
+  const planGated = !loading && (result?.planGated ?? false)
+  const error = loading ? null : result?.error ?? null
 
   const visibleRows = useMemo(
     () => summary?.series.filter((row) => !row.masked) ?? [],

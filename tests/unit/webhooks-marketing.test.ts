@@ -1,3 +1,7 @@
+/**
+ * Requirement: #845 Phase 3 security hardening — the marketing webhook verifies its HMAC
+ * signature in constant time and never logs signature material (SPEC_INTEGRATIONS webhooks).
+ */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { hmacSha256Hex } from '../../functions/api/lib/webhooks'
