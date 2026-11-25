@@ -26,6 +26,10 @@ jobs:
   health:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # CLOUDFLARE_API_TOKEN is on the production environment (the deploy job
+    # reads it there). A repo-level lookup is empty, so --require-remote
+    # fails in seconds without this. The environment allows main only.
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

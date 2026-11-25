@@ -29,6 +29,10 @@ concurrency:
 jobs:
   kb-sync:
     runs-on: ubuntu-latest
+    # CLOUDFLARE_API_TOKEN is on the production environment (the deploy job
+    # reads it there). A repo-level lookup is empty, so this lane exits
+    # before syncing. The environment allows main only.
+    environment: production
     # 40 min: a defense-in-depth margin on top of the embed-kb.ts concurrency
     # fix (EMBED_CONCURRENCY) — protects against a slow Workers AI endpoint or
     # a future large doc dump re-triggering the same timeout failure mode.
