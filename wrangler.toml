@@ -82,7 +82,7 @@ REALTIME_TOWNHALL_ENABLED = "true"
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
 # Integrations: Slack/Teams notifications (gates integration checks in routes).
-INTEGRATION_ENABLED = "1"
+INTEGRATION_ENABLED = "true"
 # Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
 CIRCUIT_BREAKER_ENABLED = "true"
 # Energizers: warm-up activities before live questions (DRAFT→ENERGIZING state machine).
@@ -345,11 +345,13 @@ simple = { limit = 10, period = 60 }
 #   Sunday=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6, Sat=7.
 #   "0 3 * * 1"     — weekly KV backup, Sunday 03:00 UTC
 #   "0 6 * * 3,5,7" — Content Engine, Tue/Thu/Sat 06:00 UTC
+#   "0 * * * *"     — metrics alert sweep (OPS-ALERTS-PAGING-01), hourly. This is the
+#                     5th and last cron slot; fold new jobs into an existing schedule.
 # See https://developers.cloudflare.com/workers/configuration/cron-triggers/
 #
 # ⚠️ Cloudflare allows at most 5 cron triggers per Worker — we have headroom after
 # removing the mention-monitor schedule.
-crons = ["0 2 * * *", "0 3 * * 1", "0 6 * * 3,5,7", "0 4 * * *"]
+crons = ["0 2 * * *", "0 3 * * 1", "0 6 * * 3,5,7", "0 4 * * *", "0 * * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Having a [env.preview] block today

@@ -22,6 +22,12 @@ export type WorkflowCreateOptions<Params> = {
 export type Env = {
   // Vars
   ENV: 'production' | 'preview' | 'dev' | 'staging'
+  /**
+   * Local/E2E marker set by `scripts/e2e-serve-fullstack.sh` (`--var ENVIRONMENT:development`).
+   * Distinct from {@link ENV}, which stays `production` in the default wrangler vars the
+   * E2E server inherits. Plan middleware skips the KV plan cache when this is `development`.
+   */
+  ENVIRONMENT?: string
   /** Pages origin — used for CORS allowed-origin and CSRF check. */
   PAGES_URL: string
   /** Worker's own URL — used for OAuth redirect_uri and email magic-link base. */
@@ -165,6 +171,10 @@ export type Env = {
   KB_ADMIN_KEY?: string
   KB_SEARCH_SERVICE_KEY?: string
   RESEND_API_KEY?: string
+  /** OPS-ALERTS-PAGING-01: operator email for critical SLO alerts (optional). */
+  OPS_ALERT_EMAIL?: string
+  /** OPS-ALERTS-PAGING-01: webhook URL for critical alerts (optional). */
+  OPS_ALERT_WEBHOOK?: string
   STRIPE_SECRET_KEY?: string
   STRIPE_WEBHOOK_SECRET?: string
   GOOGLE_CLIENT_ID?: string

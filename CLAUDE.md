@@ -31,7 +31,7 @@ worker/  ──scheduled──► cleanup, cron triggers
 | Email | Resend via `RESEND_API_KEY` | `auth.ts:sendEmail()` |
 | Payments | Stripe, price IDs in `wrangler.toml [vars]` | `billing.ts`, `stripe.ts` |
 | Auth | Magic link (JWT) + SAML SSO | `auth.ts` |
-| Vector | DECISIONS_VECTORIZE, HELP_VECTORIZE, KB_VECTORIZE (1024d, cosine, bge-m3) | `vectorize.ts` |
+| Vector | DECISIONS_VECTORIZE, HELP_VECTORIZE, KB_VECTORIZE (1024d, cosine, bge-m3) — model + dim constants in `lib/embedding-model.ts` | `lib/{insights,help}-vectorize.ts`, `services/kbSearchService.ts` |
 | Embed | EMBED widget mint + public read planes, `EMBED_WIDGET_SECRET` HMAC token (ADR-0050) | `routes/embed.ts`, `routes/embed-widget-v1.ts`, `lib/embed-token.ts` |
 
 ### Session State Machine

@@ -63,6 +63,7 @@ function makeDO(status: number, body: unknown): DurableObjectNamespace {
 const DO_OK = makeDO(200, { ok: true, data: { initialised: true } })
 const DO_ALREADY_INIT = makeDO(409, { ok: false, error: { code: 'already_initialised', message: 'Session already initialised' } })
 const DO_FAIL = makeDO(500, { ok: false, error: { code: 'internal_error', message: 'DO unavailable' } })
+const DO_CLOSE_OK = makeDO(200, { ok: true, data: { counts: {}, total: 0, votes: [], questionId: null } })
 
 // A DO whose fetch() *rejects* — mirrors an uncaught exception inside a handler,
 // which the runtime surfaces to the caller as a rejected stub.fetch() promise.
@@ -356,6 +357,59 @@ describe('POST /api/sessions/:id/start', () => {
 
     expect(close.status).toBe(500)
     expect(db.sessions.get(sessionId)?.status).toBe('live')
+  })
+
+  it('registers post-session queue sends with waitUntil on close', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const cookie = await cookieFor('user_queue', 'queue@example.com')
+    const startEnv = makeEnv(db, DO_OK)
+    const sessionId = await createSession(db, app, startEnv, cookie)
+    seedPollQuestion(db, sessionId)
+
+    const start = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
+      startEnv,
+    )
+    expect(start.status).toBe(200)
+
+    // Hold the queue send open so we can see whether anything keeps the Worker
+    // alive for it after the response is returned.
+    let releaseSend: () => void = () => undefined
+    const send = vi.fn(() => new Promise<void>((resolve) => { releaseSend = resolve }))
+    const waitUntilPromises: Promise<unknown>[] = []
+    const waitUntil = vi.fn((p: Promise<unknown>) => {
+      waitUntilPromises.push(p)
+      void p.catch(() => undefined)
+    })
+    const closeEnv = makeEnv(db, DO_CLOSE_OK)
+    closeEnv.INTEGRATIONS_KV = kv()
+    closeEnv.INSIGHTS_QUEUE = { send } as unknown as Queue
+
+    const close = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
+      closeEnv,
+      { waitUntil } as unknown as ExecutionContext,
+    )
+
+    expect(close.status).toBe(200)
+    expect(send).toHaveBeenCalledOnce()
+    expect(waitUntil).toHaveBeenCalled()
+
+    // Other post-response work (analytics) may also register via waitUntil, so
+    // assert on behaviour: some registered promise must still be pending while
+    // the queue send is in flight, and settle once it completes.
+    const settled = waitUntilPromises.map((p) => {
+      const state = { done: false }
+      void p.then(() => { state.done = true }, () => { state.done = true })
+      return state
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    expect(settled.some((st) => !st.done)).toBe(true)
+
+    releaseSend()
+    await Promise.all(waitUntilPromises)
+    expect(settled.every((st) => st.done)).toBe(true)
   })
 
   it('no questions → 409 no_question', async () => {

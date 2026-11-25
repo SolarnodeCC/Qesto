@@ -41,7 +41,7 @@ type AuthApi = AuthState & {
   verifyMfa: (mfaToken: string, factor: { code: string } | { recoveryCode: string }) => Promise<'ok' | 'invalid' | 'expired' | 'error'>
   signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'password_breached' | 'error'>
   requestPasswordReset: (email: string) => Promise<'sent' | 'invalid' | 'error'>
-  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'>
+  confirmPasswordReset: (token: string, password: string) => Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error' | { mfaToken: string }>
   refresh: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -134,9 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const confirmPasswordReset = useCallback(
-    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error'> => {
-      const result = await api<{ reset: boolean; token: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
+    async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'password_breached' | 'error' | { mfaToken: string }> => {
+      const result = await api<{ reset: boolean; token: string } | { reset: boolean; mfa_required: true; mfa_token: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
       if (result.ok) {
+        if ('mfa_required' in result.data) return { mfaToken: result.data.mfa_token }
         setAuthToken(result.data.token)
         await refresh()
         return 'ok'

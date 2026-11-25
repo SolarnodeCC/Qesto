@@ -9,12 +9,12 @@ Read [`agent/JANKURAI_STANDARD.md`](./agent/JANKURAI_STANDARD.md) first. Proof l
 ## Stack
 
 - **Frontend**: React + TypeScript, Vite, Tailwind CSS v4
-- **Backend**: Cloudflare Pages Functions (Hono framework) in `functions/api/[[route]].ts`
+- **Backend**: Hono on Cloudflare Pages Functions in `worker/index.ts` (delegates to `functions/api/app.ts`)
 - **Worker**: Separate Cloudflare Worker in `worker/` met eigen `wrangler.toml`
 - **Database**: Cloudflare D1 (`DB` binding, database `qesto-db`)
 - **KV**: USERS_KV, SESSIONS_KV, TEAMS_KV, TEMPLATES_KV, DECISIONS_KV, AUDIT_KV, ACTIONS_KV
 - **Durable Objects**: SESSION_ROOM (class `SessionRoom`) voor realtime sessie state
-- **Vectorize**: DECISIONS_VECTORIZE (qesto-decisions, 768 dimensies, cosine)
+- **Vectorize**: DECISIONS_VECTORIZE (qesto-decisions), HELP_VECTORIZE (qesto-help), KB_VECTORIZE (qesto-kb-production) — alle **1024 dimensies, cosine, `@cf/baai/bge-m3`**
 - **AI**: Workers AI via `c.env.AI.run()` — gebruik NOOIT externe Anthropic API calls
 - **Email**: Resend via `RESEND_API_KEY` secret, zie `functions/api/auth.ts:sendEmail()`
 - **Payments**: Stripe, price IDs in `wrangler.toml [vars]`, secrets via `wrangler pages secret`

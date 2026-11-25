@@ -11,7 +11,21 @@ export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
 
 export const HELP_EMBED_MODEL = '@cf/baai/bge-m3' as const
 export const HELP_EMBED_DIM = 1024 // bge-m3 outputs 1024 dims — must match the qesto-help index
+/** How many documents the caller gets back. */
 export const HELP_SIMILARITY_TOP_K = 3
+/**
+ * How many candidates to pull from Vectorize before plan-scope filtering.
+ *
+ * Scope is enforced in application code below, not as a Vectorize metadata
+ * filter, because a metadata filter only works when a metadata index exists on
+ * the property and those are not retroactive (audit #13). Post-filtering is
+ * correct either way — but fetching only HELP_SIMILARITY_TOP_K candidates meant
+ * a free-plan user whose three nearest documents were all `team`-scoped got
+ * zero answers, with no indication that anything had matched (audit #21).
+ * Over-fetching gives the filter headroom. Well under the Vectorize cap of 50
+ * for a query returning metadata.
+ */
+export const HELP_SIMILARITY_FETCH_K = 15
 export const HELP_SIMILARITY_MIN_SCORE = 0.70
 export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
@@ -54,18 +68,22 @@ export async function embedAndFindSimilarDocuments(
 
   const similarDocuments: HelpQueryMatch[] = []
   const scopeHierarchy: Record<string, number> = { free: 0, starter: 1, team: 2 }
-  const userScopeLevel = scopeHierarchy[params.userScope] || 2
+  // `|| 2` was a falsy-zero bug: scopeHierarchy.free is 0, so every free user
+  // was promoted to level 2 (team) and could see premium help content. Use ??
+  // so only a genuinely unknown scope falls back (audit #24).
+  const userScopeLevel = scopeHierarchy[params.userScope] ?? 2
 
   const matches = (
     await queryVectors(
       env.HELP_VECTORIZE,
       vector,
-      { topK: HELP_SIMILARITY_TOP_K },
+      { topK: HELP_SIMILARITY_FETCH_K },
       HELP_VECTORIZE_TIMEOUT_MS,
       'Help document similarity query',
     )
   ).filter((m) => (m.score ?? 0) > HELP_SIMILARITY_MIN_SCORE)
   for (const match of matches) {
+    if (similarDocuments.length >= HELP_SIMILARITY_TOP_K) break
     const meta = match.metadata as Record<string, string> | undefined
     if (!meta?.document_id || !meta?.title) continue
 

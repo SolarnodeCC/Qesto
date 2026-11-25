@@ -166,6 +166,11 @@ export type QestoEvent = {
     | 'tournament.completed'
     | 'kb_rag.query'
     | 'kb_rag.result_returned'
+    // KB ingest telemetry (audit #19): one datapoint per sync run so the
+    // pipeline's health is queryable over time instead of living only in a
+    // console.log and a single overwritten KV key.
+    | 'kb_sync.run'
+    | 'kb_sync.delete'
     | 'coaching.suggestion_accepted'
     | 'coaching.suggestion_dismissed'
     | 'coaching.export_emailed'
@@ -204,6 +209,7 @@ export type QestoEvent = {
     | 'queue.message_enqueued'
     | 'queue.message_acked'
     | 'queue.message_failed'
+    | 'queue.enqueue.noop'
     | 'queue.dlq_size'
     // Phase 2.2: DO vote buffering observability (ADR-042)
     | 'do.vote_buffer_depth'

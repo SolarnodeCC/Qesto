@@ -42,7 +42,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     if (!session) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
-    const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub)
+    const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub, c.env.DECISIONS_VECTORIZE)
     if (!deleted) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }

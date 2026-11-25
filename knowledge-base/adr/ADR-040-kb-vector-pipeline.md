@@ -44,7 +44,7 @@ We need a semantic retrieval layer so that:
 - New or modified docs are re-indexed without manual intervention.
 
 ### 1.2 Existing Constraints
-- **Workers AI only** (`@cf/baai/bge-m3`, 768d, cosine). No external embedding providers (CLAUDE.md hard rule #1).
+- **Workers AI only** (`@cf/baai/bge-m3`, 1024d, cosine). No external embedding providers (CLAUDE.md hard rule #1).
 - **Existing Vectorize index**: `DECISIONS_VECTORIZE` — 768d / cosine — already wired with `withTimeout` and fallback. Currently stores session decision vectors.
 - **Edge runtime**: 30s CPU per request, 128MB RAM. Cannot read 141 files synchronously in one request.
 - **No file-system access at runtime**: Workers cannot read `/knowledge-base/` directly. Files must be embedded at build/script time and shipped to Vectorize.

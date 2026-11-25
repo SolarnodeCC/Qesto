@@ -81,6 +81,9 @@ function makeEnv(): Env {
     ENV: 'production',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
+    // A strong, configured key so the KB admin routes reach their real
+    // credential check (401) rather than the misconfiguration guard (503).
+    KB_ADMIN_KEY: 'k'.repeat(48),
     // jankurai:allow HLT-010-SECRET-SPRAWL reason="local HMAC key for test-only JWTs, never used outside this suite" expires=2027-12-31
     JWT_SECRET: 'route-coverage-secret-at-least-32-bytes!',
     DB: new D1Mock() as unknown as D1Database,

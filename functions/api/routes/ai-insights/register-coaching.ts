@@ -113,7 +113,8 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
       c.env.SESSIONS_KV ? await listCoachingActions(c.env.SESSIONS_KV, sessionId) : []
     const accepted = priorActions.filter((a) => a.action === 'accepted').length
     const dismissed = priorActions.filter((a) => a.action === 'dismissed').length
-    const ragChunks = await queryDecisionGrounding(c.env, `${session.title} ${summaries.join(' ')}`, 3)
+    // Scoped to the session's team — no team means no cross-session memory (audit #4).
+    const ragChunks = await queryDecisionGrounding(c.env, `${session.title} ${summaries.join(' ')}`, 3, session.team_id)
 
     const coaching = await generateFacilitatorCoaching(
       c.env,
@@ -209,7 +210,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const theme = c.req.query('theme') ?? session.title
-    const chunks = await queryDecisionGrounding(c.env, theme, 8)
+    const chunks = await queryDecisionGrounding(c.env, theme, 8, session.team_id)
     writeEvent(c.env.METRICS_AE, { name: 'kb_rag.query', userId: user.sub, sessionId, detail: theme.slice(0, 80) })
     return c.json({
       ok: true,

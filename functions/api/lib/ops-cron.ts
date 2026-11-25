@@ -28,6 +28,7 @@ export const CRON_REGISTRY: CronJob[] = [
   // mention-monitor DISABLED — Reddit/YouTube not connected; cron removed from wrangler.toml.
   // Keep entry commented in registry history via docs; do not re-add until OAuth is live.
   { key: 'oauth-token-refresh', label: 'Marketing OAuth token refresh', schedule: '0 4 * * *', intervalMs: DAY },
+  { key: 'metrics-alert-sweep', label: 'Metrics alert sweep (operator paging)', schedule: '0 * * * *', intervalMs: 60 * 60 * 1000 },
 ]
 
 /** Grace period before a late run is considered missed (AC: alert ≤ 1 min late). */

@@ -7,7 +7,7 @@
  * into the running session is COPILOT-06.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus, Check } from 'lucide-react'
+import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus, Check, CheckCircle, XCircle, ListChecks } from 'lucide-react'
 import { useT } from '../i18n'
 import { useCopilot, type CopilotActionKind } from '../hooks/useCopilot'
 import { inputHint } from '../ui/input-hint'
@@ -43,6 +43,12 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
     suggestSource,
     suggestLoading,
     fetchSuggestions,
+    plan,
+    planLoading,
+    planReviewing,
+    fetchPlan,
+    createPlan,
+    reviewPlanStep,
   } = useCopilot(sessionId, enabled && open)
 
   // Auto-fetch suggestions once per live open (heavier LLM call — not on the 15s poll).
@@ -183,6 +189,78 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                             </li>
                           )
                         })}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {/* Supervised plan (COPILOT-RUNTIME-01) */}
+                {context?.isLive && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-pulse-500">
+                        <ListChecks size={14} aria-hidden="true" />
+                        {t('copilot.plan_title')}
+                      </h3>
+                      {!plan && (
+                        <button
+                          type="button"
+                          onClick={() => void createPlan()}
+                          disabled={planLoading}
+                          className="text-xs font-medium text-violet-700 dark:text-violet-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:opacity-40"
+                        >
+                          {planLoading ? t('copilot.plan_loading') : t('copilot.plan_create')}
+                        </button>
+                      )}
+                      {plan && (
+                        <button
+                          type="button"
+                          onClick={() => void fetchPlan()}
+                          disabled={planLoading}
+                          aria-label={t('copilot.plan_refresh')}
+                          className="rounded p-1 text-pulse-500 hover:text-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                        >
+                          <RefreshCw size={14} className={planLoading ? 'animate-spin' : ''} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                    {!plan ? (
+                      <p className="text-sm text-pulse-500">{t('copilot.plan_empty')}</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {plan.steps.map((step) => (
+                          <li
+                            key={step.id}
+                            className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-2.5 text-sm"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-xs text-pulse-500">{step.tool}</span>
+                              <span className="text-xs uppercase tracking-wide text-pulse-500">{step.status}</span>
+                            </div>
+                            {step.status === 'pending' && (
+                              <div className="mt-2 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => void reviewPlanStep(step.id, 'approved')}
+                                  disabled={planReviewing === step.id}
+                                  className="inline-flex items-center gap-1 rounded bg-teal-600 px-2 py-1 text-xs font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
+                                >
+                                  <CheckCircle size={12} aria-hidden="true" />
+                                  {t('copilot.plan_approve')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void reviewPlanStep(step.id, 'dismissed')}
+                                  disabled={planReviewing === step.id}
+                                  className="inline-flex items-center gap-1 rounded border border-pulse-300 px-2 py-1 text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-400 disabled:opacity-40"
+                                >
+                                  <XCircle size={12} aria-hidden="true" />
+                                  {t('copilot.plan_dismiss')}
+                                </button>
+                              </div>
+                            )}
+                          </li>
+                        ))}
                       </ul>
                     )}
                   </div>

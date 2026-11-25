@@ -1,12 +1,32 @@
 /**
  * Hard-delete a session and all D1 rows that reference it.
  * Explicit child deletes avoid 500s when legacy DBs lack ON DELETE CASCADE on every table.
+ *
+ * When `vectorize` is supplied the session's decision vector is removed too.
+ * DECISIONS_VECTORIZE is keyed by session id and its metadata carries the
+ * session title, so without this a deleted session leaves a permanently
+ * retrievable record of itself in a cross-tenant index (audit #12). Only the
+ * GDPR user-erasure path did this before; the ordinary
+ * `DELETE /api/sessions/:id` did not.
+ *
+ * The vector delete runs first, while the id is still known, and is
+ * best-effort: losing it must not block the D1 deletion, which is the
+ * durable-record removal that actually matters legally.
  */
 export async function hardDeleteSession(
   db: D1Database,
   sessionId: string,
   ownerId: string,
+  vectorize?: VectorizeIndex,
 ): Promise<{ deleted: boolean }> {
+  if (vectorize) {
+    try {
+      await vectorize.deleteByIds([sessionId])
+    } catch {
+      /* best-effort — the D1 delete below is the legal floor */
+    }
+  }
+
   const statements = [
     `DELETE FROM votes WHERE session_id = ?1`,
     `DELETE FROM team_quiz_responses WHERE energizer_id IN (SELECT id FROM energizers WHERE session_id = ?1)`,
@@ -33,4 +53,50 @@ export async function hardDeleteSession(
   const last = results[results.length - 1]
   const changes = last?.meta?.changes ?? 0
   return { deleted: changes > 0 }
+}
+
+/**
+ * Remove every decision vector belonging to a team's sessions.
+ *
+ * Called when a team is deleted (audit #12). These embeddings exist only to
+ * power team-scoped cross-session intelligence — the feature being torn down —
+ * and would otherwise survive in a cross-tenant index tagged with a team_id
+ * that resolves to nothing. The sessions and their D1 rows are deliberately
+ * left intact; only the derived embeddings go, and an insights run regenerates
+ * them.
+ *
+ * Lives here rather than in the route because D1 access belongs outside
+ * functions/api/routes (ADR-0069, enforced by scripts/check-d1-access.mjs).
+ *
+ * Best-effort: returns the number of vectors deleted, and 0 on any failure —
+ * a purge problem must never block the team deletion itself.
+ */
+export async function deleteTeamSessionVectors(
+  db: D1Database,
+  vectorize: VectorizeIndex | undefined,
+  teamId: string,
+): Promise<number> {
+  if (!vectorize) return 0
+  try {
+    // Keyset-paged (DD-14): a team can own any number of sessions, so read
+    // and purge one page at a time instead of loading every id at once.
+    const PAGE = 100
+    let deleted = 0
+    let after = ''
+    for (;;) {
+      const { results } = await db
+        .prepare(`SELECT id FROM sessions WHERE team_id = ?1 AND id > ?2 ORDER BY id LIMIT ${PAGE}`)
+        .bind(teamId, after)
+        .all<{ id: string }>()
+      const ids = (results ?? []).map((r) => r.id)
+      if (ids.length === 0) break
+      await vectorize.deleteByIds(ids)
+      deleted += ids.length
+      if (ids.length < PAGE) break
+      after = ids[ids.length - 1]
+    }
+    return deleted
+  } catch {
+    return 0
+  }
 }
