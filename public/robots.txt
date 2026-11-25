@@ -70,5 +70,7 @@ Disallow: /sessions/*/present
 Disallow: /sessions/*/results
 Allow: /
 
+# Prefer the index; children remain reachable for older crawlers.
+Sitemap: https://qesto.cc/sitemap-index.xml
 Sitemap: https://qesto.cc/sitemap.xml
 Sitemap: https://qesto.cc/sitemap-templates.xml
