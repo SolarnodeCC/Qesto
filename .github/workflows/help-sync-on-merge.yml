@@ -20,6 +20,10 @@ jobs:
   help-sync:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # CLOUDFLARE_API_TOKEN is on the production environment (the deploy job
+    # reads it there). A repo-level lookup is empty, so --require-remote
+    # fails in seconds without this. The environment allows main only.
+    environment: production
     # The secrets context is not allowed in step `if:` expressions — map the
     # webhook into job env so the Slack step can gate on `env.*` instead.
     env:

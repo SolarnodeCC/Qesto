@@ -2,13 +2,27 @@
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
-const baseUrl = process.argv[2] ?? process.env.APP_URL
-
-if (!baseUrl) {
-  console.error('Usage: npm run verify:deploy -- <base-url>')
-  console.error('Example: npm run verify:deploy -- https://qesto2-github.oostelaar.workers.dev')
-  process.exit(1)
+/**
+ * Pages deploy does not apply wrangler.toml (that file is the Worker config;
+ * adopting it as the Pages source of truth would replace dashboard bindings).
+ * Required probes such as INSIGHTS_QUEUE can therefore be absent until an
+ * operator binds them on the Pages project. Same contract as
+ * scripts/smoke-platform.mjs: warn by default, fail only when
+ * SMOKE_REQUIRE_BINDINGS=1, so an unbound queue does not block every release.
+ *
+ * @param {unknown} missingRequired
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {{ action: 'ok' | 'warn' | 'fail', missing: string[] }}
+ */
+export function bindingProbeDecision(missingRequired, env = process.env) {
+  const missing = Array.isArray(missingRequired)
+    ? missingRequired.filter((name) => typeof name === 'string' && name.length > 0)
+    : []
+  if (missing.length === 0) return { action: 'ok', missing }
+  if (env.SMOKE_REQUIRE_BINDINGS === '1') return { action: 'fail', missing }
+  return { action: 'warn', missing }
 }
 
 function localCommit() {
@@ -36,9 +50,9 @@ function parseDistAssets() {
   }
 }
 
-async function checkAssetMime(url, expectedType, label) {
+async function checkAssetMime(url, expectedType, label, headers) {
   try {
-    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: cfAccessHeaders })
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers })
     const ct = res.headers.get('content-type') ?? ''
     const ok = ct.includes(expectedType)
     const status = ok ? '✓' : '✗'
@@ -56,6 +70,15 @@ async function checkAssetMime(url, expectedType, label) {
     console.error(`✗ ${label} MIME check failed: ${err.message}`)
     return false
   }
+}
+
+async function main() {
+const baseUrl = process.argv[2] ?? process.env.APP_URL
+
+if (!baseUrl) {
+  console.error('Usage: npm run verify:deploy -- <base-url>')
+  console.error('Example: npm run verify:deploy -- https://qesto2-github.oostelaar.workers.dev')
+  process.exit(1)
 }
 
 const local = localCommit()
@@ -145,9 +168,12 @@ try {
   if (healthRes.ok) {
     const health = await healthRes.json()
     const bindings = health?.data?.bindings
-    if (bindings?.missingRequired?.length) {
-      console.error(`✗ Required bindings missing: ${bindings.missingRequired.join(', ')}`)
+    const decision = bindingProbeDecision(bindings?.missingRequired)
+    if (decision.action === 'fail') {
+      console.error(`✗ Required bindings missing: ${decision.missing.join(', ')}`)
       exitCode = exitCode || 5
+    } else if (decision.action === 'warn') {
+      console.warn(`⚠ Required bindings missing: ${decision.missing.join(', ')} (set SMOKE_REQUIRE_BINDINGS=1 to fail on this)`)
     } else if (bindings?.probes) {
       console.log('Bindings     : OK (required probes present)')
     }
@@ -168,13 +194,13 @@ const assets = parseDistAssets()
 const mimeChecks = []
 
 if (assets.js) {
-  mimeChecks.push(checkAssetMime(`${origin}${assets.js}`, 'javascript', 'JS entry'))
+  mimeChecks.push(checkAssetMime(`${origin}${assets.js}`, 'javascript', 'JS entry', cfAccessHeaders))
 } else {
   console.warn('  Could not find JS entry in dist/index.html — skipping JS MIME check')
 }
 
 if (assets.css) {
-  mimeChecks.push(checkAssetMime(`${origin}${assets.css}`, 'text/css', 'CSS'))
+  mimeChecks.push(checkAssetMime(`${origin}${assets.css}`, 'text/css', 'CSS', cfAccessHeaders))
 } else {
   console.warn('  Could not find CSS asset in dist/index.html — skipping CSS MIME check')
 }
@@ -191,3 +217,9 @@ if (!mimeOk) {
 }
 
 process.exit(exitCode)
+}
+
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (invokedDirectly) {
+  await main()
+}
