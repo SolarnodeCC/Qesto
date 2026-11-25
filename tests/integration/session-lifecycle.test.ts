@@ -368,12 +368,15 @@ describe('POST /api/sessions/:id/start', () => {
     seedPollQuestion(db, sessionId)
 
     const start = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       startEnv,
     )
     expect(start.status).toBe(200)
 
-    const send = vi.fn(async () => undefined)
+    // Hold the queue send open so we can see whether anything keeps the Worker
+    // alive for it after the response is returned.
+    let releaseSend: () => void = () => undefined
+    const send = vi.fn(() => new Promise<void>((resolve) => { releaseSend = resolve }))
     const waitUntilPromises: Promise<unknown>[] = []
     const waitUntil = vi.fn((p: Promise<unknown>) => {
       waitUntilPromises.push(p)
@@ -384,15 +387,29 @@ describe('POST /api/sessions/:id/start', () => {
     closeEnv.INSIGHTS_QUEUE = { send } as unknown as Queue
 
     const close = await app.fetch(
-      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { cookie } }),
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { 'x-qesto-client': 'web', cookie } }),
       closeEnv,
       { waitUntil } as unknown as ExecutionContext,
     )
 
     expect(close.status).toBe(200)
     expect(send).toHaveBeenCalledOnce()
-    expect(waitUntil).toHaveBeenCalledOnce()
+    expect(waitUntil).toHaveBeenCalled()
+
+    // Other post-response work (analytics) may also register via waitUntil, so
+    // assert on behaviour: some registered promise must still be pending while
+    // the queue send is in flight, and settle once it completes.
+    const settled = waitUntilPromises.map((p) => {
+      const state = { done: false }
+      void p.then(() => { state.done = true }, () => { state.done = true })
+      return state
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    expect(settled.some((st) => !st.done)).toBe(true)
+
+    releaseSend()
     await Promise.all(waitUntilPromises)
+    expect(settled.every((st) => st.done)).toBe(true)
   })
 
   it('no questions → 409 no_question', async () => {

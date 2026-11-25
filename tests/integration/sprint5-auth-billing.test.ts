@@ -53,6 +53,8 @@ describe('Sprint 5 auth/billing routes', () => {
       created_at: Date.now(),
       last_login_at: null,
       plan: 'starter',
+      // Checkout sits behind requireVerifiedEmail; verify so the Stripe gate is what answers.
+      email_verified_at: 1,
     })
     const cookie = await cookieFor('u0', 'u0@example.com')
     const fetchSpy = vi.fn(() => {
@@ -76,7 +78,7 @@ describe('Sprint 5 auth/billing routes', () => {
     ] as const
 
     for (const route of routes) {
-      const headers: Record<string, string> = { cookie }
+      const headers: Record<string, string> = { cookie, 'x-qesto-client': 'web' }
       const init: RequestInit = { method: route.method, headers }
       if ('body' in route) {
         headers['content-type'] = 'application/json'

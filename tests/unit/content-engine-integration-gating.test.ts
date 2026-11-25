@@ -1,3 +1,9 @@
+/**
+ * Requirement: SPEC_INTEGRATIONS content pipeline — the cron Content Engine
+ * (functions/api/lib/marketing/content-engine.ts) only generates drafts for due
+ * `content_calendar` slots and leaves slots for disabled platforms planned.
+ * Audit context: knowledge-base/quality/audits/TECHNICAL_AUDIT_2026-09-15.md.
+ */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SqliteD1 } from '../helpers/d1-sqlite'
 import { KVMock } from '../helpers/kv-mock'
