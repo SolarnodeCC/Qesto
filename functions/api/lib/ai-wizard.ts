@@ -8,12 +8,14 @@
 // heuristics such as "model returned valid JSON on first try" and "all
 // questions validate".
 
+import { withTimeout } from './shared/async'
 import { z } from 'zod'
 import type { Env } from '../types'
 import { runAI, envWithAI } from './ai/ai-gateway'
 import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './domain-schemas'
 import { ulid } from './ulid'
 import { logEvent } from './log'
+import { AI_MODELS } from './ai/models'
 
 export type GenerateInput = {
   sessionTitle: string
@@ -212,8 +214,12 @@ const TARGET_QUESTION_COUNT = 8
 const RETRY_DELAYS_MS = [150, 300]
 // Exported so transparency/consent metadata reports the models that actually
 // run, instead of a hardcoded string that can drift.
-export const FAST_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
-export const QUALITY_FALLBACK_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+export const FAST_MODEL = AI_MODELS.LLAMA_8B
+export const QUALITY_FALLBACK_MODEL = AI_MODELS.LLAMA_70B
+/** Per-call ceiling for a single wizard inference attempt. */
+const WIZARD_CALL_TIMEOUT_MS = 20_000
+/** Max gap between stream chunks before the stream is treated as stalled. */
+const WIZARD_STREAM_IDLE_TIMEOUT_MS = 15_000
 const PARALLEL_BATCH_FOCI = [
   'alignment, priorities, and decisions',
   'risks, concerns, trade-offs, and next steps',
@@ -236,11 +242,15 @@ async function invokeAI(
     }
     const t0 = Date.now()
     try {
-      const res = (await runAI(envWithAI(ai), model, {
-        messages,
-        max_tokens: MAX_TOKENS,
-        stream: false,
-      })) as { response?: string } | string
+      const res = (await withTimeout(
+        runAI(envWithAI(ai), model, {
+          messages,
+          max_tokens: MAX_TOKENS,
+          stream: false,
+        }),
+        WIZARD_CALL_TIMEOUT_MS,
+        'ai.wizard.invoke',
+      )) as { response?: string } | string
       const latencyMs = Date.now() - t0
       const raw =
         typeof res === 'string'
@@ -305,11 +315,23 @@ async function invokeAIStream(
   onDelta: (rawSoFar: string) => void | Promise<void>,
 ): Promise<string> {
   const t0 = Date.now()
-  const res = (await ai.run(model, {
-    messages,
-    max_tokens: MAX_TOKENS,
-    stream: true,
-  })) as unknown as ReadableStream<Uint8Array> | { response?: string } | string
+  let res: ReadableStream<Uint8Array> | { response?: string } | string
+  try {
+    res = (await withTimeout(
+      ai.run(model, {
+        messages,
+        max_tokens: MAX_TOKENS,
+        stream: true,
+      }) as unknown as Promise<ReadableStream<Uint8Array> | { response?: string } | string>,
+      WIZARD_CALL_TIMEOUT_MS,
+      'ai.wizard.stream_open',
+    ))
+  } catch (err) {
+    // Surface as a Wizard* error so the route's non-streaming fallback engages
+    // instead of rethrowing a raw platform error to the SSE client.
+    logEvent({ event: 'ai.wizard.stream_open_error', model, latencyMs: Date.now() - t0, error: err instanceof Error ? err.message : String(err) })
+    throw new WizardAIError('AI stream could not be opened')
+  }
 
   // Defensive fallback: some environments/mocks ignore stream:true and return a
   // plain envelope. Treat it as a single, already-complete delta.
@@ -332,7 +354,16 @@ async function invokeAIStream(
   let sseBuffer = ''
   let raw = ''
   for (;;) {
-    const { value, done } = await reader.read()
+    let chunk: ReadableStreamReadResult<Uint8Array>
+    try {
+      // A stalled stream used to hang the SSE response (and the user's spinner).
+      chunk = await withTimeout(reader.read(), WIZARD_STREAM_IDLE_TIMEOUT_MS, 'ai.wizard.stream_read')
+    } catch (err) {
+      void reader.cancel().catch(() => undefined)
+      logEvent({ event: 'ai.wizard.stream_stalled', model, latencyMs: Date.now() - t0, outputChars: raw.length, error: err instanceof Error ? err.message : String(err) })
+      throw new WizardAIError('AI stream stalled')
+    }
+    const { value, done } = chunk
     if (done) break
     sseBuffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n')
     let boundary = sseBuffer.indexOf('\n\n')

@@ -7,6 +7,8 @@
 import { describe, expect, it } from 'vitest'
 import { __internal, type InsightsInput } from '../../functions/api/lib/ai-insights'
 import injectionFixture from './fixtures/prompt-injection.json'
+import { buildUserPrompt as buildInsightsUserPrompt, INSIGHTS_USER_PROMPT_BUDGET } from '../../functions/api/lib/ai-insights'
+import { PROMPT_MAX_LEN } from '../../functions/api/lib/ai/prompt-sanitize'
 
 const {
   THEME_SYSTEM_PROMPT,
@@ -98,5 +100,26 @@ describe('eval: insights prompt construction', () => {
     expect(buildUserPrompt({ ...base, anonymity: 'partial' })).toContain(ANONYMITY_PROMPT_RULE)
     expect(buildUserPrompt({ ...base })).toContain(ANONYMITY_PROMPT_RULE)
     expect(buildUserPrompt({ ...base, anonymity: 'none' })).not.toContain(ANONYMITY_PROMPT_RULE)
+  })
+})
+
+// 2026-11 hardening (REV-10 evidence): the gateway sanitiser cuts every
+// message at PROMPT_MAX_LEN. A large session used to overflow it and lose the
+// untrusted-data close marker + the final instruction. The builder now budgets.
+
+describe('eval: insights prompt budget', () => {
+  it('keeps the fence close and final instruction with 100 long responses + KB context', () => {
+    const prompt = buildInsightsUserPrompt({
+      sessionTitle: 'Big all-hands',
+      openResponses: Array.from({ length: 100 }, (_, i) => `Response ${i} ` + 'x'.repeat(480)),
+      kbContext: '## Knowledge Base Context\n' + 'k'.repeat(5000),
+      similarSessionTitles: ['Q1 all-hands', 'Q2 all-hands'],
+      anonymity: 'full',
+    })
+    expect(prompt.length).toBeLessThanOrEqual(INSIGHTS_USER_PROMPT_BUDGET)
+    expect(prompt.length).toBeLessThan(PROMPT_MAX_LEN)
+    expect(prompt.trimEnd().endsWith('Return the themes JSON now.')).toBe(true)
+    // At least a meaningful sample of responses survives.
+    expect((prompt.match(/^\d+\. Response/gm) ?? []).length).toBeGreaterThanOrEqual(8)
   })
 })

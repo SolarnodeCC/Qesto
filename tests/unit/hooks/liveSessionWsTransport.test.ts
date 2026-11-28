@@ -7,6 +7,8 @@ import {
   buildLiveSessionSubprotocols,
   wsReconnectDelayMs,
   WS_MAX_RECONNECT_ATTEMPTS,
+  WS_STABLE_RESET_MS,
+  WS_PING_INTERVAL_MS,
   type ReconnectingWsStatus,
 } from '../../../src/hooks/liveSessionWsTransport'
 
@@ -33,7 +35,8 @@ class FakeWebSocket {
     this.listeners.set(type, arr)
   }
 
-  send(_data: string) {}
+  sent: string[] = []
+  send(data: string) { this.sent.push(data) }
 
   close(code?: number, reason?: string) {
     this.closedWith = { code, reason }
@@ -164,5 +167,33 @@ describe('liveSessionWsTransport', () => {
     })
     FakeWebSocket.instances[0].emit('open', {})
     expect(order).toEqual(['connecting', 'onOpen', 'open'])
+  })
+
+  it('resets the reconnect budget after a stable connection (long sessions survive >5 drops)', () => {
+    const statuses: ReconnectingWsStatus[] = []
+    const h = createReconnectingWs({ url: 'wss://x', subprotocols: [], onMessage: () => {}, onStatus: (st) => statuses.push(st) })
+    for (let i = 0; i < WS_MAX_RECONNECT_ATTEMPTS + 2; i++) {
+      const sock = FakeWebSocket.instances.at(-1)!
+      sock.readyState = 1
+      sock.emit('open', {})
+      vi.advanceTimersByTime(WS_STABLE_RESET_MS + 1)
+      sock.emit('close', { code: 1006 })
+      vi.advanceTimersByTime(20_000)
+    }
+    expect(statuses.some((st) => st.kind === 'failed')).toBe(false)
+    h.close()
+  })
+
+  it('sends an app-level ping while open and ignores pong frames', () => {
+    const messages: unknown[] = []
+    const h = createReconnectingWs({ url: 'wss://x', subprotocols: [], onMessage: (ev) => messages.push(ev), onStatus: () => {} })
+    const sock = FakeWebSocket.instances.at(-1)!
+    sock.readyState = 1
+    sock.emit('open', {})
+    vi.advanceTimersByTime(WS_PING_INTERVAL_MS + 1)
+    expect(sock.sent).toContain('ping')
+    sock.emit('message', { data: 'pong' })
+    expect(messages).toHaveLength(0)
+    h.close()
   })
 })

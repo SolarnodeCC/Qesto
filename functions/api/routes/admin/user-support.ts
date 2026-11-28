@@ -307,6 +307,8 @@ export function mountUserSupportRoutes(
         TEAMS_KV: c.env.TEAMS_KV,
         SESSIONS_KV: c.env.SESSIONS_KV,
         DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE,
+        SESSION_ROOM: c.env.SESSION_ROOM,
+        R2_SESSIONS: c.env.R2_SESSIONS,
       },
       userId,
     )

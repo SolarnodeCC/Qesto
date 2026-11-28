@@ -17,7 +17,7 @@ import type { KbSource } from '../../types/knowledge-base'
 import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
-import { safeLogContext , logEvent} from '../../lib/log'
+import { safeLogContext, logEvent } from '../../lib/log'
 import { fetchSessionAIGovernanceForOwner } from '../../lib/session-repository'
 import { checkInsightsAllowed } from '../../lib/insights-guards'
 import { featureAllowed } from '../../lib/entitlements'
@@ -54,19 +54,6 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         })
       }
 
-      // ADR-0074: monthly ceiling while the free-access window is open; no-op
-      // outside it. Consumed before the AI call, after the burst limiter.
-      const promoQuota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
-      if (!promoQuota.allowed) {
-        return fail(
-          c,
-          'limit_exceeded',
-          `Free-access AI limit reached (${promoQuota.limit} insight runs this month). Resets on the 1st.`,
-          429,
-          { limit: promoQuota.limit, used: promoQuota.used },
-        )
-      }
-
       const sessionResult = await fetchSessionAIGovernanceForOwner(c.env.DB, sessionId, user.sub)
 
       if (!sessionResult) {
@@ -77,6 +64,20 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
       const guard = checkInsightsAllowed(sessionResult)
       if (!guard.allowed) {
         return fail(c, guard.code, guard.message, 403)
+      }
+
+      // ADR-0074: monthly ceiling while the free-access window is open; no-op
+      // outside it. Consumed after the ownership + governance checks so a rejected
+      // request never costs the user one of their monthly runs.
+      const promoQuota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
+      if (!promoQuota.allowed) {
+        return fail(
+          c,
+          'limit_exceeded',
+          `Free-access AI limit reached (${promoQuota.limit} insight runs this month). Resets on the 1st.`,
+          429,
+          { limit: promoQuota.limit, used: promoQuota.used },
+        )
       }
 
       // REV-27: similar sessions are user-visible only for team sessions on a
@@ -184,7 +185,8 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
           )
         }
         if (err instanceof InsightsAIError) {
-          return fail(c, 'ai_failed', err.message, 500)
+          safeLogContext(err, { traceId: trace_id ?? 'unknown', route: 'insights.analyze', errorClass: 'InsightsAIError', statusCode: 502 })
+          return fail(c, 'ai_failed', 'AI insights are temporarily unavailable. Please try again.', 502)
         }
         throw err
       }

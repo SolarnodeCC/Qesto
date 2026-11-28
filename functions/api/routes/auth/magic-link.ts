@@ -1,3 +1,4 @@
+import { background } from '../../lib/background'
 import { errorResponse } from '../../lib/error-handler'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../../lib/email'
@@ -97,13 +98,13 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] magic-link/email', errorClass: err instanceof Error ? err.name : 'UnknownError' })
       }
 
-      void recordAuthAuditEvent(c.env.DB, {
+      background(c, recordAuthAuditEvent(c.env.DB, {
         action: 'auth.magic_link_requested',
         actor_ip: ip ?? null,
         trace_id: c.get('trace_id'),
         subject_id: email,
         outcome: 'success',
-      })
+      }), 'auth.audit')
       return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)
     } catch (err) {
       return authJsonInternalError(c, err, '[auth] magic-link request')
@@ -188,14 +189,14 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
 
       const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
-      void recordAuthAuditEvent(c.env.DB, {
+      background(c, recordAuthAuditEvent(c.env.DB, {
         action: 'auth.magic_link_consumed',
         actor_id: userId,
         actor_ip: c.req.header('cf-connecting-ip') ?? null,
         trace_id: c.get('trace_id'),
         subject_id: userId,
         outcome: 'success',
-      })
+      }), 'auth.audit')
       return c.redirect(`${c.env.PAGES_URL}${safeRedirect}`, 302)
     } catch (err) {
       return authRedirectLoginServerError(c, err, '[auth] magic-link callback')

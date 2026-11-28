@@ -22,6 +22,7 @@
 // The Workers AI embedding step (via runAI) is the only non-pure step; the
 // prompt-free embedding + query is kept here and validation is pure/testable.
 
+import { logBestEffort } from './log'
 import { z } from 'zod'
 import type { Env } from '../types'
 import { runAI } from './ai/ai-gateway'
@@ -150,7 +151,9 @@ export async function suggestNextQuestions(
       'Studio suggest embedding',
     )
     vector = firstVector(embedResult)
-  } catch {
+  } catch (err) {
+    // Degrades to "no suggestions"; log so an embedding outage is visible.
+    logBestEffort(err, { traceId: 'studio-suggest', route: 'studio.suggest', operation: 'ai.embed', reason: 'suggest_embedding_failed' })
     return empty
   }
   if (!vector) return empty // dim mismatch / bad envelope → safe empty
@@ -168,7 +171,9 @@ export async function suggestNextQuestions(
       'Studio suggest similarity query',
     )
     matches = queryResult.matches ?? []
-  } catch {
+  } catch (err) {
+    // Degrades to "no suggestions"; log so a Vectorize outage is visible.
+    logBestEffort(err, { traceId: 'studio-suggest', route: 'studio.suggest', operation: 'vectorize.query', reason: 'suggest_query_failed' })
     return empty
   }
 

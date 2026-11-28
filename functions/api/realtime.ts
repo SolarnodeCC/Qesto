@@ -308,6 +308,8 @@ export type ServerMessage =
         energizer: LiveEnergizerState | null
         /** Unix ms when the current question auto-advances (fun mode only). */
         expiresAt: number | null
+        /** True while the presenter has paused voting (restored on reconnect). */
+        paused?: boolean
         /** Aggregate mood for open questions (presenter only, AI-SENTIMENT-01). */
         sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
         /**
@@ -322,7 +324,8 @@ export type ServerMessage =
   | {
       v?: LiveProtocolVersion
       type: 'question'
-      data: { question: LiveQuestion; index: number; total: number }
+      /** `expiresAt`: fun-mode per-question deadline (epoch ms). */
+      data: { question: LiveQuestion; index: number; total: number; expiresAt?: number }
       timestamp: number
     }
   | {

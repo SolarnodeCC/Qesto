@@ -17,6 +17,8 @@ import { recordAuditEvent } from '../lib/audit'
 import { writeEvent } from '../lib/observability'
 import { logEvent } from '../lib/log'
 import { runAI } from '../lib/ai/ai-gateway'
+import { enforceAiBudget } from '../lib/ai/ai-budget'
+import { withTimeout } from '../lib/shared/async'
 import {
   buildAuthoringPrompt,
   parseAuthoringResult,
@@ -113,15 +115,23 @@ export function mountStudioRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: 'invalid_topic', message }, trace_id }, 400)
     }
 
+    // Metering: this runs the 70B model and was previously unlimited.
+    const overBudget = await enforceAiBudget(c, c.get('user').sub, 'studio_generate')
+    if (overBudget) return overBudget
+
     // The single non-pure step: Workers AI inference (no egress).
     let raw: string
     const t0 = Date.now()
     try {
-      const res = await runAI(c.env, STUDIO_MODEL, {
-        messages: built.messages,
-        max_tokens: 800,
-        stream: false,
-      })
+      const res = await withTimeout(
+        runAI(c.env, STUDIO_MODEL, {
+          messages: built.messages,
+          max_tokens: 800,
+          stream: false,
+        }),
+        25_000,
+        'studio.authoring.generate',
+      )
       raw = readAIResponse(res)
       logEvent({
         event: 'studio.authoring.ai_ok',

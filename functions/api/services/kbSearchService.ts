@@ -22,12 +22,13 @@ import type { KbQueryFilter, KbVectorMatch, KbVectorRepository } from '../reposi
 import { firstEmbeddingVector } from '../lib/embedding'
 import { runAI, envWithAI } from '../lib/ai/ai-gateway'
 import { safeLogContext } from '../lib/log'
+import { AI_MODELS } from '../lib/ai/models'
 
 // ─── Tunable constants ────────────────────────────────────────────────────
 // The re-ranking weights are deliberately exposed: tuning is expected once
 // we have evaluation telemetry. Keep them in `[0, 1]` and summing to ~1.
 
-export const KB_EMBED_MODEL = '@cf/baai/bge-m3' as const
+export const KB_EMBED_MODEL = AI_MODELS.BGE_M3
 export const KB_EMBED_DIM = 1024
 export const KB_EMBED_TIMEOUT_MS = 3_000
 export const KB_DEFAULT_LIMIT = 5

@@ -59,6 +59,7 @@ import { mountTenantNamespaceRoutes } from './routes/tenant-namespace'
 import { mountForensicsRoutes } from './routes/forensics'
 import { mountBreachRoutes } from './routes/breach'
 import { mountReportContentRoutes } from './routes/report-content'
+import { mountClientErrorRoutes } from './routes/client-errors'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -234,10 +235,21 @@ export function createApp() {
     }),
   )
 
+  // Browser crash telemetry — public, so bound it per IP.
+  app.use(
+    '/api/client-errors',
+    rateLimit<Vars>({
+      sustained: { max: 30, windowSeconds: 600, prefix: 'mw-client-errors' },
+      profileLabel: 'client_errors',
+    }),
+  )
+
   // Stripe webhook — public endpoint with signature verification (no user auth)
   mountStripeWebhookRoutes(app)
   // DSA Art. 16 — public illegal content notice & action mechanism (no auth required)
   mountReportContentRoutes(app)
+  // Public browser crash telemetry (rate-limited above; no auth by design).
+  mountClientErrorRoutes(app)
   mountPublicEventAgendaRoutes(app)
   mountPublicEventSuiteRoutes(app)
 

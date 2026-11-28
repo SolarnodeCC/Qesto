@@ -1,5 +1,6 @@
 // DD-04 (#877) — TOTP enrolment, second-factor login, and step-up.
 // Logic lives in lib/mfa.ts; these handlers only wire it to HTTP.
+import { background } from '../../lib/background'
 import { z } from 'zod'
 import type { Context } from 'hono'
 import { authMiddleware } from '../../middleware/auth'
@@ -58,7 +59,7 @@ async function issueMfaSession(c: C, user: { sub: string; email: string }): Prom
 }
 
 function audit(c: C, action: 'auth.mfa_enabled' | 'auth.mfa_disabled' | 'auth.mfa_verified' | 'auth.mfa_failed', userId: string, detail?: string) {
-  void recordAuthAuditEvent(c.env.DB, {
+  background(c, recordAuthAuditEvent(c.env.DB, {
     action,
     actor_id: userId,
     actor_ip: c.req.header('cf-connecting-ip') ?? null,
@@ -66,7 +67,7 @@ function audit(c: C, action: 'auth.mfa_enabled' | 'auth.mfa_disabled' | 'auth.mf
     subject_id: userId,
     outcome: action === 'auth.mfa_failed' ? 'failure' : 'success',
     ...(detail ? { detail } : {}),
-  })
+  }), 'auth.audit')
 }
 
 export function registerMfaRoutes(app: AuthApp): void {

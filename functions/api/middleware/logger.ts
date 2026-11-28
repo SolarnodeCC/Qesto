@@ -10,7 +10,8 @@
 import type { MiddlewareHandler } from 'hono'
 import type { AuthClaims } from '../lib/jwt'
 import type { Env } from '../types'
-import { routeKey, writeLiveMetricBucket } from '../lib/metrics-kv'
+import { routeKey } from '../lib/metrics-kv'
+import { recordRequestMetric, takeMetricsSnapshot, flushMetricsSnapshot } from '../lib/metrics-rollup'
 
 type LoggerVariables = {
   trace_id: string
@@ -83,10 +84,17 @@ export const loggerMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: Log
     blobs: [line.trace_id, ...(user?.sub ? [user.sub] : [])],
   })
 
-  // METRICS_KV live bucket — async, deferred via waitUntil.
-  if (c.env.METRICS_KV) {
-    c.executionCtx.waitUntil(
-      writeLiveMetricBucket(c.env.METRICS_KV, duration_ms, status >= 500),
-    )
+  // Per-isolate accumulator → metrics_summary (SLO paging) + live KV bucket,
+  // flushed at most once a minute off the response path (lib/metrics-rollup.ts).
+  recordRequestMetric(routeKey(path), duration_ms, status >= 500)
+  const snapshot = takeMetricsSnapshot()
+  if (snapshot) {
+    const flush = flushMetricsSnapshot(c.env, snapshot)
+    try {
+      c.executionCtx.waitUntil(flush)
+    } catch {
+      // No execution context (unit tests): let it run detached; it never throws.
+      void flush
+    }
   }
 }

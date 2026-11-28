@@ -4,6 +4,7 @@
  * `content_calendar` slots and leaves slots for disabled platforms planned.
  * Audit context: knowledge-base/quality/audits/TECHNICAL_AUDIT_2026-09-15.md.
  */
+import { AI_MODELS } from '../../functions/api/lib/ai/models'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SqliteD1 } from '../helpers/d1-sqlite'
 import { KVMock } from '../helpers/kv-mock'
@@ -57,7 +58,7 @@ describe('runContentEngine integration policy gates', () => {
 
     expect(result).toEqual({ generated: 1, skipped: 1, failed: 0 })
     expect(runAIMock).toHaveBeenCalledTimes(1)
-    expect(runAIMock.mock.calls[0]?.[1]).toBe('@cf/meta/llama-3.1-8b-instruct')
+    expect(runAIMock.mock.calls[0]?.[1]).toBe(AI_MODELS.LLAMA_8B)
 
     const calendarRows = db.db
       .prepare('SELECT id, status FROM content_calendar ORDER BY id')

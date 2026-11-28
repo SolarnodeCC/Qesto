@@ -53,6 +53,7 @@ const EXEMPT = new RegExp(
     'help/register',
     'templates-marketing',
     'report-content',
+    'client-errors',
   ].join('|'),
 )
 

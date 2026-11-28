@@ -191,13 +191,20 @@ export async function dispatchAlert(
     ...(ctx.details ? { details: sanitizeDetails(ctx.details) } : {}),
   }
 
+  // Dedupe webhook + Sentry pages per fingerprint (GitHub has its own issue
+  // dedupe). Without this, a failing route paged on EVERY 5xx and the queue
+  // consumer paged on every retry — an outage became an alert flood.
+  const fresh = await claimAlertWindow(env, alertFingerprint(route, errorClass))
+
   const [webhook, sentry, github] = await Promise.all([
-    postAlertWebhook(env.ALERT_WEBHOOK_URL, payload),
-    postSentryEvent(env.SENTRY_DSN, result.message, {
-      traceId,
-      route,
-      reasons: result.reasons,
-    }),
+    fresh ? postAlertWebhook(env.ALERT_WEBHOOK_URL, payload) : Promise.resolve(false),
+    fresh
+      ? postSentryEvent(env.SENTRY_DSN, result.message, {
+          traceId,
+          route,
+          reasons: result.reasons,
+        })
+      : Promise.resolve(false),
     postGitHubAlert(env, {
       route,
       reason: errorClass,
@@ -207,6 +214,38 @@ export async function dispatchAlert(
     }),
   ])
   return { webhook, sentry, github }
+}
+
+/** Window in which identical (route, errorClass) pages are suppressed. */
+export const ALERT_DEDUP_WINDOW_SEC = 600
+const recentAlerts = new Map<string, number>()
+
+/**
+ * True when this fingerprint has not paged within the window (and claims it).
+ * In-isolate map first (cheap, no I/O), then KV when bound so other isolates
+ * dedupe too. Fails OPEN: a KV fault must never swallow a page.
+ */
+async function claimAlertWindow(env: AlertDispatchEnv, fingerprint: string): Promise<boolean> {
+  const now = Date.now()
+  const last = recentAlerts.get(fingerprint)
+  if (last !== undefined && now - last < ALERT_DEDUP_WINDOW_SEC * 1000) return false
+  recentAlerts.set(fingerprint, now)
+  if (recentAlerts.size > 500) recentAlerts.clear()
+  const kv = env.ACTIONS_KV ?? env.METRICS_KV
+  if (!kv) return true
+  const key = `alert:dedup:${fingerprint}`
+  try {
+    if (await kv.get(key)) return false
+    await kv.put(key, String(now), { expirationTtl: ALERT_DEDUP_WINDOW_SEC })
+  } catch {
+    return true
+  }
+  return true
+}
+
+/** Test helper. */
+export function __resetAlertDedup(): void {
+  recentAlerts.clear()
 }
 
 /**

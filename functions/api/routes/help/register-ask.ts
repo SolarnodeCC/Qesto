@@ -10,7 +10,8 @@ import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
 import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { verifyJwt } from '../../lib/jwt'
-import { safeLogContext , logEvent} from '../../lib/log'
+import { safeLogContext, logEvent } from '../../lib/log'
+import { resolveEffectivePlan } from '../../middleware/plan'
 import type { AuthVariables } from '../../middleware/auth'
 
 const AskSchema = z.object({
@@ -23,13 +24,16 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
 
     // Auth is optional — anonymous users get free-tier scope
     let userId: string | null = null
-    const userPlan: 'free' | 'starter' | 'team' = 'free'
+    let userPlan: 'free' | 'starter' | 'team' = 'free'
     const authHeader = c.req.header('authorization')
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7)
       const claims = await verifyJwt(token, c.env.JWT_SECRET)
       if (claims) userId = claims.sub
     }
+    // Paid users previously never got starter/team help docs: the plan was
+    // hardcoded to 'free'. Resolve it the same way planMiddleware does.
+    if (userId) userPlan = await resolveEffectivePlan(c.env, userId)
 
     // Parse and validate input
     let body: unknown
@@ -55,6 +59,16 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
     })
     if (!rl.allowed) {
       return errorResponse(c, 429, 'rate_limited', 'Too many questions; please wait before asking again')
+    }
+    // Daily ceiling: anonymous callers can otherwise drive unbounded AI spend at
+    // 10/min forever. Signed-in users get a higher allowance.
+    const daily = await rateLimit(c.env.ACTIONS_KV, rateLimitKey, {
+      max: userId ? 200 : 50,
+      windowSeconds: 86_400,
+      prefix: 'help-ask-day',
+    })
+    if (!daily.allowed) {
+      return errorResponse(c, 429, 'rate_limited', 'Daily help question limit reached; please try again tomorrow')
     }
 
     const userScope = userPlan

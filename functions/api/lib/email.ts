@@ -13,15 +13,27 @@ export type SendEmailArgs = {
   from?: string
 }
 
+function runtimeEnv(): string | undefined {
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+  return proc?.env?.ENV
+}
+
 export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs): Promise<{ delivered: boolean; id?: string }> {
   if (!apiKey) {
-    // Dev/local fallback when Resend is unset. Keep the magic-link URL so local
-    // sign-in works; redact recipient (PII). Cursor Cloud may still scrub the
-    // 64-hex token from terminal capture — use D1 seed + callback (AGENTS.md).
-    logEvent({
-      event: 'email.dev_fallback',
-      message: `[email:dev] to=[REDACTED] subject=${args.subject}\n${args.text}`,
-    })
+    // SECURITY: the body of a sign-in email IS the credential (the magic-link
+    // URL carries the single-use token). If RESEND_API_KEY were missing in
+    // production, the old fallback wrote every login link to the logs, where
+    // anyone with log access could take over accounts. The body is now kept
+    // ONLY when the runtime env is explicitly `dev`; any other or unknown env
+    // logs an error with no body (fail-safe if process.env is not populated).
+    if (runtimeEnv() === 'dev') {
+      logEvent({
+        event: 'email.dev_fallback',
+        message: `[email:dev] to=[REDACTED] subject=${args.subject}\n${args.text}`,
+      })
+    } else {
+      logEvent({ event: 'email.not_configured', subject: args.subject, detail: 'RESEND_API_KEY missing — email NOT sent' }, 'error')
+    }
     return { delivered: false }
   }
   const from = args.from?.trim() || 'Qesto <noreply@qesto.cc>'

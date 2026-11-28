@@ -2,6 +2,7 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
+import { getDeviceId } from '../lib/device-id'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -171,8 +172,12 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
   const tXr = useT('xr')
 
+  // Per-browser id so participants behind one shared IP stay distinct voters.
+  const deviceId = useMemo(() => getDeviceId(), [])
+
   const { state, sendVote, sendEnergizerAnswer, sendReactionSubmit, sendXrAvatarSync } = useLiveSession(sessionId, {
     enabled: true,
+    fingerprint: deviceId,
     onReactionDelta,
     onXrAvatarSync,
   })
@@ -236,6 +241,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   useEffect(() => {
     setMyVotes([])
   }, [state.question?.id])
+
+  // The server rejected the last vote (paused, closed, out of date…): roll back
+  // the optimistic "voted" state so the participant can vote again instead of
+  // being told they voted when nothing was counted.
+  // (Adjust-state-during-render pattern: no effect, no cascading render.)
+  const rejectionSeq = state.voteRejection?.seq ?? 0
+  const [seenRejectionSeq, setSeenRejectionSeq] = useState(rejectionSeq)
+  if (rejectionSeq !== seenRejectionSeq) {
+    setSeenRejectionSeq(rejectionSeq)
+    if (rejectionSeq > 0) setMyVotes((prev) => prev.slice(0, -1))
+  }
 
   function handleVote(optionId: string) {
     sendVote(optionId)

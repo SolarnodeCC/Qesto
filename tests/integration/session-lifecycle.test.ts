@@ -591,7 +591,8 @@ describe('POST /api/sessions/:id/start', () => {
 
     const res = await app.fetch(
       new Request('http://local/api/sessions/sess_live_team/ws', {
-        headers: { upgrade: 'websocket', 'x-qesto-client': 'web', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        // Browsers always send Origin on a WS handshake; cookie presenter auth requires it (P8).
+        headers: { upgrade: 'websocket', 'x-qesto-client': 'web', cookie, origin: 'http://local', 'cf-connecting-ip': '127.0.0.1' },
       }),
       env,
     )

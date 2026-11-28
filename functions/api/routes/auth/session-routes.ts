@@ -1,3 +1,4 @@
+import { background } from '../../lib/background'
 import { deleteCookie, getCookie } from 'hono/cookie'
 import { signJwt } from '../../lib/jwt'
 import { bumpSessionEpoch, hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
@@ -94,14 +95,14 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
         }
       }
     } catch { /* ignore decode errors */ }
-    void recordAuthAuditEvent(c.env.DB, {
+    background(c, recordAuthAuditEvent(c.env.DB, {
       action: 'auth.logout',
       actor_id: logoutUserId,
       actor_ip: c.req.header('cf-connecting-ip') ?? null,
       trace_id: c.get('trace_id'),
       subject_id: logoutUserId ?? 'anonymous',
       outcome: 'success',
-    })
+    }), 'auth.audit')
     // The clearing cookie must carry the SAME attributes the session cookie was
     // issued with (`setAuthSessionCookie`). A bare `Path=/; Max-Age=0` is a
     // first-party (SameSite=Lax) cookie, which the browser rejects outright on
@@ -152,14 +153,14 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
       JWT_TTL_SECONDS,
     )
     setAuthSessionCookie(c, jwt)
-    void recordAuthAuditEvent(c.env.DB, {
+    background(c, recordAuthAuditEvent(c.env.DB, {
       action: 'auth.sessions_revoked',
       actor_id: user.sub,
       actor_ip: c.req.header('cf-connecting-ip') ?? null,
       trace_id: c.get('trace_id'),
       subject_id: user.sub,
       outcome: 'success',
-    })
+    }), 'auth.audit')
     return c.json({ ok: true, data: { revoked: true, token: jwt }, trace_id: c.get('trace_id') })
   })
 

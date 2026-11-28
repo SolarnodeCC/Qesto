@@ -6,10 +6,11 @@
 import type { Env } from '../types'
 import { withTimeout } from './shared/async'
 import { embedVector, queryVectors } from './ai/embed-query'
+import { AI_MODELS } from './ai/models'
 
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
 
-export const DECISIONS_EMBED_MODEL = '@cf/baai/bge-m3' as const
+export const DECISIONS_EMBED_MODEL = AI_MODELS.BGE_M3
 export const DECISIONS_EMBED_DIM = 1024 // bge-m3 outputs 1024 dims — must match the qesto-decisions index
 export const DECISIONS_SIMILARITY_TOP_K = 3
 export const DECISIONS_SIMILARITY_MIN_SCORE = 0.75

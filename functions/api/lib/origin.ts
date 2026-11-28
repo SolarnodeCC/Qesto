@@ -30,3 +30,24 @@ export function isLocalDevHost(requestUrl: string): boolean {
   }
 }
 
+
+/**
+ * Same trust rule the CSRF middleware applies to credentialed browser requests:
+ * the configured frontend origin, this API's own origin (Pages previews call
+ * their co-located Functions), or loopback only when this API is itself local
+ * or in dev/staging. Used where CSRF middleware cannot run (WebSocket upgrade).
+ */
+export function isTrustedBrowserOrigin(
+  env: Pick<Env, 'PAGES_URL' | 'API_URL' | 'ENV'>,
+  requestUrl: string,
+  originHeader: string | null | undefined,
+): boolean {
+  const candidate = normaliseOrigin(originHeader)
+  if (!candidate) return false
+  const expected = resolveExpectedOrigin(env, requestUrl)
+  const selfOrigin = normaliseOrigin(requestUrl)
+  if (candidate === expected || candidate === selfOrigin) return true
+  const isLoopbackOrigin = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate)
+  const apiIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(selfOrigin ?? '')
+  return isLoopbackOrigin && (env.ENV === 'dev' || env.ENV === 'staging' || apiIsLocal)
+}

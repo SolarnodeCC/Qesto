@@ -1,31 +1,32 @@
-// DX-INSIGHTS-01/02 — AI-assisted insights for closed sessions.
+// DX-INSIGHTS-01/02 — AI-assisted insights for closed sessions (read side).
 //
 // GET /api/sessions/:id/insights
-//   • Authenticated (session owner only)
-//   • Plan-gated to `insightsAI` (Team plan in Qesto's v1 quota table; the
-//     feature-gate middleware enforces this)
-//   • Returns { themes, trend } where themes come from Workers AI (Mistral)
-//     and trend is a simple 7d / 30d new-session counter for the owner.
-//   • 5-minute KV cache keyed by (session, ai-model) so repeated calls are
-//     cheap and deterministic.
+//   • Authenticated (session owner only), plan-gated to `insightsAI`.
+//   • READ-ONLY: returns the payload produced by
+//     POST /api/sessions/:id/insights/analyze (routes/ai-insights/register-analyze.ts),
+//     plus a 7d / 30d closed-session trend for the owner.
+//   • Never runs Workers AI. A GET used to generate themes on a cache miss; the
+//     Dashboard fans this GET out over up to 20 sessions, which burned the user's
+//     AI rate limit and monthly free-access quota just by opening the dashboard.
+//
+// Response shape (stable, consumed by src/hooks/useInsights.ts and
+// src/components/insights/SimilarSessionsResultsPanel.tsx):
+//   { session_id, themes: string[], follow_ups, generated_at, model, trend,
+//     similar_sessions, cached: true }                       — analyzed
+//   { session_id, insights: null, themes: [], follow_ups: [], trend,
+//     similar_sessions: [], message }                          — not analyzed yet
+//
+// This route is mounted before routes/ai-insights and therefore shadows its GET.
 
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireFeature } from '../middleware/feature-gate'
-import {
-  INSIGHTS_MODEL,
-  InsightsAIError,
-  InsightsValidationError,
-  extractThemes,
-  type InsightTheme,
-} from '../lib/ai-insights'
 import { checkInsightsAllowed } from '../lib/insights-guards'
-import { errorResponse, sanitizeError } from '../lib/error-handler'
-import { readKvJson, writeKvJson } from '../lib/kv'
-import { atomicRateLimitDual } from '../lib/atomic-rate-limit'
-import { consumePromoAiRun } from '../lib/promo-ai-quota'
-import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
+import { errorResponse } from '../lib/error-handler'
+import { readKvJson } from '../lib/kv'
+import { logBestEffort } from '../lib/log'
+import { insightsCacheKey } from './ai-insights/constants'
 import type { Anonymity, Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -42,32 +43,19 @@ type SessionRow = {
   ai_consent_at: number | null
 }
 
-type VoteBreakdown = {
-  questionId: string
-  prompt: string
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
-  topLabels: string[]
+type SimilarSession = { title: string; score: number }
+
+/** The analyze payload as written to DECISIONS_KV, normalised defensively. */
+export type InsightsReadPayload = {
+  session_id: string
+  themes: string[]
+  follow_ups: string[]
+  generated_at: number
+  model: string
+  similar_sessions: SimilarSession[]
 }
 
-type CachedInsights = {
-  themes: InsightTheme[]
-  trend: { '7d': number; '30d': number }
-  cached_at: number
-}
-
-const CACHE_TTL_SECONDS = 300 // 5 min
-// Guard against tight loops that would drain AI quota across many sessions.
-const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'insights-ai' }
-
-function cacheKey(sessionId: string): string {
-  return `insights:${INSIGHTS_MODEL}:${sessionId}`
-}
-
-async function fetchOwnedSession(
-  db: D1Database,
-  id: string,
-  ownerId: string,
-): Promise<SessionRow | null> {
+async function fetchOwnedSession(db: D1Database, id: string, ownerId: string): Promise<SessionRow | null> {
   const row = await db
     .prepare(
       `SELECT id, owner_id, title, status, closed_at, created_at,
@@ -80,114 +68,47 @@ async function fetchOwnedSession(
   return row ?? null
 }
 
-// REV-27: the analyze route (routes/ai-insights/register-analyze.ts) caches a
-// payload in DECISIONS_KV that may carry team-filtered `similar_sessions`.
-// This GET route is mounted first and shadows the ai-insights GET, so we merge
-// that field here for the Results page panel. Best-effort — empty on any miss.
-async function readSimilarSessions(
-  kv: KVNamespace,
-  sessionId: string,
-): Promise<{ title: string; score: number }[]> {
-  try {
-    const cached = await readKvJson<{ similar_sessions?: unknown }>(kv, `insights:${sessionId}`)
-    const raw = cached?.similar_sessions
-    if (!Array.isArray(raw)) return []
-    return raw.filter(
-      (s): s is { title: string; score: number } =>
-        !!s && typeof s === 'object' &&
-        typeof (s as { title?: unknown }).title === 'string' &&
-        typeof (s as { score?: unknown }).score === 'number',
-    )
-  } catch {
-    return []
+function isSimilar(s: unknown): s is SimilarSession {
+  return (
+    !!s &&
+    typeof s === 'object' &&
+    typeof (s as { title?: unknown }).title === 'string' &&
+    typeof (s as { score?: unknown }).score === 'number'
+  )
+}
+
+/**
+ * Normalise a cached analyze payload. Themes may be plain strings (current
+ * analyze route) or `{ theme }` objects (older cache entries) — both become
+ * strings so the client never has to guess. Returns null when there is no
+ * usable payload.
+ */
+export function normaliseInsightsPayload(sessionId: string, raw: unknown): InsightsReadPayload | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  if (!Array.isArray(r.themes)) return null
+  const themes = r.themes
+    .map((t) => (typeof t === 'string' ? t : t && typeof t === 'object' ? (t as { theme?: unknown }).theme : null))
+    .filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
+  return {
+    session_id: sessionId,
+    themes,
+    follow_ups: Array.isArray(r.follow_ups) ? r.follow_ups.filter((f): f is string => typeof f === 'string') : [],
+    generated_at: typeof r.generated_at === 'number' ? r.generated_at : 0,
+    model: typeof r.model === 'string' ? r.model : '',
+    similar_sessions: Array.isArray(r.similar_sessions) ? r.similar_sessions.filter(isSimilar) : [],
   }
 }
 
-async function fetchOpenResponses(
-  db: D1Database,
-  _sessionId: string,
-): Promise<string[]> {
-  // v1 schema has no dedicated `responses` table; open-ended responses are
-  // captured in the SessionRoom DO and, once closed, persisted into the
-  // `votes` table with free-text `option_id` values for `kind='open'`
-  // questions. The query below returns any such values — if/when a proper
-  // responses table lands, swap this out without touching the handler.
-  const { results } = await db
-    .prepare(
-      `SELECT v.option_id AS text
-         FROM votes v
-         JOIN questions q ON q.id = v.question_id
-        WHERE v.session_id = ?1 AND q.kind = 'open'
-        ORDER BY v.submitted_at ASC
-        LIMIT 500`,
-    )
-    .bind(_sessionId)
-    .all<{ text: string }>()
-  return (results ?? []).map((r) => r.text).filter((s) => s && s.length > 0)
-}
-
-async function fetchPollBreakdown(
-  db: D1Database,
-  sessionId: string,
-): Promise<VoteBreakdown[]> {
-  const { results: qs } = await db
-    .prepare(
-      `SELECT id, prompt, kind, options_json
-         FROM questions
-        WHERE session_id = ?1
-        ORDER BY position ASC
-        LIMIT 20`,
-    )
-    .bind(sessionId)
-    .all<{ id: string; prompt: string; kind: VoteBreakdown['kind']; options_json: string }>()
-
-  const out: VoteBreakdown[] = []
-  for (const q of qs ?? []) {
-    if (q.kind !== 'poll' && q.kind !== 'ranking' && q.kind !== 'consent') continue
-    const { results: counts } = await db
-      .prepare(
-        `SELECT option_id, COUNT(*) AS n
-           FROM votes
-          WHERE question_id = ?1
-          GROUP BY option_id
-          ORDER BY n DESC
-          LIMIT 3`,
-      )
-      .bind(q.id)
-      .all<{ option_id: string; n: number }>()
-    const options = validateKvJson(q.options_json, PollOptionArraySchema) ?? []
-    const topLabels: string[] = []
-    for (const c of counts ?? []) {
-      const match = options.find((o) => o.id === c.option_id)
-      topLabels.push(match?.label ?? c.option_id)
-    }
-    out.push({ questionId: q.id, prompt: q.prompt, kind: q.kind, topLabels })
-  }
-  return out
-}
-
-async function fetchTrend(
-  db: D1Database,
-  ownerId: string,
-): Promise<{ '7d': number; '30d': number }> {
+async function fetchTrend(db: D1Database, ownerId: string): Promise<{ '7d': number; '30d': number }> {
   const now = Date.now()
   const d7 = now - 7 * 24 * 60 * 60 * 1000
   const d30 = now - 30 * 24 * 60 * 60 * 1000
+  const stmt = `SELECT COUNT(*) AS n FROM sessions
+                 WHERE owner_id = ?1 AND status IN ('closed','archived') AND closed_at >= ?2`
   const [row7, row30] = await Promise.all([
-    db
-      .prepare(
-        `SELECT COUNT(*) AS n FROM sessions
-          WHERE owner_id = ?1 AND status IN ('closed','archived') AND closed_at >= ?2`,
-      )
-      .bind(ownerId, d7)
-      .first<{ n: number }>(),
-    db
-      .prepare(
-        `SELECT COUNT(*) AS n FROM sessions
-          WHERE owner_id = ?1 AND status IN ('closed','archived') AND closed_at >= ?2`,
-      )
-      .bind(ownerId, d30)
-      .first<{ n: number }>(),
+    db.prepare(stmt).bind(ownerId, d7).first<{ n: number }>(),
+    db.prepare(stmt).bind(ownerId, d30).first<{ n: number }>(),
   ])
   return { '7d': row7?.n ?? 0, '30d': row30?.n ?? 0 }
 }
@@ -217,98 +138,40 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       return errorResponse(c, 403, guard.code, guard.message)
     }
 
-    // Cache check before rate limit — hits don't consume AI quota.
-    const cached = await readKvJson(c.env.SESSIONS_KV, cacheKey(id))
-    if (cached) {
-      const ci = validateData(cached, CachedInsightsSchema)
-      if (ci) {
-        return c.json({
-          ok: true,
-          data: {
-            themes: ci.themes,
-            trend: ci.trend,
-            similar_sessions: await readSimilarSessions(c.env.DECISIONS_KV, id),
-            cached: true,
-            cached_at: ci.cached_at,
-          },
-          trace_id: c.get('trace_id'),
-        })
-      }
-    }
-
-    // Rate limit only applies to fresh AI calls.
-    const rl = await atomicRateLimitDual(c.env, {
-      key: user.sub,
-      burst: 'ai_burst',
-      sustained: AI_RATE_LIMIT,
-      profileLabel: 'ai_insights',
-    })
-    if (!rl.allowed) {
-      return errorResponse(c, 429, 'rate_limited', 'Too many insights requests; try again later')
-    }
-
-    // ADR-0074: monthly ceiling while the free-access window is open. No-op
-    // outside it — `team` remains unlimited as sold. Consumed after the cache
-    // check above so a repeat read never costs the user a run.
-    const promoQuota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
-    if (!promoQuota.allowed) {
-      return errorResponse(
-        c,
-        429,
-        'limit_exceeded',
-        `Free-access AI limit reached (${promoQuota.limit} insight runs this month). Resets on the 1st.`,
-      )
-    }
-
-    const [openResponses, pollBreakdown, trend] = await Promise.all([
-      fetchOpenResponses(c.env.DB, id),
-      fetchPollBreakdown(c.env.DB, id),
-      fetchTrend(c.env.DB, user.sub),
-    ])
-
-    let themes: InsightTheme[] = []
+    let cached: unknown = null
     try {
-      const result = await extractThemes(
-        c.env.AI,
-        {
-          sessionTitle: session.title,
-          openResponses,
-          pollBreakdown: pollBreakdown.map((pb) => ({ prompt: pb.prompt, topLabels: pb.topLabels })),
-          anonymity: session.anonymity,
-        },
-        INSIGHTS_MODEL,
-      )
-      themes = result.themes
+      cached = c.env.DECISIONS_KV ? await readKvJson<unknown>(c.env.DECISIONS_KV, insightsCacheKey(id)) : null
     } catch (err) {
-      if (err instanceof InsightsValidationError) {
-        return errorResponse(c, 502, 'ai_output_invalid', 'AI returned an output that failed validation')
-      }
-      if (err instanceof InsightsAIError) {
-        const sanitized = sanitizeError(err, c.env.ENV, 500)
-        return errorResponse(c, 500, 'ai_failed', sanitized.message)
-      }
-      throw err
+      logBestEffort(err, {
+        traceId: c.get('trace_id') ?? 'unknown',
+        route: 'insights.get',
+        operation: 'kv.read',
+        errorClass: err instanceof Error ? err.name : 'KvReadError',
+        reason: 'insights_cache_read_failed',
+      })
     }
 
-    const payload: CachedInsights = { themes, trend, cached_at: Date.now() }
-    // Best-effort cache; don't fail the request if KV write fails.
-    try {
-      await writeKvJson(c.env.SESSIONS_KV, cacheKey(id), payload, {
-        expirationTtl: CACHE_TTL_SECONDS,
+    const trend = await fetchTrend(c.env.DB, user.sub)
+    const payload = normaliseInsightsPayload(id, cached)
+    if (!payload) {
+      return c.json({
+        ok: true,
+        data: {
+          session_id: id,
+          insights: null,
+          themes: [],
+          follow_ups: [],
+          trend,
+          similar_sessions: [],
+          message: 'No insights generated yet. Call POST /api/sessions/:id/insights/analyze first.',
+        },
+        trace_id: c.get('trace_id'),
       })
-    } catch {
-      // swallow — cache is an optimisation, not a correctness requirement
     }
 
     return c.json({
       ok: true,
-      data: {
-        themes,
-        trend,
-        similar_sessions: await readSimilarSessions(c.env.DECISIONS_KV, id),
-        cached: false,
-        cached_at: payload.cached_at,
-      },
+      data: { ...payload, trend, cached: true },
       trace_id: c.get('trace_id'),
     })
   })

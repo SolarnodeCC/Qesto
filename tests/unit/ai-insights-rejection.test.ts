@@ -193,24 +193,25 @@ describe('AI insights — rejection & retry paths', () => {
       ).rejects.toBeInstanceOf(InsightsValidationError)
     })
 
-    it('throws ValidationError when example exceeds max length', async () => {
+    it('truncates (does not reject) an example that exceeds max length', async () => {
       const longExample = 'a'.repeat(300) // exceeds max 200
+      const longLabel = 'L'.repeat(90) // exceeds max 60
       const ai = {
         run: vi.fn(async () => ({
           response: JSON.stringify({
             themes: [
-              { theme: 'Theme', count: 1, examples: [longExample] },
+              { theme: longLabel, count: 1, examples: [longExample] },
             ],
           }),
         })),
       } as unknown as Ai
 
-      await expect(
-        extractThemes(ai, {
-          sessionTitle: 'Retro',
-          openResponses: ['Issue 1'],
-        }),
-      ).rejects.toBeInstanceOf(InsightsValidationError)
+      const result = await extractThemes(ai, {
+        sessionTitle: 'Retro',
+        openResponses: ['Issue 1'],
+      })
+      expect(result.themes[0]!.theme.length).toBeLessThanOrEqual(60)
+      expect(result.themes[0]!.examples[0]!.length).toBeLessThanOrEqual(200)
     })
   })
 

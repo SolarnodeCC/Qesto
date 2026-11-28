@@ -19,16 +19,21 @@ const WEEK = 7 * DAY
 
 // Sourced from wrangler.toml [triggers].crons plus known automation workers.
 export const CRON_REGISTRY: CronJob[] = [
+  // Must mirror worker/scheduled-jobs.ts SCHEDULED_JOBS (each writes cron_runs
+  // via lib/scheduled-dispatch.ts) plus separately deployed automation workers.
   { key: 'kb-watchdog', label: 'KB vector retrieval watchdog', schedule: '0 2 * * *', intervalMs: DAY },
+  { key: 'ws-trends', label: 'Workspace trend rollup', schedule: '0 2 * * *', intervalMs: DAY },
+  { key: 'pulse-retention', label: 'Pulse retention (GDPR)', schedule: '0 2 * * *', intervalMs: DAY },
   // Cloudflare cron day-of-week is 1=Sunday … 7=Saturday (not the standard 0=Sunday).
-  { key: 'kb-weekly', label: 'KB weekly maintenance', schedule: '0 3 * * 1', intervalMs: WEEK },
-  { key: 'linkedin-automation', label: 'LinkedIn content automation', schedule: '0 8 * * *', intervalMs: DAY },
-  // Marketing automation (absorbs linkedin-automation going forward; left running during transition).
+  { key: 'kv-backup', label: 'KV backup to R2 (disaster recovery)', schedule: '0 3 * * 1', intervalMs: WEEK },
   { key: 'content-engine', label: 'Marketing content engine', schedule: '0 6 * * 3,5,7', intervalMs: 2.5 * DAY },
   // mention-monitor DISABLED — Reddit/YouTube not connected; cron removed from wrangler.toml.
-  // Keep entry commented in registry history via docs; do not re-add until OAuth is live.
   { key: 'oauth-token-refresh', label: 'Marketing OAuth token refresh', schedule: '0 4 * * *', intervalMs: DAY },
   { key: 'metrics-alert-sweep', label: 'Metrics alert sweep (operator paging)', schedule: '0 * * * *', intervalMs: 60 * 60 * 1000 },
+  { key: 'stale-session-sweep', label: 'Auto-close abandoned live sessions', schedule: '0 * * * *', intervalMs: 60 * 60 * 1000 },
+  // Separate worker (workers/linkedin-scheduler, Tue & Thu 09:00 UTC); it
+  // writes its own cron_runs row.
+  { key: 'linkedin-automation', label: 'LinkedIn content automation', schedule: '0 9 * * 3,5', intervalMs: 5 * DAY },
 ]
 
 /** Grace period before a late run is considered missed (AC: alert ≤ 1 min late). */

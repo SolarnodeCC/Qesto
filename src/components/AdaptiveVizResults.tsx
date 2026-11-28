@@ -49,6 +49,12 @@ interface AdaptiveVizResultsProps {
   questionKind?: string | undefined
   /** Pass true when the presenter has hidden the tally */
   tallyHidden?: boolean | undefined
+  /**
+   * Live counts keyed by response TEXT, for `word_cloud` / `open` questions.
+   * Those kinds have no `options`, so without this the canvas showed
+   * "Waiting for responses" forever no matter how many answers arrived.
+   */
+  textCounts?: Record<string, number> | undefined
 }
 
 /** Number of bars above which we switch to horizontal layout */
@@ -379,6 +385,7 @@ export const AdaptiveVizResults = memo(function AdaptiveVizResults({
   total,
   questionKind,
   tallyHidden = false,
+  textCounts,
 }: AdaptiveVizResultsProps) {
   const t = useT('canvas')
   const max = options.reduce((m, o) => Math.max(m, o.count), 0)
@@ -396,6 +403,14 @@ export const AdaptiveVizResults = memo(function AdaptiveVizResults({
     )
   }
 
+  // Text kinds render from response text, never from (empty) options — this
+  // must run BEFORE the "no options → waiting" branch below.
+  if (questionKind === 'word_cloud' || questionKind === 'open') {
+    const counts: Record<string, number> = { ...(textCounts ?? {}) }
+    for (const o of options) counts[o.label] = (counts[o.label] ?? 0) + o.count
+    return <WordCloudViz counts={counts} />
+  }
+
   if (options.length === 0) {
     return (
       <p
@@ -406,13 +421,6 @@ export const AdaptiveVizResults = memo(function AdaptiveVizResults({
         {t('viz.waitingResponses')}
       </p>
     )
-  }
-
-  if (questionKind === 'word_cloud' || questionKind === 'open') {
-    // Convert options array (count keyed by label) into the counts Record
-    const counts: Record<string, number> = {}
-    for (const o of options) counts[o.label] = o.count
-    return <WordCloudViz counts={counts} />
   }
 
   if (options.length <= DONUT_MAX) {

@@ -1,3 +1,4 @@
+import { background } from '../lib/background'
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
@@ -33,6 +34,8 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         TEAMS_KV: c.env.TEAMS_KV,
         SESSIONS_KV: c.env.SESSIONS_KV,
         DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE,
+        SESSION_ROOM: c.env.SESSION_ROOM,
+        R2_SESSIONS: c.env.R2_SESSIONS,
       },
       user.sub,
     )
@@ -93,7 +96,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (team.owner_id !== actor.sub) {
-      void recordAuthAuditEvent(c.env.DB, {
+      background(c, recordAuthAuditEvent(c.env.DB, {
         action: 'auth.gdpr_deletion',
         actor_id: actor.sub,
         actor_ip: c.req.header('cf-connecting-ip') ?? null,
@@ -101,7 +104,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         subject_id: targetUserId,
         outcome: 'failure',
         detail: 'forbidden_not_owner',
-      })
+      }), 'auth.audit')
       return errorResponse(c, 403, 'forbidden', 'Only the team owner can request member deletion')
     }
 
@@ -133,11 +136,13 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         TEAMS_KV: c.env.TEAMS_KV,
         SESSIONS_KV: c.env.SESSIONS_KV,
         DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE,
+        SESSION_ROOM: c.env.SESSION_ROOM,
+        R2_SESSIONS: c.env.R2_SESSIONS,
       },
       targetUserId,
     )
 
-    void recordAuthAuditEvent(c.env.DB, {
+    background(c, recordAuthAuditEvent(c.env.DB, {
       action: 'auth.gdpr_deletion',
       actor_id: actor.sub,
       actor_ip: c.req.header('cf-connecting-ip') ?? null,
@@ -145,7 +150,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       subject_id: targetUserId,
       outcome: 'success',
       detail: `sessions_deleted:${result.sessionsDeleted}`,
-    })
+    }), 'auth.audit')
 
     writeEvent(c.env.METRICS_AE, {
       name: 'gdpr.deletion_completed',

@@ -312,12 +312,33 @@ describe('S4 — close finalises and drops connections', () => {
     expect(await state.storage.get<string>('status')).toBe('closed')
   })
 
-  it('second close returns 409', async () => {
-    const { room } = await buildRoom()
+  // DO close is idempotent: if the route's D1 write fails after the DO flipped
+  // to `closed`, the retry must get the same payload (it used to get 409, which
+  // the route turned into a permanent 500 while D1 stayed `live`). A second
+  // close against an already-closed D1 row is rejected by the route itself.
+  it('second close replays the same payload without re-broadcasting', async () => {
+    const { room, state } = await buildRoom()
     await init(room)
-    await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
+    const ws = connectVoter(state, 'anon_1')
+    const first = await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
+    const firstBody = (await first.json()) as { data: unknown }
+    const sent = ws.received.length
     const res = await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
-    expect(res.status).toBe(409)
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as { data: unknown }).data).toEqual(firstBody.data)
+    expect(ws.received.length).toBe(sent)
+  })
+
+  it('zero_knowledge close never returns linkable voter ids', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+    const meta = (await state.storage.get<Record<string, unknown>>('meta'))!
+    await state.storage.put('meta', { ...meta, anonymity: 'zero_knowledge' })
+    const ws = connectVoter(state, 'anon_real_hmac')
+    await sendMessage(room, ws, { type: 'vote', data: { questionId: 'q_1', optionId: 'a' }, timestamp: 0 })
+    const res = await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
+    const body = (await res.json()) as { data: { votes: Array<{ voterId: string }> } }
+    expect(JSON.stringify(body)).not.toContain('anon_real_hmac')
   })
 })
 
@@ -433,6 +454,34 @@ describe('WS4-A/B — votePolicy multi + react (SessionRoom integration)', () =>
     const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
     expect(counts.x).toBe(1)
     expect(counts.y).toBe(1)
+  })
+})
+
+describe('question navigation keeps tallies (Back no longer wipes)', () => {
+  it('restores counts and dedupe when the presenter goes back', async () => {
+    const { room, state } = await buildRoom()
+    await room.fetch(new Request('https://do.internal/init', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'sess_nav', ownerId: 'user_host', code: 'NAV001', title: 'Nav', votePolicy: 'once',
+        questions: [
+          { id: 'q_1', kind: 'poll', prompt: 'One', options: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }] },
+          { id: 'q_2', kind: 'poll', prompt: 'Two', options: [{ id: 'c', label: 'C' }, { id: 'd', label: 'D' }] },
+        ],
+      }),
+    }))
+    const host = connectPresenter(state)
+    const v = connectVoter(state, 'anon_nav')
+    await sendMessage(room, v, { type: 'vote', data: { questionId: 'q_1', optionId: 'a' }, timestamp: 0 })
+    await sendMessage(room, host, { type: 'advance', data: {}, timestamp: 0 })
+    expect((await state.storage.get<Record<string, number>>('counts')) ?? {}).toEqual({})
+    await sendMessage(room, host, { type: 'back', data: {}, timestamp: 0 })
+    expect((await state.storage.get<Record<string, number>>('counts'))?.a).toBe(1)
+    // Dedupe survives: a second vote by the same voter is not counted.
+    await sendMessage(room, v, { type: 'vote', data: { questionId: 'q_1', optionId: 'b' }, timestamp: 0 })
+    const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
+    expect((counts.a ?? 0) + (counts.b ?? 0)).toBe(1)
   })
 })
 

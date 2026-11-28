@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { initI18n } from './i18n'
 import { initNativePush } from './lib/native-push-client'
+import { AppErrorBoundary } from './components/AppErrorBoundary'
+import { installGlobalErrorReporting } from './lib/report-client-error'
 import './styles.css'
 
 const root = document.getElementById('root')
@@ -19,11 +21,14 @@ function mount() {
   void initI18n()
   // NATIVE-GA-01: register for native push on shell init (no-op in the browser).
   initNativePush()
+  installGlobalErrorReporting()
   createRoot(root!).render(
     <StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <AppErrorBoundary>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AppErrorBoundary>
     </StrictMode>,
   )
 }

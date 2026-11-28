@@ -1,3 +1,4 @@
+import { background } from '../../lib/background'
 import { Hono } from 'hono'
 import type { Env } from '../../types'
 import type { SessionVars } from './shared'
@@ -138,7 +139,7 @@ export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: Ses
             .bind(id, user.sub, code, body.title, now, teamId)
             .run()
           const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
-          void emitMultiRegionWrite(c.env, colo, 'sessions.create', c.get('trace_id'))
+          background(c, emitMultiRegionWrite(c.env, colo, 'sessions.create', c.get('trace_id')), 'multi-region.write')
           const session: Session = {
             id,
             owner_id: user.sub,

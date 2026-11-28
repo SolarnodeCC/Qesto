@@ -56,11 +56,15 @@ import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
+import { enforceAiBudget } from '../lib/ai/ai-budget'
+import { sessionOwnedBy } from '../lib/session-repository'
+import { logBestEffort } from '../lib/log'
 import type { Env } from '../types'
 import { sanitizeAIGatewayRequest, assertSanitizedAIGatewayRequest } from '../lib/ai/prompt-sanitize'
 import { runAI } from '../lib/ai/ai-gateway'
 import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS, COPILOT_PLAN_TTL_SECONDS } from '../lib/constants'
 import type { ParentApp } from './parent-app'
+import { AI_MODELS } from '../lib/ai/models'
 
 type LiveContextResult =
   | { ok: true; context: CopilotLiveContext }
@@ -186,6 +190,17 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
     if (!c.env.SESSIONS_KV) {
       return errorResponse(c, 503, 'kv_unavailable', 'SESSIONS_KV required')
     }
+    // The thread is keyed by session id alone, so without this check any paid
+    // user could read another tenant's copilot thread and plant turns that are
+    // replayed into the owner's next model call (stored prompt injection).
+    const userId = c.get('user').sub
+    // 404 for both "missing" and "not yours" so session ids can't be probed.
+    if (!(await sessionOwnedBy(c.env.DB, sessionId, userId))) {
+      return errorResponse(c, 404, 'not_found', 'Session not found')
+    }
+    const overBudget = await enforceAiBudget(c, userId, 'copilot_turn')
+    if (overBudget) return overBudget
+
     const key = copilotThreadKvKey(sessionId)
     const existing = await readKvJson<CopilotThread>(c.env.SESSIONS_KV, key)
     let thread =
@@ -199,7 +214,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
     if (c.env.AI) {
       try {
         const aiInput = sanitizeAIGatewayRequest({
-          model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+          model: AI_MODELS.LLAMA_70B,
           messages: [
             { role: 'system', content: 'You are a facilitation copilot. Be concise and emotion-safe.' },
             ...thread.turns.map((t) => ({ role: t.role, content: t.content })),
@@ -208,10 +223,17 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
         assertSanitizedAIGatewayRequest(aiInput)
         const result = (await runAI(c.env, aiInput.model, {
           messages: aiInput.messages ?? [],
+          max_tokens: 400,
         })) as { response?: string }
         if (result?.response?.trim()) assistantText = result.response.trim().slice(0, 2000)
-      } catch {
-        /* fallback text */
+      } catch (err) {
+        // Non-fatal: the presenter gets the canned facilitation hint instead.
+        logBestEffort(err, {
+          traceId: c.get('trace_id') ?? 'unknown',
+          route: 'copilot.turn',
+          operation: 'ai.run',
+          reason: 'copilot_turn_ai_failed_fallback_text',
+        })
       }
     }
     const assistantTurn: CopilotTurn = { role: 'assistant', content: assistantText, at: Date.now() }
@@ -260,6 +282,8 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
         503,
       )
     }
+    const draftBudget = await enforceAiBudget(c, userId, 'copilot_draft_poll')
+    if (draftBudget) return draftBudget
 
     const locale = c.req.header('accept-language')?.split(',')[0]?.slice(0, 10)
     const draftParams = {
@@ -531,6 +555,9 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       })
     }
 
+    const suggestBudget = await enforceAiBudget(c, c.get('user').sub, 'copilot_suggest')
+    if (suggestBudget) return suggestBudget
+
     const ai = c.env.AI
     let actions = null
     if (ai) {
@@ -544,7 +571,14 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
           () => '',
         )
         actions = text ? parseSuggestions(text) : null
-      } catch {
+      } catch (err) {
+        // Non-fatal: deterministic fallback suggestions are served instead.
+        logBestEffort(err, {
+          traceId: c.get('trace_id') ?? 'unknown',
+          route: 'copilot.suggest',
+          operation: 'ai.run',
+          reason: 'copilot_suggest_ai_failed_fallback',
+        })
         actions = null
       }
     }

@@ -113,6 +113,13 @@ export type LiveState = {
   error: string | null
   reconnectAttempts: number
   lastVote: { optionId: string } | null
+  /**
+   * Set when the server rejected the last vote (paused, closed, out of date,
+   * rate limited…). `seq` increments per rejection so consumers can roll back
+   * optimistic "voted" UI. `duplicate` is NOT a rejection here: the participant
+   * genuinely has already voted.
+   */
+  voteRejection: { code: string; seq: number } | null
   paused: boolean
   allDone: boolean
   energizer: LiveEnergizerState | null
@@ -127,6 +134,11 @@ export type LiveState = {
    */
   features: string[]
 }
+
+/** Server vote-admission errors after which the vote did NOT count. */
+const VOTE_REJECTION_CODES = new Set([
+  'paused', 'question_closed', 'out_of_date', 'no_question', 'rate_limited', 'bad_option', 'cardinality_exceeded', 'energizing',
+])
 
 type Action =
   | { kind: 'connecting' }
@@ -147,6 +159,7 @@ type Action =
       energizer?: LiveEnergizerState | null
       sentiment?: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
       features?: string[]
+      paused?: boolean
     }
   | { kind: 'sentiment'; mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }
   | { kind: 'question'; question: LiveQuestion; index: number; total: number }
@@ -171,6 +184,7 @@ export const INITIAL: LiveState = {
   error: null,
   reconnectAttempts: 0,
   lastVote: null,
+  voteRejection: null,
   paused: false,
   allDone: false,
   energizer: null,
@@ -208,12 +222,15 @@ export function reducer(state: LiveState, action: Action): LiveState {
         features: action.features ?? [],
         reconnectAttempts: 0,
         error: null,
-        paused: false,
+        // A presenter refresh / mid-pause join used to show voting as open.
+        paused: action.paused ?? false,
       }
     case 'sentiment':
       return { ...state, sentiment: { mood: action.mood, sampleSize: action.sampleSize } }
     case 'question':
-      return { ...state, question: action.question, lastVote: null, allDone: false, questionIndex: action.index, questionTotal: action.total, sentiment: null }
+      // Reset results: the previous question's totals otherwise stayed on screen
+      // (and drove the min-response gate) until the first new vote arrived.
+      return { ...state, question: action.question, lastVote: null, allDone: false, questionIndex: action.index, questionTotal: action.total, sentiment: null, results: { counts: {}, total: 0 } }
     case 'results':
       return { ...state, results: { counts: action.counts, total: action.total } }
     case 'participants':
@@ -226,6 +243,14 @@ export function reducer(state: LiveState, action: Action): LiveState {
         session: state.session ? { ...state.session, status: 'closed' } : state.session,
       }
     case 'error':
+      if (VOTE_REJECTION_CODES.has(action.code) && state.lastVote) {
+        return {
+          ...state,
+          error: `${action.code}: ${action.message}`,
+          lastVote: null,
+          voteRejection: { code: action.code, seq: (state.voteRejection?.seq ?? 0) + 1 },
+        }
+      }
       return { ...state, error: `${action.code}: ${action.message}` }
     case 'vote_sent':
       return { ...state, lastVote: { optionId: action.optionId } }
@@ -302,6 +327,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
                 (init.sentiment as { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null | undefined) ??
                 null,
               features: (init.features as string[] | undefined) ?? [],
+              paused: init.paused,
             })
             break
           }

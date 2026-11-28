@@ -1,3 +1,5 @@
+import type { Env } from '../types'
+import { logBestEffort } from './log'
 /**
  * Hard-delete a session and all D1 rows that reference it.
  * Explicit child deletes avoid 500s when legacy DBs lack ON DELETE CASCADE on every table.
@@ -98,5 +100,33 @@ export async function deleteTeamSessionVectors(
     return deleted
   } catch {
     return 0
+  }
+}
+
+/**
+ * Remove a session's live-tier state: the SessionRoom DO storage (voter maps,
+ * open-text answers, energizer data) and the R2 recovery snapshot. Neither was
+ * touched by session delete or GDPR erasure, so participant data outlived the
+ * session indefinitely.
+ *
+ * Best-effort, like the vector delete: the D1 deletion is the durable-record
+ * removal that matters legally, and a DO/R2 hiccup must not block it.
+ */
+export async function purgeLiveSessionState(
+  env: { SESSION_ROOM?: Env['SESSION_ROOM'] | undefined; R2_SESSIONS?: Env['R2_SESSIONS'] | undefined },
+  sessionId: string,
+): Promise<void> {
+  if (env.R2_SESSIONS) {
+    await env.R2_SESSIONS.delete(`sessions/${sessionId}/snapshot.json`).catch((err) =>
+      logBestEffort(err, { traceId: 'session-delete', route: 'session-delete.purge', operation: 'r2.delete', reason: 'snapshot_delete_failed', sessionId }),
+    )
+  }
+  if (typeof env.SESSION_ROOM?.idFromName === 'function') {
+    try {
+      const stub = env.SESSION_ROOM.get(env.SESSION_ROOM.idFromName(sessionId))
+      await stub.fetch('https://do.internal/purge', { method: 'POST' })
+    } catch (err) {
+      logBestEffort(err, { traceId: 'session-delete', route: 'session-delete.purge', operation: 'do.purge', reason: 'do_purge_failed', sessionId })
+    }
   }
 }

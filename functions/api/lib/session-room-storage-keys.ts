@@ -13,3 +13,9 @@ export const K_SENTIMENT_MOOD = 'sentiment:mood'
 export const K_SENTIMENT_LAST = 'sentiment:last'
 export const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
 export const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
+/**
+ * Votes the close path hands to the route for D1 persistence (only those the
+ * final flush could not write). Pinned so a retried close after a D1 failure
+ * returns the SAME rows (same zk_ ids) and INSERT OR IGNORE stays idempotent.
+ */
+export const K_CLOSE_PENDING_VOTES = 'close:pending_votes'

@@ -14,8 +14,7 @@
 //   • Route handlers can call `recordSpan('d1.sessions.select', () => ...)`.
 //   • `writeEvent()` writes application events to Analytics Engine.
 
-import { recordMetric } from './metrics-kv'
-import { logBestEffort } from './log'
+import { recordRequestMetric } from './metrics-rollup'
 import type { PlanTier } from '../types'
 
 export type SpanContext = {
@@ -85,26 +84,17 @@ export async function recordSpanSafe<T>(
 }
 
 function safeRecord(
-  kv: KVNamespace | undefined,
+  _kv: KVNamespace | undefined,
   route: string,
   latency_ms: number,
   status: number,
-  user_id: string | undefined,
-  trace_id: string,
+  _user_id: string | undefined,
+  _trace_id: string,
 ): void {
-  if (!kv) return
-  // Intentionally not awaited — metric writes never block the hot path.
-  void recordMetric(kv, route, latency_ms, status, user_id, trace_id).catch((err) => {
-    // Best-effort metrics — never block the hot path or log PII.
-    logBestEffort(err, {
-      traceId: trace_id || 'metrics',
-      route: 'observability.safeRecord',
-      operation: 'kv.recordMetric',
-      errorClass: 'MetricsBestEffortError',
-      reason: 'metric_write_non_blocking',
-      details: { metricRoute: route, status },
-    })
-  })
+  // Spans feed the same in-memory accumulator as requests (flushed by the
+  // logger middleware). This used to be 3 KV reads + 3 KV writes per traced
+  // DO call, fire-and-forget outside waitUntil.
+  recordRequestMetric(route, latency_ms, status >= 500)
 }
 
 export type QestoEvent = {

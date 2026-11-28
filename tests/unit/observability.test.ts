@@ -9,6 +9,7 @@ import {
   writeEvent,
 } from '../../functions/api/lib/observability'
 import type { AnalyticsEngineDataset } from '@cloudflare/workers-types'
+import { __resetMetricsRollup, takeMetricsSnapshot } from '../../functions/api/lib/metrics-rollup'
 
 describe('Observability — Span Tracing', () => {
   let mockKV: any
@@ -25,23 +26,27 @@ describe('Observability — Span Tracing', () => {
     vi.useRealTimers()
   })
 
-  it('records successful span with latency', async () => {
-    const startTime = Date.now()
-    vi.setSystemTime(startTime)
-
+  // Spans no longer write KV per call (3 reads + 3 writes per DO call hit KV's
+  // per-key write limit). They feed the per-isolate accumulator that the
+  // logger middleware flushes once a minute (lib/metrics-rollup.ts).
+  it('records successful span latency into the accumulator, not KV', async () => {
+    __resetMetricsRollup()
     const result = await recordSpan('test_op', async () => {
       vi.advanceTimersByTime(100)
       return 'success'
     }, { trace_id: 'trace123', user_id: 'user456', kv: mockKV })
 
     expect(result).toBe('success')
-    // Flush the fire-and-forget metrics promise chain
-    await vi.runAllTimersAsync()
-    expect(mockKV.put).toHaveBeenCalled()
+    expect(mockKV.put).not.toHaveBeenCalled()
+    const snap = takeMetricsSnapshot(Date.now(), true)!
+    const row = snap.rows.find((r) => r.route === 'test_op')!
+    expect(row.count).toBe(1)
+    expect(row.errors).toBe(0)
+    expect(row.samples[0]).toBeGreaterThanOrEqual(100)
   })
 
   it('records span error without throwing', async () => {
-    // recordSpanSafe catches errors and returns SpanResult (not undefined)
+    __resetMetricsRollup()
     const result = await recordSpanSafe('failing_op', async () => {
       throw new Error('Intentional error')
     }, { trace_id: 'trace123', kv: mockKV })
@@ -50,24 +55,16 @@ describe('Observability — Span Tracing', () => {
     if (!result.ok) {
       expect(result.error.message).toBe('Intentional error')
     }
-    // Flush the fire-and-forget metrics
-    await vi.runAllTimersAsync()
-    expect(mockKV.put).toHaveBeenCalled()
+    const row = takeMetricsSnapshot(Date.now(), true)!.rows.find((r) => r.route === 'failing_op')!
+    expect(row.errors).toBe(1)
   })
 
-  it('propagates trace_id and user_id to metrics', async () => {
-    await recordSpan('op_with_ids', async () => 42, {
-      trace_id: 'trace_abc',
-      user_id: 'user_xyz',
-      kv: mockKV,
-    })
-
-    await vi.runAllTimersAsync()
-    const callArgs = mockKV.put.mock.calls[0]
-    const key = callArgs[0]
-    // Verify trace_id is not leaked into KV key (should be in value only)
-    expect(key).not.toContain('trace_abc')
-    expect(key).not.toContain('user_xyz')
+  it('never puts trace_id or user_id into metric keys', async () => {
+    __resetMetricsRollup()
+    await recordSpan('op_with_ids', async () => 42, { trace_id: 'trace_abc', user_id: 'user_xyz', kv: mockKV })
+    const keys = JSON.stringify(takeMetricsSnapshot(Date.now(), true)!.rows.map((r) => r.route))
+    expect(keys).not.toContain('trace_abc')
+    expect(keys).not.toContain('user_xyz')
   })
 
   it('enforces no PII in span context', async () => {

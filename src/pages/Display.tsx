@@ -213,6 +213,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
                 total={state.results.total}
                 questionKind={state.question.kind}
                 tallyHidden={false}
+                textCounts={state.results.counts}
               />
             </div>
           </div>

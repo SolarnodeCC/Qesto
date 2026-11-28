@@ -1,4 +1,6 @@
 // CODE-SPLIT-01 — shared session route helpers.
+import { checkInsightsAllowed } from '../../lib/insights-guards'
+import { fetchSessionAIGovernanceForOwner } from '../../lib/session-repository'
 import { ulid } from '../../lib/ulid'
 import { writeEvent } from '../../lib/observability'
 import { readKvText, writeKvJson } from '../../lib/kv'
@@ -23,7 +25,7 @@ import { readKvJson } from '../../lib/kv'
 import { teamDocumentKey } from '../../lib/kv-keys'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
 import { CachedThemeLabelsSchema, decodeKvJson } from '../../lib/boundary-decode'
-import { ignoreSchemaPatchError, logEvent } from '../../lib/log'
+import { ignoreSchemaPatchError, logBestEffort, logEvent } from '../../lib/log'
 import { ensureTownhallSchema } from '../../lib/session-schema-repair'
 import { effectivePlan } from '../../lib/free-access'
 
@@ -96,7 +98,17 @@ export async function presenterPermissionsForSession(
 ): Promise<Permission[] | undefined> {
   if (!session.team_id) return undefined
   const team = await readKvJson<Team>(env.TEAMS_KV, teamDocumentKey(session.team_id))
-  if (!team) return []
+  if (!team) {
+    // The session owner always controls their own session. Returning [] here
+    // (team document missing/deleted from KV) handed the owner the presenter
+    // role with zero permissions: they could not advance, go back or pause.
+    // Non-owners still get nothing.
+    if (session.owner_id === userId) {
+      logEvent({ event: 'presenter_permissions.team_missing_owner_fallback', sessionId: session.id, teamId: session.team_id }, 'warn')
+      return undefined
+    }
+    return []
+  }
   return effectiveTeamPermissionsForUser(env.DB, team, userId)
 }
 
@@ -462,6 +474,25 @@ export async function precomputeInsights(
   // from insights_daily, the vector metadata, and therefore every rollup.
   if (opts.anonymity === 'zero_knowledge') {
     logEvent({ event: 'insights.precompute.zk_skip', sessionId })
+    return
+  }
+
+  // REV-06 consent: AI-generated sessions need a recorded consent timestamp
+  // before ANY AI summarisation — the request-time routes enforce this, and the
+  // close-time precompute must too. Unknown governance state fails closed.
+  try {
+    const gov = await fetchSessionAIGovernanceForOwner(env.DB, sessionId, ownerId)
+    const guard = checkInsightsAllowed({
+      anonymity: gov?.anonymity ?? opts.anonymity ?? null,
+      ai_generated: gov?.ai_generated ?? null,
+      ai_consent_at: gov?.ai_consent_at ?? null,
+    })
+    if (!guard.allowed) {
+      logEvent({ event: 'insights.precompute.governance_skip', sessionId, reason: guard.code })
+      return
+    }
+  } catch (err) {
+    logBestEffort(err, { traceId: opts.traceId ?? 'precompute', route: 'insights.precompute', operation: 'd1.read', reason: 'governance_lookup_failed_skip' })
     return
   }
 

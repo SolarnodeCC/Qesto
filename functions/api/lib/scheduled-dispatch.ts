@@ -10,6 +10,7 @@
  */
 import { logEvent, safeLogContext } from './log'
 import { alertCritical } from './alerts'
+import { logCronRun } from './marketing/cron-log'
 import type { Env } from '../types'
 
 export type ScheduledJob = {
@@ -32,15 +33,20 @@ export async function runScheduledJobs(
   for (const job of jobs) {
     if (job.cron !== cron) continue
     const traceId = `${job.key}-${Date.now()}`
+    const startedAt = Date.now()
     try {
       const summary = await job.run(env)
       logEvent({ event: 'cron.job.ok', job: job.key, ...(summary ? { summary } : {}) })
       results.push({ key: job.key, ok: true, ...(summary ? { summary } : {}) })
+      // OPS missed-run view reads cron_runs; core jobs never wrote it, so they
+      // always showed "missed" and real misses were indistinguishable.
+      if (env.DB) await logCronRun(env.DB, job.key, 'success', summary ?? undefined, startedAt)
     } catch (err) {
       const errorClass = err instanceof Error ? err.name : 'ScheduledJobFailed'
       safeLogContext(err, { traceId, route: `worker/${job.key}`, errorClass })
       await alertCritical(env, `worker/${job.key}`, errorClass, { traceId, errorClass })
       results.push({ key: job.key, ok: false })
+      if (env.DB) await logCronRun(env.DB, job.key, 'failure', err instanceof Error ? `${err.name}: ${err.message}` : String(err), startedAt)
     }
   }
   return results

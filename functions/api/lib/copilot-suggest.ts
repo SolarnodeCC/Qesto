@@ -10,8 +10,9 @@
 import { z } from 'zod'
 import type { CopilotLiveContext } from './copilot-live-context'
 import { sanitizePromptText } from './ai/prompt-sanitize'
+import { AI_MODELS } from './ai/models'
 
-export const COPILOT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+export const COPILOT_MODEL = AI_MODELS.LLAMA_70B
 
 /**
  * AI-463 (S87) — prompt-version stamp on copilot suggestions.

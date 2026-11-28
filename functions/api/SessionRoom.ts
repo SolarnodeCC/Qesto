@@ -116,6 +116,11 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     this.ctx = ctx
     this.env = env
 
+    // Keepalive answered by the runtime without waking a hibernated room.
+    if (typeof ctx.setWebSocketAutoResponse === 'function' && typeof WebSocketRequestResponsePair !== 'undefined') {
+      ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'))
+    }
+
     const handlerCtx = toHandlerContext(ctx)
     this.rateLimiter = new RateLimiter(ctx.storage)
     this.energizerHandler = new EnergizerHandler(handlerCtx, env, this.scheduleAlarm.bind(this))
@@ -177,6 +182,20 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     const url = new URL(req.url)
     if (url.pathname === '/init' && req.method === 'POST') return handleInit(this, req)
     if (url.pathname === '/close' && req.method === 'POST') return handleClose(this)
+    if (url.pathname === '/purge' && req.method === 'POST') {
+      // Session deleted / GDPR erasure: drop every socket and ALL room state
+      // (voter maps, open-text answers, energizer data). Previously DO storage
+      // outlived the session indefinitely.
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.close(CLOSE_NORMAL, 'session deleted') } catch { /* ignore */ }
+      }
+      await this.ctx.storage.deleteAlarm()
+      await this.ctx.storage.deleteAll()
+      this.state.voteBuffer = []
+      this.state._counts = null
+      this.state._voters = null
+      return new Response(JSON.stringify({ ok: true, data: { purged: true } }), { headers: { 'content-type': 'application/json' } })
+    }
     if (url.pathname === '/transition-to-live' && req.method === 'POST') return handleTransitionToLive(this)
     if (url.pathname === '/state' && req.method === 'GET') return handleState(this)
     if (url.pathname === '/copilot/snapshot' && req.method === 'GET') return handleCopilotSnapshot(this)

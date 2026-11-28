@@ -35,6 +35,7 @@ const PUBLIC_ROUTES: Record<string, string> = {
   'GET /api/events/:code/agenda': 'public event agenda by code',
   'GET /api/events/:code/feed': 'public event feed by code',
   'POST /api/report-content': 'abuse reporting must not require an account',
+  'POST /api/client-errors': 'browser crash telemetry is sent before/without login (rate-limited, redacted, not stored)',
   // Token- or signature-authenticated machine planes.
   'GET /api/embed/v1/sessions/:idOrCode/results': 'embed widget token (ADR-0050)',
   'GET /api/embed/v1/sessions/:idOrCode/state': 'embed widget token (ADR-0050)',

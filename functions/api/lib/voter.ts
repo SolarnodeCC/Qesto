@@ -54,6 +54,27 @@ function fingerprintInput(request: Request): string {
   ].join('|')
 }
 
+// Per-browser device id (`?fp=` on the WebSocket URL), a random UUID the client
+// keeps in localStorage. Shared-network trade-off (2026-11 go-live review):
+// without it, everyone behind one NAT with identical devices (a classroom of
+// iPhones, a company laptop fleet) collapsed into ONE voter — only the first
+// vote per question counted. Folding a device id into the salted HMAC keeps
+// those people distinct. A participant who deliberately clears storage can mint
+// a fresh id and vote again; that is the same trade-off Mentimeter/Slido make,
+// and it is still bounded by the per-socket token bucket, the per-IP connect
+// rate limit and the plan participant cap. The id is validated as a UUID so it
+// cannot carry arbitrary data, and it never leaves the HMAC input.
+const DEVICE_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+export function deviceIdFrom(request: Request): string {
+  try {
+    const fp = new URL(request.url).searchParams.get('fp') ?? ''
+    return DEVICE_ID_RE.test(fp) ? fp.toLowerCase() : ''
+  } catch {
+    return ''
+  }
+}
+
 function clientIp(request: Request): string {
   // #584: only `cf-connecting-ip` is set by Cloudflare and trustworthy. The
   // `x-forwarded-for` / `x-real-ip` headers are attacker-controlled and must not
@@ -115,7 +136,8 @@ export async function deriveVoterIdentity(
 
   // Full-length digest, not a truncation: the previous 32-bit slice was small
   // enough to brute-force independently of the salt.
-  const mac = await hmacHex(sessionSalt, `${ip}|${fingerprintSource}`)
+  const device = deviceIdFrom(request)
+  const mac = await hmacHex(sessionSalt, device ? `${ip}|${fingerprintSource}|${device}` : `${ip}|${fingerprintSource}`)
   return {
     voterId: `anon_${mac}`,
     // ipHash keys the per-IP connection cap and rate limiter. It stays derived

@@ -90,11 +90,14 @@ export const ATOMIC_RATE_LIMIT_PROFILES: Record<AtomicRateLimitProfile, ProfileC
     periodSec: 60,
     kvFallback: { max: 30, windowSeconds: 60, prefix: 'embed-hs' },
   },
+  // Sized for a whole audience joining from ONE public IP (corporate NAT,
+  // venue Wi-Fi) within a minute. 20/min locked out the 21st attendee. A
+  // 6-char join code (~2e9 space) stays impractical to enumerate at this rate.
   join: {
     binding: 'RL_JOIN',
-    limit: 20,
+    limit: 240,
     periodSec: 60,
-    kvFallback: { max: 20, windowSeconds: 60, prefix: 'atomic-join' },
+    kvFallback: { max: 240, windowSeconds: 60, prefix: 'atomic-join' },
   },
   public_event: {
     binding: 'RL_PUBLIC_EVENT',

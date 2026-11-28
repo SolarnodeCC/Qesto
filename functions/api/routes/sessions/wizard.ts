@@ -14,7 +14,7 @@ import {
 import { ensurePersonalTeam } from '../teams'
 import { errorResponse } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
-import { hardDeleteSession } from '../../lib/session-delete'
+import { hardDeleteSession, purgeLiveSessionState } from '../../lib/session-delete'
 import { suggestDuplicateTitle } from '../../lib/session-title'
 import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '../../lib/session-lifecycle'
 import { ulid } from '../../lib/ulid'
@@ -46,6 +46,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     if (!deleted) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
+    await purgeLiveSessionState(c.env, id)
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })
 

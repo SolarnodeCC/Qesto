@@ -20,6 +20,7 @@ import {
   K_STATUS,
   K_ACTIVE_ENERGIZER,
   K_SENTIMENT_MOOD,
+  K_CLOSE_PENDING_VOTES,
 } from './session-room-storage-keys'
 import { type Meta, type Counts, type Votes, FUN_MODE_QUESTION_MS } from './session-room-types'
 import type { SessionRoomContext } from './session-room-context'
@@ -125,47 +126,68 @@ export async function handleClose(self: SessionRoomContext): Promise<Response> {
   await self.flushVotes()
 
   const status = (await self.ctx.storage.get<string>(K_STATUS)) ?? null
-  if (status !== 'live' && status !== 'energizing') {
+  // Idempotent: a previous close may have flipped the DO to `closed` and then
+  // failed to write D1. Rejecting that retry with 409 left D1 `live` forever
+  // (the route surfaces it as a permanent 500). Replay the same payload instead.
+  const alreadyClosed = status === 'closed'
+  if (!alreadyClosed && status !== 'live' && status !== 'energizing') {
     return self.jsonError(409, 'not_live', 'Session is not active')
   }
   // Use cached counts if available, otherwise load from storage.
   const counts = self.state._counts ?? (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-  const votes = await self.ensureVoters()
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
-  const msg = serverMessage({
-    type: 'session_closed',
-    data: { counts, total },
-    timestamp: now(),
-  })
-  for (const ws of self.ctx.getWebSockets()) {
-    try {
-      ws.send(msg)
-      ws.close(CLOSE_NORMAL, 'session closed')
-    } catch {
-      /* ignore */
-    }
-  }
-  await self.ctx.storage.put(K_STATUS, 'closed')
-
-  // Phase 2.3: Take final snapshot before session closes.
-  await self.snapshot()
-  // TOWNHALL (ADR-0044): persist the board to D1 on close — the export + GDPR-erasure tier.
   const meta = await self.ctx.storage.get<Meta>(K_META)
-  if (meta?.townhallModeration) {
-    try {
-      await self.townhallHandler.persistBoard(meta.sessionId, now())
-    } catch (err) {
-      logEvent({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) })
+
+  if (!alreadyClosed) {
+    const msg = serverMessage({
+      type: 'session_closed',
+      data: { counts, total },
+      timestamp: now(),
+    })
+    for (const ws of self.ctx.getWebSockets()) {
+      try {
+        ws.send(msg)
+        ws.close(CLOSE_NORMAL, 'session closed')
+      } catch {
+        /* ignore */
+      }
+    }
+    await self.ctx.storage.put(K_STATUS, 'closed')
+
+    // Phase 2.3: Take final snapshot before session closes.
+    await self.snapshot()
+    // TOWNHALL (ADR-0044): persist the board to D1 on close — the export + GDPR-erasure tier.
+    if (meta?.townhallModeration) {
+      try {
+        await self.townhallHandler.persistBoard(meta.sessionId, now())
+      } catch (err) {
+        logEvent({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) })
+      }
     }
   }
+
   const questionId = (await self.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
-  // Flatten voterId → optionId[] into one row per (voter, optionId) so the
-  // D1 schema collapses duplicate voter rows via INSERT OR IGNORE. For kinds
-  // where one voter can legitimately submit multiple entries (multi_select,
-  // upvote, word_cloud) each entry is emitted separately.
-  const voteList = Object.entries(votes).flatMap(([voterId, optionIds]) =>
-    optionIds.map((optionId) => ({ voterId, optionId })),
-  )
+  // Only votes the final flush could NOT persist go back to the route. Every
+  // vote passes through the buffer, so after a successful flush this is empty.
+  // Previously the whole voter map was returned and re-inserted: harmless with
+  // stable ids, but in zero_knowledge mode the flushed rows carry random zk_
+  // ids, so every final-question vote was stored twice — and the second copy
+  // used the linkable HMAC voter id that DD-03 forbids in D1.
+  let voteList = await self.ctx.storage.get<CloseVote[]>(K_CLOSE_PENDING_VOTES)
+  if (!voteList) {
+    const zeroKnowledge = meta?.anonymity === 'zero_knowledge'
+    voteList = self.state.voteBuffer.map((v) => ({
+      questionId: v.questionId,
+      voterId: zeroKnowledge ? `zk_${crypto.randomUUID()}` : v.voterId,
+      optionId: v.optionId,
+    }))
+    await self.ctx.storage.put(K_CLOSE_PENDING_VOTES, voteList)
+    // Ownership of these rows moves to the route; a later alarm must not
+    // insert them a second time.
+    self.state.voteBuffer = []
+    self.state.flushScheduled = false
+  }
+
   let retroActionItems: string[] = []
   let retroStats: { wentWell: number; didntGoWell: number; actions: number; totalCards: number } | undefined
   if (meta?.sessionMode === 'retro') {
@@ -178,6 +200,8 @@ export async function handleClose(self: SessionRoomContext): Promise<Response> {
   }
   return self.jsonOk({ counts, total, votes: voteList, questionId, retroActionItems, retroStats })
 }
+
+type CloseVote = { questionId: string; voterId: string; optionId: string }
 
 // ── /transition-to-live ──────────────────────────────────────────────────────
 // Transitions session from ENERGIZING to LIVE. Broadcast update to all clients.
