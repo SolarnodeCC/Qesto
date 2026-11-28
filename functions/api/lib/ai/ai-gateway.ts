@@ -100,7 +100,7 @@ function resolveGatewayConfig(env: AIGatewayEnv): AIGatewayResolvedConfig {
  * @returns { result, cached, cacheAge, gatewayLatencyMs }
  *
  * @example
- * const response = await runThroughAIGateway(env, ctx, '@cf/meta/distilbert-sst-2-int8', { text: 'hello' });
+ * const response = await runThroughAIGateway(env, ctx, AI_MODELS.SENTIMENT, { text: 'hello' });
  * if (response.cached) console.log('cache hit, saved latency');
  */
 export async function runThroughAIGateway(
@@ -127,45 +127,66 @@ export async function runThroughAIGateway(
   const gatewayUrl = buildGatewayUrl(config, model)
   const gatewayHeaders = buildGatewayHeaders(config, ctx.plan)
 
+  let response: Response
   try {
-    const response = await fetch(gatewayUrl, {
+    response = await fetch(gatewayUrl, {
       method: 'POST',
       headers: gatewayHeaders,
       body: JSON.stringify(sanitizedInput),
       signal: AbortSignal.timeout(AI_GATEWAY_CONFIG.requestTimeoutMs),
     })
-
-    if (!response.ok) {
-      // Gateway error: fall back to direct env.AI
-      if (response.status >= 500) {
-        return fallbackToDirect(env, model, sanitizedInput, startMs, `gateway_http_${response.status}`)
-      }
-      // Client error (bad request): propagate
-      throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
-    }
-
-    const parsed = AIGatewayRawResponseSchema.safeParse(await response.json())
-    if (!parsed.success) {
-      // Gateway returned an unexpected body shape — treat like a gateway fault.
-      return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_invalid_body')
-    }
-    const data = parsed.data
-
-    const response_obj: AIGatewayResponse = {
-      result: data.result,
-      cached: data.cached ?? false,
-      gatewayLatencyMs: Date.now() - startMs,
-    }
-    if (data.cache_age !== undefined) {
-      response_obj.cacheAge = data.cache_age
-    }
-    return response_obj
   } catch (err) {
     // Network error, timeout, or Gateway down: fall back to direct env.AI
-    if (err instanceof Error && err.name === 'AbortError') {
+    if (err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
       return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_timeout')
     }
     return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_network')
+  }
+
+  // Status handling sits OUTSIDE the network try/catch. Previously a 4xx was
+  // thrown inside it and caught as "gateway_network", so gateway rate limits
+  // (429) and auth failures were silently bypassed with a second round trip.
+  if (!response.ok) {
+    if (response.status >= 500) {
+      return fallbackToDirect(env, model, sanitizedInput, startMs, `gateway_http_${response.status}`)
+    }
+    if (response.status === 429) {
+      throw new AIGatewayRateLimitedError()
+    }
+    if (response.status === 401 || response.status === 403) {
+      // Misconfigured gateway credentials must not take AI features down —
+      // but log loudly so the misconfiguration is visible.
+      return fallbackToDirect(env, model, sanitizedInput, startMs, `gateway_auth_${response.status}`)
+    }
+    throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
+  }
+
+  const parsed = AIGatewayRawResponseSchema.safeParse(await response.json().catch(() => null))
+  if (!parsed.success) {
+    // Gateway returned an unexpected body shape — treat like a gateway fault.
+    return fallbackToDirect(env, model, sanitizedInput, startMs, 'gateway_invalid_body')
+  }
+  const data = parsed.data
+  // The gateway reports cache hits in a response header, not the body.
+  const cacheStatus = response.headers.get('cf-aig-cache-status')
+
+  const response_obj: AIGatewayResponse = {
+    result: data.result,
+    cached: cacheStatus ? cacheStatus.toUpperCase() === 'HIT' : (data.cached ?? false),
+    gatewayLatencyMs: Date.now() - startMs,
+  }
+  if (data.cache_age !== undefined) {
+    response_obj.cacheAge = data.cache_age
+  }
+  return response_obj
+}
+
+/** Thrown when AI Gateway rate-limits the request (HTTP 429). */
+export class AIGatewayRateLimitedError extends Error {
+  readonly status = 429
+  constructor() {
+    super('AI Gateway rate limit exceeded')
+    this.name = 'AIGatewayRateLimitedError'
   }
 }
 
@@ -240,7 +261,12 @@ function buildGatewayHeaders(config: AIGatewayResolvedConfig, plan: string): Rec
     // Optional: add plan-based rate-limit headers
     'X-Qesto-Plan': plan,
   }
-  if (config.token) headers['Authorization'] = `Bearer ${config.token}`
+  if (config.token) {
+    // Workers AI provider auth + authenticated-gateway auth. The configured
+    // token needs both "Workers AI Read" and "AI Gateway Run" permissions.
+    headers['Authorization'] = `Bearer ${config.token}`
+    headers['cf-aig-authorization'] = `Bearer ${config.token}`
+  }
   return headers
 }
 

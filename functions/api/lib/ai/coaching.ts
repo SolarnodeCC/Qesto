@@ -11,8 +11,9 @@ import type { Env } from '../../types'
 import { sanitizePromptText } from './prompt-sanitize'
 import { runAI } from './ai-gateway'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
+import { AI_MODELS } from './models'
 
-const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+const COACHING_MODEL = AI_MODELS.LLAMA_70B
 export const COACHING_PROMPT_VERSION = 'v2'
 export const COACHING_MAX_TOKENS = 600
 

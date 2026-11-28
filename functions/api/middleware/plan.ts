@@ -108,12 +108,13 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
       }
     }
   } catch (err) {
+    // warn, not info: this silently downgrades a paying user to `free`.
     logEvent({
         event: 'plan_middleware.db_failure',
         userId: user.sub,
         traceId: c.get('trace_id'),
         error: err instanceof Error ? err.message : String(err),
-      })
+      }, 'warn')
     // Degrade to the safest quota tier instead of turning every authenticated
     // route into a 500 during a transient D1 fault.
     plan = 'free'
@@ -133,6 +134,21 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   c.set('planQuotas', QUOTAS_MAP[plan])
 
   await next()
+}
+
+/**
+ * Resolve a user's served plan outside planMiddleware (routes that allow
+ * anonymous callers, e.g. help /ask). Same order as the middleware: KV cache →
+ * D1 → ADR-0074 effectivePlan. Fails safe to `free`.
+ */
+export async function resolveEffectivePlan(env: Env, userId: string): Promise<PlanTier> {
+  let stored: PlanTier = 'free'
+  try {
+    stored = (await readCachedPlan(env, userId)) ?? (await lookupUserPlan(env.DB, userId))
+  } catch (err) {
+    logEvent({ event: 'plan_resolve.db_failure', userId, error: err instanceof Error ? err.message : String(err) }, 'warn')
+  }
+  return effectivePlan(env, stored)
 }
 
 export const __internal = { lookupUserPlan, PLAN_LOOKUP_TIMEOUT_MS, freeAccessActive }

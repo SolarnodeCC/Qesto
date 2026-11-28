@@ -19,12 +19,13 @@ import { buildLinkedInPrompt, buildYouTubePrompt, parseYouTubeResponse } from '.
 import { clampPost } from '../linkedin'
 import { youtubeIntegrationEnabled } from '../integrations-policy'
 import { logEvent } from '../log'
+import { AI_MODELS } from '../ai/models'
 
 const JOB = 'content-engine'
 const LOCK_TTL_MS = 30 * 60 * 1000
 
-const LINKEDIN_MODEL = '@cf/meta/llama-3.1-8b-instruct'
-const YOUTUBE_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+const LINKEDIN_MODEL = AI_MODELS.LLAMA_8B
+const YOUTUBE_MODEL = AI_MODELS.LLAMA_70B
 
 export type ContentEngineEnv = {
   YOUTUBE_INTEGRATION_ENABLED?: string

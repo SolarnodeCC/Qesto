@@ -2,6 +2,7 @@
  * AI-RECAP-PROV-01 — provenance block for exports and insights surfaces.
  */
 import type { Session } from '../../types'
+import { AI_MODELS } from './models'
 
 export type AiRecapProvenance = {
   model: string | null
@@ -15,7 +16,7 @@ export type AiRecapProvenance = {
 export function buildAiRecapProvenance(session: Session): AiRecapProvenance {
   const generatedAt = session.ai_consent_at ?? (session.ai_generated ? session.created_at : null)
   return {
-    model: session.ai_recap_model ?? '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    model: session.ai_recap_model ?? AI_MODELS.LLAMA_70B,
     generated_at: generatedAt,
     host_edited: (session.ai_recap_edited_at ?? 0) > 0,
     prompt_version: 'v1',

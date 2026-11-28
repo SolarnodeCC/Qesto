@@ -1,3 +1,4 @@
+import { AI_MODELS } from './ai/models'
 /**
  * The single source of truth for the embedding model and its output dimension.
  *
@@ -13,7 +14,7 @@
  * AI-eval-gated change (CLAUDE.md hard rule 6) AND requires recreating every
  * index at the new dimension.
  */
-export const BGE_M3_MODEL = '@cf/baai/bge-m3' as const
+export const BGE_M3_MODEL = AI_MODELS.BGE_M3
 export const BGE_M3_EMBED_DIM = 1024
 
 /**

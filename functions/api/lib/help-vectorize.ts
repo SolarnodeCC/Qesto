@@ -6,10 +6,11 @@
 import type { Env } from '../types'
 import { withTimeout } from './shared/async'
 import { embedVector, queryVectors } from './ai/embed-query'
+import { AI_MODELS } from './ai/models'
 
 export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
 
-export const HELP_EMBED_MODEL = '@cf/baai/bge-m3' as const
+export const HELP_EMBED_MODEL = AI_MODELS.BGE_M3
 export const HELP_EMBED_DIM = 1024 // bge-m3 outputs 1024 dims — must match the qesto-help index
 /** How many documents the caller gets back. */
 export const HELP_SIMILARITY_TOP_K = 3

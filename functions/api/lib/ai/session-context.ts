@@ -11,6 +11,7 @@ import type { Env, Anonymity, PlanTier } from '../../types'
 import { CircuitBreakers } from '../resilience/circuit-breaker'
 import { writeEvent } from '../observability'
 import { runThroughAIGateway, type AIGatewayRequest } from './ai-gateway'
+import { AI_MODELS } from './models'
 
 export type SessionAIContext = {
   sessionId: string
@@ -28,8 +29,8 @@ export type AIPipelineResult<T> =
   | { ok: true; data: T; model: string; durationMs: number }
   | { ok: false; code: 'ai_unavailable' | 'ai_timeout' | 'ai_rate_limited'; message: string }
 
-export const DEFAULT_AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-export const SENTIMENT_MODEL = '@cf/meta/distilbert-sst-2-int8'
+export const DEFAULT_AI_MODEL = AI_MODELS.LLAMA_70B
+export const SENTIMENT_MODEL = AI_MODELS.SENTIMENT
 export const PROMPT_VERSION = 'v1'
 
 export function modelForPlan(_plan: PlanTier): string {
@@ -136,7 +137,7 @@ export async function aiPipeline<T>(
  *
  * Usage (replaces inline Workers AI calls):
  * ```
- * const result = await runAI(ctx, env, '@cf/meta/distilbert-sst-2-int8', { text: 'hello' });
+ * const result = await runAI(ctx, env, AI_MODELS.SENTIMENT, { text: 'hello' });
  * ```
  *
  * @param ctx Session AI context (plan, sessionId, model preference, etc.)

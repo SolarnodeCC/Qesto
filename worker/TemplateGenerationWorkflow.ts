@@ -26,6 +26,7 @@ import {
   parseSimilarityScore,
   properNounGateAdmits,
 } from '../functions/api/lib/template-gates'
+import { AI_MODELS } from '../functions/api/lib/ai/models'
 
 export interface SessionPipelinePayload {
   sessionId: string
@@ -47,7 +48,7 @@ interface GatedQuestion extends SourceQuestion {
   originalHash: string
 }
 
-const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+const AI_MODEL = AI_MODELS.LLAMA_70B
 const RETRY_ATTEMPTS = 3
 const RETRY_DELAY_MS = [150, 300, 600] // exponential backoff: 150ms, 300ms, 600ms
 /** Classification confidence required to auto-publish; below this the template parks as draft. */

@@ -95,6 +95,11 @@ export class CircuitBreaker {
       this.recordSuccess()
       return result
     } catch (err) {
+      // Caller-side errors (bad model output, validation, prompt sanitisation)
+      // say nothing about the dependency's health. Counting them let three bad
+      // generations open AI for every user on the isolate for 45s.
+      if (!isInfrastructureFailure(err)) throw err
+
       // Failure: record and maybe open breaker
       this.recordFailure(err)
 
@@ -165,8 +170,16 @@ export class CircuitBreaker {
   }
 
   private recordFailure(_err: unknown): void {
-    this.state.failureCount++
-    this.state.lastFailureTime = Date.now()
+    const now = Date.now()
+    // Failures only accumulate within a rolling window; an isolated failure an
+    // hour ago must not combine with two today to trip the breaker.
+    if (this.state.lastFailureTime !== undefined && now - this.state.lastFailureTime > FAILURE_WINDOW_MS) {
+      this.state.failureCount = 0
+    }
+    // A failed half-open probe re-opens immediately.
+    this.state.failureCount =
+      this.state.status === 'half_open' ? this.config.failureThreshold : this.state.failureCount + 1
+    this.state.lastFailureTime = now
 
     if (this.state.failureCount >= this.config.failureThreshold) {
       this.state.status = 'open'
@@ -198,6 +211,22 @@ export class CircuitBreaker {
       
     }
   }
+}
+
+/** Failures older than this no longer count toward the threshold. */
+export const FAILURE_WINDOW_MS = 60_000
+
+const NON_INFRA_ERROR_NAME = /Validation|Sanitization|ZodError|SyntaxError|NotFound|Forbidden/i
+
+/**
+ * True when an error reflects the dependency being unhealthy (timeouts,
+ * network, 5xx, capacity) rather than the caller's input or the model's
+ * output shape. Errors may opt out explicitly with `breakerIgnore = true`.
+ */
+export function isInfrastructureFailure(err: unknown): boolean {
+  if (!(err instanceof Error)) return true
+  if ((err as { breakerIgnore?: unknown }).breakerIgnore === true) return false
+  return !NON_INFRA_ERROR_NAME.test(err.name)
 }
 
 /**

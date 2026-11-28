@@ -16,6 +16,7 @@ import { z } from 'zod'
 import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './domain-schemas'
 import { sanitizePromptText } from './ai/prompt-sanitize'
 import { ulid } from './ulid'
+import { AI_MODELS } from './ai/models'
 
 /** Hard ceiling on a surfaced question prompt (mirrors the Zod 240-char bound). */
 export const OUTPUT_PROMPT_MAX_LEN = 240
@@ -59,7 +60,7 @@ export function sanitizeAuthoringText(value: string, maxLen: number): string {
 }
 
 /** Workers AI model — quality model for authoring (privacy-native, no egress). */
-export const STUDIO_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+export const STUDIO_MODEL = AI_MODELS.LLAMA_70B
 
 /** Lower/upper bound on how many questions a single authoring call may request. */
 export const MIN_COUNT = 1

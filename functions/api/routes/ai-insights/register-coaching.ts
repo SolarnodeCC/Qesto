@@ -1,4 +1,7 @@
 import type { Hono } from 'hono'
+import { consumePromoAiRun } from '../../lib/promo-ai-quota'
+import { enforceAiBudget } from '../../lib/ai/ai-budget'
+import { logBestEffort } from '../../lib/log'
 import { errorResponse } from '../../lib/error-handler'
 import { z } from 'zod'
 import { requireFeature } from '../../middleware/feature-gate'
@@ -88,6 +91,15 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
       return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId }, 404)
     }
 
+    // ADR-0074 monthly AI ceiling (no-op outside the free-access window).
+    // Charged only after the ownership check so a rejected request is free.
+    if (c.env.SESSIONS_KV) {
+      const quota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, user.sub)
+      if (!quota.allowed) {
+        return errorResponse(c, 429, 'limit_exceeded', `Free-access AI limit reached (${quota.limit} AI runs this month). Resets on the 1st.`)
+      }
+    }
+
     const questions = await fetchQuestions(c.env.DB, sessionId)
     const summaries = questions.map((q) => `${q.kind}: ${q.prompt}`)
     const voteRow = await c.env.DB.prepare(`SELECT COUNT(*) as n FROM votes WHERE session_id = ?1`)
@@ -114,7 +126,14 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     const accepted = priorActions.filter((a) => a.action === 'accepted').length
     const dismissed = priorActions.filter((a) => a.action === 'dismissed').length
     // Scoped to the session's team — no team means no cross-session memory (audit #4).
-    const ragChunks = await queryDecisionGrounding(c.env, `${session.title} ${summaries.join(' ')}`, 3, session.team_id)
+    // Grounding is optional context: a Vectorize/embedding fault must degrade
+    // coaching to "no similar sessions", not fail the whole request with a 500.
+    let ragChunks: Awaited<ReturnType<typeof queryDecisionGrounding>> = []
+    try {
+      ragChunks = await queryDecisionGrounding(c.env, `${session.title} ${summaries.join(' ')}`, 3, session.team_id)
+    } catch (err) {
+      logBestEffort(err, { traceId: traceId ?? 'unknown', route: 'coaching.post', operation: 'vectorize.query', reason: 'coaching_grounding_unavailable' })
+    }
 
     const coaching = await generateFacilitatorCoaching(
       c.env,
@@ -202,15 +221,23 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     return c.json({ ok: true, data: { recorded: true }, trace_id: traceId })
   })
 
-  app.get('/sessions/:sessionId/coaching/similar', async (c) => {
+  app.get('/sessions/:sessionId/coaching/similar', requireFeature('insightsAI'), async (c) => {
     const sessionId = c.req.param('sessionId')
     const user = c.get('user')
     const session = await assertSessionOwner(c.env.DB, sessionId, user.sub)
     if (!session) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
-    const theme = c.req.query('theme') ?? session.title
-    const chunks = await queryDecisionGrounding(c.env, theme, 8, session.team_id)
+    const overBudget = await enforceAiBudget(c, user.sub, 'coaching_similar')
+    if (overBudget) return overBudget
+    // The theme is embedded — cap it so a caller can't push arbitrary-length text.
+    const theme = (c.req.query('theme') ?? session.title).slice(0, 200)
+    let chunks: Awaited<ReturnType<typeof queryDecisionGrounding>> = []
+    try {
+      chunks = await queryDecisionGrounding(c.env, theme, 8, session.team_id)
+    } catch (err) {
+      logBestEffort(err, { traceId: c.get('trace_id') ?? 'unknown', route: 'coaching.similar', operation: 'vectorize.query', reason: 'coaching_similar_unavailable' })
+    }
     writeEvent(c.env.METRICS_AE, { name: 'kb_rag.query', userId: user.sub, sessionId, detail: theme.slice(0, 80) })
     return c.json({
       ok: true,

@@ -11,15 +11,17 @@
  * on OPEN the pipeline degrades to "captions paused" (null) rather than erroring
  * the session. Every model output is Zod-parsed before use (never trust raw text).
  */
+import { logBestEffort } from '../log'
 import { z } from 'zod'
 import { runAI } from './ai-gateway'
 import type { Env } from '../../types'
 import { CircuitBreakers } from '../resilience/circuit-breaker'
 import type { CaptionLocale } from '../captions-config'
+import { AI_MODELS } from './models'
 
 // ── Model IDs (the only place they are named) ────────────────────────────────
-export const CAPTIONS_ASR_MODEL = '@cf/openai/whisper'
-export const CAPTIONS_MT_MODEL = '@cf/meta/m2m100-1.2b'
+export const CAPTIONS_ASR_MODEL = AI_MODELS.WHISPER
+export const CAPTIONS_MT_MODEL = AI_MODELS.M2M100
 
 // ── Output schemas — parse every model response, never trust raw text ────────
 // Whisper returns { text, (word_count?), (words?), (vtt?) }; we only require text.
@@ -48,8 +50,8 @@ export async function transcribeAudio(
   env: Env,
   audio: number[] | Uint8Array,
 ): Promise<TranscriptResult | null> {
-  const bytes = audio instanceof Uint8Array ? [...audio] : audio
-  return CircuitBreakers.ai.execute(
+  const bytes = audio instanceof Uint8Array ? Array.from(audio) : audio
+  return degradeToNull('captions.asr', () => CircuitBreakers.ai.execute(
     async () => {
       const raw = await runAI(env, CAPTIONS_ASR_MODEL, { audio: bytes })
       const parsed = WhisperResponseSchema.safeParse(raw)
@@ -59,7 +61,7 @@ export async function transcribeAudio(
       return { text }
     },
     () => null, // breaker OPEN → captions paused
-  )
+  ))
 }
 
 /**
@@ -75,7 +77,7 @@ export async function translateText(
   targetLang: CaptionLocale,
 ): Promise<TranslationResult | null> {
   if (sourceLang === targetLang) return { text }
-  return CircuitBreakers.ai.execute(
+  return degradeToNull('captions.mt', () => CircuitBreakers.ai.execute(
     async () => {
       const raw = await runAI(env, CAPTIONS_MT_MODEL, {
         text,
@@ -89,7 +91,21 @@ export async function translateText(
       return { text: translated }
     },
     () => null, // breaker OPEN → degrade to source
-  )
+  ))
+}
+
+/**
+ * Below the breaker threshold `execute` rethrows. For captions every failure
+ * must degrade (paused chunk / source-only variant), never 500 the segment.
+ */
+async function degradeToNull<T>(route: string, fn: () => Promise<T | null>): Promise<T | null> {
+  try {
+    return await fn()
+  } catch (err) {
+    // Non-fatal by design: the caller treats null as "degrade this chunk".
+    logBestEffort(err, { traceId: 'captions', route, operation: 'ai.run', reason: 'captions_ai_degraded' })
+    return null
+  }
 }
 
 export const __captionsAiInternal = {

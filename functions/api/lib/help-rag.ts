@@ -12,6 +12,7 @@ import { sleep, withTimeout } from './shared/async'
 import { runAI, envWithAI } from './ai/ai-gateway'
 import { sanitizePromptText } from './ai/prompt-sanitize'
 import { scrubPII } from './ai/pii-scrub'
+import { AI_MODELS } from './ai/models'
 
 export class HelpAIError extends Error {
   constructor(message: string) {
@@ -31,7 +32,7 @@ export class HelpValidationError extends Error {
 }
 
 // Constants
-const HELP_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8' as const
+const HELP_MODEL = AI_MODELS.LLAMA_8B
 const AI_TIMEOUT_MS = 20_000
 const RETRY_DELAYS_MS = [200, 400] as const
 const MAX_TOKENS = 512

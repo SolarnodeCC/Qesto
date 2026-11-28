@@ -28,6 +28,9 @@ import {
 import { updateSessionGroundingHash } from '../../repositories/sessionRepository'
 import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { WIZARD_DRAFT_TTL_SECONDS } from '../../lib/constants'
+import { consumePromoAiRun } from '../../lib/promo-ai-quota'
+import { logBestEffort } from '../../lib/log'
+import { errorResponse } from '../../lib/error-handler'
 import {
         hashGrounding } from './shared'
 
@@ -49,6 +52,19 @@ async function generationCacheKey(
     }),
   )
   return `wizard:gen:${userId}:${hash}`
+}
+
+/**
+ * ADR-0074 monthly AI ceiling for wizard generations (no-op outside the
+ * free-access window). Called only on a cache miss, right before inference,
+ * so replays and rejected requests never cost the user a run.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- route context shared by three handlers
+async function consumeWizardQuota(c: any, userId: string): Promise<Response | null> {
+  if (!c.env.SESSIONS_KV) return null
+  const quota = await consumePromoAiRun(c.env, c.env.SESSIONS_KV, userId)
+  if (quota.allowed) return null
+  return errorResponse(c, 429, 'limit_exceeded', `Free-access AI limit reached (${quota.limit} AI runs this month). Resets on the 1st.`)
 }
 
 export function mountWizardGenerateRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
@@ -101,6 +117,8 @@ export function mountWizardGenerateRoutes(app: Hono<{ Bindings: Env; Variables: 
           })
         }
       }
+      const overQuota = await consumeWizardQuota(c, user.sub)
+      if (overQuota) return overQuota
       const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
       recordWizardAiInference(c, id, result.questions.length, inferenceStart)
@@ -167,6 +185,13 @@ export function mountWizardGenerateRoutes(app: Hono<{ Bindings: Env; Variables: 
     const groundingHash = await hashGrounding(grounding)
     const cacheKey = `wizard:gen:${user.sub}:${groundingHash}`
     const traceId = c.get('trace_id')
+
+    // Charge the monthly ceiling up front (a 429 can't be sent once the SSE
+    // stream has started) — but only when this isn't a cached replay.
+    if (!(await readKvText(c.env.SESSIONS_KV, cacheKey))) {
+      const overQuota = await consumeWizardQuota(c, user.sub)
+      if (overQuota) return overQuota
+    }
 
     function sse(event: string, data: unknown): Uint8Array {
       return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
@@ -244,9 +269,11 @@ export function mountWizardGenerateRoutes(app: Hono<{ Bindings: Env; Variables: 
             const { status: _status, ...errorBody } = payload
             controller.enqueue(sse('error', errorBody))
           } else {
+            // Never forward raw platform error text to the client.
+            logBestEffort(err, { traceId: traceId ?? 'unknown', route: 'wizard.ai.generate', operation: 'ai.stream', reason: 'wizard_stream_unexpected_error' })
             controller.enqueue(sse('error', {
               code: 'internal_error',
-              message: err instanceof Error ? err.message : 'Unexpected AI generation error',
+              message: 'AI generation failed. Please try again.',
             }))
           }
         } finally {
@@ -309,6 +336,8 @@ export function mountWizardGenerateRoutes(app: Hono<{ Bindings: Env; Variables: 
     try {
       const language = c.req.header('accept-language') ?? 'en'
       // The refine prompt blends grounding + user feedback into the goal field.
+      const overQuota = await consumeWizardQuota(c, c.get('user').sub)
+      if (overQuota) return overQuota
       const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, {
         sessionTitle: session.title,
