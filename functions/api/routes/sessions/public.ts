@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { SESSION_COOKIE } from '../../middleware/auth'
 import { jwtVerificationSecrets, verifyJwtWithSecrets } from '../../lib/jwt'
 import { deriveVoterIdentity } from '../../lib/voter'
+import { isTrustedBrowserOrigin } from '../../lib/origin'
 import { isSessionTokenRevoked } from '../../lib/session-token'
 import { requireLiveForWebSocket } from '../../lib/session-lifecycle'
 import { errorResponse } from '../../lib/error-handler'
@@ -98,7 +99,18 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
       .map((s) => s.trim())
       .find((s) => s.startsWith(`${SESSION_COOKIE}=`))
       ?.substring(SESSION_COOKIE.length + 1)
-    const token = bearerToken ?? cookieToken
+    // SECURITY: the session cookie is SameSite=None and the WS upgrade bypasses
+    // the CSRF middleware, so ANY page the host visited could open this socket
+    // with the host's cookie and gain presenter control (cross-site WebSocket
+    // hijacking). Browsers always send Origin on a WS handshake: honour the
+    // cookie only from a trusted origin. Untrusted origins degrade to a plain
+    // voter. The bearer-subprotocol path is unaffected (not ambient authority).
+    const cookieAllowed =
+      !!cookieToken && isTrustedBrowserOrigin(c.env, c.req.url, c.req.header('origin'))
+    if (cookieToken && !cookieAllowed && !bearerToken) {
+      logEvent({ event: 'ws.presenter_cookie_rejected_origin', sessionId: id, origin: (c.req.header('origin') ?? '').slice(0, 120) }, 'warn')
+    }
+    const token = bearerToken ?? (cookieAllowed ? cookieToken : undefined)
     let presenterUserId: string | null = null
     let presenterPermissions: Permission[] | undefined
     if (token) {

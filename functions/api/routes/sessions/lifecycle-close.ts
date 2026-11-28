@@ -92,7 +92,7 @@ export function mountSessionCloseRoute(app: Hono<{ Bindings: Env; Variables: Ses
           data: {
             counts: Record<string, number>
             total: number
-            votes: Array<{ voterId: string; optionId: string }>
+            votes: Array<{ voterId: string; optionId: string; questionId?: string }>
             questionId: string | null
             retroActionItems?: string[]
             retroStats?: { wentWell: number; didntGoWell: number; actions: number; totalCards: number }

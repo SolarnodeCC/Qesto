@@ -3,6 +3,7 @@
 // The start and close handlers were split into sibling modules (issue #687);
 // this file composes them and keeps the transition-to-live route.
 
+import { errorResponse } from '../../lib/error-handler'
 import { Hono } from 'hono'
 import type { Env } from '../../types'
 import type { SessionVars } from './shared'
@@ -66,9 +67,38 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
 
-    // Update DB status to live
-    const changed = await transitionEnergizingToLive(c.env.DB, id, user.sub)
+    // DO FIRST, then D1. The old order committed D1=`live` and then made a
+    // best-effort, unchecked DO call: if it failed the room stayed
+    // `energizing` (votes/advance/joins rejected) while every retry got 409
+    // because D1 was no longer `energizing`. The DO transition is idempotent
+    // (`transitioned:false` when already live), so retrying this route after
+    // any partial failure converges.
+    let doRes: Response
+    try {
+      doRes = await postDO(c.env, id, '/transition-to-live')
+    } catch (err) {
+      logEvent({
+        ts: new Date().toISOString(),
+        level: 'error',
+        event: 'session.transition_to_live.do_network_error',
+        trace_id: traceId,
+        session_id: id,
+        user_id: user.sub,
+        ...describeDOError(err),
+      }, 'error')
+      return errorResponse(c, 503, 'do_unavailable', 'Session room unavailable, please try again')
+    }
+    if (!doRes.ok) {
+      logEvent({
+        event: 'session.transition_to_live.do_rejected',
+        trace_id: traceId,
+        session_id: id,
+        status: doRes.status,
+      }, 'error')
+      return errorResponse(c, 503, 'do_unavailable', 'Session room unavailable, please try again')
+    }
 
+    const changed = await transitionEnergizingToLive(c.env.DB, id, user.sub)
     if (changed === 0) {
       return c.json(
         {
@@ -78,23 +108,6 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         },
         409,
       )
-    }
-
-    // Notify DO to update its internal state (if it exists). Best-effort by
-    // design — the DB transition already committed — but log the failure so
-    // a room stuck in energizing is diagnosable.
-    try {
-      await postDO(c.env, id, '/transition-to-live')
-    } catch (err) {
-      logEvent({
-        ts: new Date().toISOString(),
-        level: 'warn',
-        event: 'session.transition_to_live.do_network_error',
-        trace_id: traceId,
-        session_id: id,
-        user_id: user.sub,
-        ...describeDOError(err),
-      })
     }
 
     session.status = 'live'

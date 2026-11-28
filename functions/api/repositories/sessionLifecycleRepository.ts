@@ -79,25 +79,33 @@ export async function countNonDraftSessions(db: D1Database, ownerId: string): Pr
  * Persist per-voter rows on close. `INSERT OR IGNORE` + UNIQUE(question_id, voter_id)
  * guards against replay.
  */
+export type CloseVoteRow = { voterId: string; optionId: string; questionId?: string }
+
+/** Max statements per D1 batch on the close path (matches the DO vote flush). */
+export const CLOSE_VOTE_BATCH_SIZE = 100
+
 function closeVoteStatements(
   db: D1Database,
   sessionId: string,
-  questionId: string,
-  votes: Array<{ voterId: string; optionId: string }>,
+  questionId: string | null,
+  votes: CloseVoteRow[],
   submittedAt: number,
 ): D1PreparedStatement[] {
   const stmt = db.prepare(
     `INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
   )
-  return votes.map((v) => stmt.bind(ulid(), sessionId, questionId, v.voterId, v.optionId, submittedAt))
+  return votes
+    .map((v) => ({ ...v, qid: v.questionId ?? questionId }))
+    .filter((v): v is CloseVoteRow & { qid: string } => !!v.qid)
+    .map((v) => stmt.bind(ulid(), sessionId, v.qid, v.voterId, v.optionId, submittedAt))
 }
 
 export async function insertCloseVotes(
   db: D1Database,
   sessionId: string,
   questionId: string,
-  votes: Array<{ voterId: string; optionId: string }>,
+  votes: CloseVoteRow[],
   submittedAt: number,
 ): Promise<void> {
   if (votes.length === 0) return
@@ -116,13 +124,18 @@ export async function closeSessionWithVotes(
     ownerId: string
     closedAt: number
     questionId: string | null
-    votes: Array<{ voterId: string; optionId: string }>
+    votes: CloseVoteRow[]
   },
 ): Promise<void> {
-  const statements =
-    args.questionId && args.votes.length > 0
-      ? closeVoteStatements(db, args.sessionId, args.questionId, args.votes, args.closedAt)
-      : []
+  const statements = closeVoteStatements(db, args.sessionId, args.questionId, args.votes, args.closedAt)
+  // Large tails go in chunks first (an unbounded single batch could exceed
+  // D1's per-invocation limits and wedge the close). Each chunk is idempotent
+  // (INSERT OR IGNORE over ids pinned by the DO), so a retry after a partial
+  // failure is safe; the final batch still writes the last chunk together
+  // with the status flip, so "closed" never precedes its final votes.
+  while (statements.length > CLOSE_VOTE_BATCH_SIZE) {
+    await db.batch(statements.splice(0, CLOSE_VOTE_BATCH_SIZE))
+  }
   statements.push(markSessionClosedStatement(db, args.sessionId, args.ownerId, args.closedAt))
   await db.batch(statements)
 }
