@@ -242,6 +242,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
     setMyVotes([])
   }, [state.question?.id])
 
+  // The server rejected the last vote (paused, closed, out of date…): roll back
+  // the optimistic "voted" state so the participant can vote again instead of
+  // being told they voted when nothing was counted.
+  // (Adjust-state-during-render pattern: no effect, no cascading render.)
+  const rejectionSeq = state.voteRejection?.seq ?? 0
+  const [seenRejectionSeq, setSeenRejectionSeq] = useState(rejectionSeq)
+  if (rejectionSeq !== seenRejectionSeq) {
+    setSeenRejectionSeq(rejectionSeq)
+    if (rejectionSeq > 0) setMyVotes((prev) => prev.slice(0, -1))
+  }
+
   function handleVote(optionId: string) {
     sendVote(optionId)
     setMyVotes((prev) => [...prev, optionId])

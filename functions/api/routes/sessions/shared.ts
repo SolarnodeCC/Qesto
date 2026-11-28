@@ -98,7 +98,17 @@ export async function presenterPermissionsForSession(
 ): Promise<Permission[] | undefined> {
   if (!session.team_id) return undefined
   const team = await readKvJson<Team>(env.TEAMS_KV, teamDocumentKey(session.team_id))
-  if (!team) return []
+  if (!team) {
+    // The session owner always controls their own session. Returning [] here
+    // (team document missing/deleted from KV) handed the owner the presenter
+    // role with zero permissions: they could not advance, go back or pause.
+    // Non-owners still get nothing.
+    if (session.owner_id === userId) {
+      logEvent({ event: 'presenter_permissions.team_missing_owner_fallback', sessionId: session.id, teamId: session.team_id }, 'warn')
+      return undefined
+    }
+    return []
+  }
   return effectiveTeamPermissionsForUser(env.DB, team, userId)
 }
 

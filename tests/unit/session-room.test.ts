@@ -457,6 +457,34 @@ describe('WS4-A/B — votePolicy multi + react (SessionRoom integration)', () =>
   })
 })
 
+describe('question navigation keeps tallies (Back no longer wipes)', () => {
+  it('restores counts and dedupe when the presenter goes back', async () => {
+    const { room, state } = await buildRoom()
+    await room.fetch(new Request('https://do.internal/init', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'sess_nav', ownerId: 'user_host', code: 'NAV001', title: 'Nav', votePolicy: 'once',
+        questions: [
+          { id: 'q_1', kind: 'poll', prompt: 'One', options: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }] },
+          { id: 'q_2', kind: 'poll', prompt: 'Two', options: [{ id: 'c', label: 'C' }, { id: 'd', label: 'D' }] },
+        ],
+      }),
+    }))
+    const host = connectPresenter(state)
+    const v = connectVoter(state, 'anon_nav')
+    await sendMessage(room, v, { type: 'vote', data: { questionId: 'q_1', optionId: 'a' }, timestamp: 0 })
+    await sendMessage(room, host, { type: 'advance', data: {}, timestamp: 0 })
+    expect((await state.storage.get<Record<string, number>>('counts')) ?? {}).toEqual({})
+    await sendMessage(room, host, { type: 'back', data: {}, timestamp: 0 })
+    expect((await state.storage.get<Record<string, number>>('counts'))?.a).toBe(1)
+    // Dedupe survives: a second vote by the same voter is not counted.
+    await sendMessage(room, v, { type: 'vote', data: { questionId: 'q_1', optionId: 'b' }, timestamp: 0 })
+    const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
+    expect((counts.a ?? 0) + (counts.b ?? 0)).toBe(1)
+  })
+})
+
 describe('advance authorisation', () => {
   it('rejects advance from a voter role', async () => {
     const { room, state } = await buildRoom()

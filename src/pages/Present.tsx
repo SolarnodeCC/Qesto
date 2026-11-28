@@ -155,7 +155,10 @@ export default function Present() {
   }
 
   function handleStartTimer() {
-    const secs = Math.max(10, Math.min(600, parseInt(timerInput, 10) * 60))
+    // An empty/invalid input used to yield NaN → a "NaN:NaN" timer that never stopped.
+    const minutes = Number.parseFloat(timerInput)
+    if (!Number.isFinite(minutes) || minutes <= 0) return
+    const secs = Math.max(10, Math.min(600, Math.round(minutes * 60)))
     timer.start(secs)
   }
 

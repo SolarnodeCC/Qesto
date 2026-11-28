@@ -14,6 +14,7 @@ import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
 import { runContentEngine } from '../functions/api/lib/marketing/content-engine'
 import { refreshAllTokens } from '../functions/api/lib/marketing/token-status'
 import { runMetricsAlertSweep } from '../functions/api/lib/metrics-alert-sweep'
+import { closeStaleSessions } from '../functions/api/lib/stale-session-sweep'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -162,6 +163,19 @@ export const SCHEDULED_JOBS: readonly ScheduledJob[] = [
     run: async (env) => {
       const sweep = await runMetricsAlertSweep(env)
       return `scanned ${sweep.scanned}, critical ${sweep.critical}`
+    },
+  },
+  {
+    // Auto-close sessions abandoned LIVE/ENERGIZING for >24h (2026-11 go-live
+    // review found sessions stuck live for weeks). Destroys the voter salt via
+    // the normal close write. Throws when any close fails so the dispatcher
+    // logs + alerts the job instead of reporting `ok`.
+    key: 'stale-session-sweep',
+    cron: '0 * * * *',
+    run: async (env) => {
+      const r = await closeStaleSessions(env)
+      if (r.failed > 0) throw new Error(`stale-session-sweep: ${r.failed}/${r.scanned} closes failed`)
+      return `scanned ${r.scanned}, closed ${r.closed}`
     },
   },
   // Mention Monitor (Reddit/YouTube) intentionally absent — not connected (#941).

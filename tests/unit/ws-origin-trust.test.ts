@@ -1,10 +1,10 @@
 /**
- * Requirement: OWASP A01 / cross-site WebSocket hijacking — presenter role via cookie only from a trusted Origin (2026-11 go-live review).
+ * Requirement: ADR-0001 (DO per session) + CSRF origin model (middleware/csrf.ts DD-24/25) — presenter role via cookie only from a trusted Origin.
  */
 import { describe, expect, it } from 'vitest'
 import { isTrustedBrowserOrigin } from '../../functions/api/lib/origin'
 
-const PROD = { PAGES_URL: 'https://qesto.cc', API_URL: 'https://qesto.cc', ENV: 'production' }
+const PROD = { PAGES_URL: 'https://qesto.cc', API_URL: 'https://qesto.cc', ENV: 'production' as const }
 const URL_PROD = 'https://qesto.cc/api/sessions/s1/ws'
 
 describe('isTrustedBrowserOrigin', () => {

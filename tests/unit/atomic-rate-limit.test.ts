@@ -65,7 +65,7 @@ describe('atomicRateLimit (ADR-0073 WS-1)', () => {
       api_key: 120,
       embed_read: 120,
       embed_handshake: 30,
-      join: 20,
+      join: 240, // sized for a full room behind one NAT (2026-11 go-live review)
       public_event: 60,
       webhook: 100,
       auth_burst: 5,

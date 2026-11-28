@@ -126,6 +126,7 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
         participants: self.ctx.getWebSockets().length,
         energizer,
         expiresAt: meta.questionExpiresAt ?? null,
+        paused: meta.paused === true,
         sentiment,
         ...(isPresenterReconnect ? { presenterReconnect: true } : {}),
       },

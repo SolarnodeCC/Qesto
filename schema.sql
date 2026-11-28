@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   code TEXT NOT NULL UNIQUE,                                   -- 6-char join code
   title TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft'
-    CHECK (status IN ('draft','live','closed','archived')),
+    CHECK (status IN ('draft','energizing','live','closed','archived')),
   anonymity TEXT NOT NULL DEFAULT 'full'
     CHECK (anonymity IN ('full','partial','none','zero_knowledge')),
   vote_policy TEXT NOT NULL DEFAULT 'once'

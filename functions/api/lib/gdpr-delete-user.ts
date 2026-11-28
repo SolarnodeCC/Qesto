@@ -1,7 +1,7 @@
 /**
  * GDPR-BADGE-01 — delete all personal data for an authenticated user.
  */
-import { hardDeleteSession } from './session-delete'
+import { hardDeleteSession, purgeLiveSessionState } from './session-delete'
 import { teamDocumentKey, userPrefsKey } from './kv-keys'
 import { readKvText, writeKvJson, deleteKv } from './kv'
 import { logBestEffort } from './log'
@@ -23,6 +23,9 @@ export async function deleteUserGdprData(
     // supplied, the user's decision vectors (keyed by session id, see
     // insights-vectorize.ts) are purged alongside content + metadata.
     DECISIONS_VECTORIZE?: VectorizeIndex
+    // Live tier: DO storage + R2 recovery snapshots (optional for the same reason).
+    SESSION_ROOM?: DurableObjectNamespace | undefined
+    R2_SESSIONS?: R2Bucket | undefined
   },
   userId: string,
 ): Promise<GdprDeleteResult> {
@@ -60,7 +63,10 @@ export async function deleteUserGdprData(
   let sessionsDeleted = 0
   for (const row of sessions ?? []) {
     const { deleted } = await hardDeleteSession(env.DB, row.id, userId)
-    if (deleted) sessionsDeleted++
+    if (deleted) {
+      sessionsDeleted++
+      await purgeLiveSessionState(env, row.id)
+    }
   }
 
   await env.DB.prepare(`DELETE FROM audit_events WHERE actor_id = ?1`).bind(userId).run().catch((err) => {

@@ -12,11 +12,16 @@ const LiveQuestionSchema = z.object({
   options: z.array(z.union([z.string(), PollOptionSchema])).optional(),
 })
 
+// Optional fields are declared (zod strips unknown keys): dropping `anonymity`
+// meant the zero-knowledge trust badge and anonymity label never rendered.
 const LiveSessionSummarySchema = z.object({
   id: z.string(),
   code: z.string(),
   title: z.string(),
   status: z.string(),
+  anonymity: z.enum(['full', 'partial', 'none', 'zero_knowledge']).optional(),
+  sessionMode: z.string().optional(),
+  votePolicy: z.string().optional(),
 })
 
 const ServerEnvelopeSchema = z.object({
@@ -61,5 +66,7 @@ export function parseInitPayload(data: Record<string, unknown>) {
     // appends the `'xr'` string when BETA_XR_ENABLED is on and the session is
     // not zero_knowledge. Absence means the launcher must never mount.
     features: Array.isArray(data.features) ? (data.features.filter((f) => typeof f === 'string') as string[]) : [],
+    paused: data.paused === true,
+    expiresAt: typeof data.expiresAt === 'number' ? data.expiresAt : null,
   }
 }

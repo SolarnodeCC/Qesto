@@ -28,6 +28,10 @@ export function sendWsJson(ws: WebSocket | null, payload: Record<string, unknown
 }
 
 export const WS_MAX_RECONNECT_ATTEMPTS = 5
+/** A connection open this long resets the reconnect budget. */
+export const WS_STABLE_RESET_MS = 30_000
+/** App-level keepalive interval (DO replies `pong` via setWebSocketAutoResponse). */
+export const WS_PING_INTERVAL_MS = 25_000
 
 /** Exponential backoff: 1s, 2s, 4s, 8s, capped at 16s. */
 export function wsReconnectDelayMs(attempt: number): number {
@@ -67,30 +71,51 @@ export type ReconnectingWsHandle = {
  * session hooks — previously each hook hand-rolled the same connect / close /
  * exponential-backoff machinery (audit 2026-07-08, High).
  *
- * NOTE: the reconnect attempt counter deliberately does NOT reset on a
- * successful open — this mirrors the behavior of all four original hooks
- * (at most WS_MAX_RECONNECT_ATTEMPTS reconnects over the handle's lifetime).
+ * Reconnect budget: the attempt counter resets once a connection has stayed
+ * open for WS_STABLE_RESET_MS. It used to never reset, so a long session with
+ * five transient drops (Wi-Fi roaming, laptop sleep) went permanently `failed`.
+ * After giving up, the socket is retried when the browser comes back `online`
+ * or the tab becomes visible. An app-level ping every WS_PING_INTERVAL_MS
+ * keeps idle connections from being reaped by proxies/NATs; the DO answers it
+ * with a hibernation auto-response, so it never wakes the room.
  */
 export function createReconnectingWs(opts: ReconnectingWsOptions): ReconnectingWsHandle {
   let ws: WebSocket | null = null
   let attempt = 0
   let retryTimer: ReturnType<typeof setTimeout> | null = null
   let closedByClient = false
+  let gaveUp = false
+  let stableTimer: ReturnType<typeof setTimeout> | null = null
+  let pingTimer: ReturnType<typeof setInterval> | null = null
+
+  const clearLiveTimers = () => {
+    if (stableTimer) { clearTimeout(stableTimer); stableTimer = null }
+    if (pingTimer) { clearInterval(pingTimer); pingTimer = null }
+  }
 
   const connect = () => {
+    gaveUp = false
     opts.onStatus({ kind: 'connecting' })
     const socket = new WebSocket(opts.url, opts.subprotocols)
     ws = socket
     opts.onSocket?.(socket)
 
     socket.addEventListener('open', () => {
+      stableTimer = setTimeout(() => { attempt = 0 }, WS_STABLE_RESET_MS)
+      pingTimer = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          try { socket.send('ping') } catch { /* close handler takes over */ }
+        }
+      }, WS_PING_INTERVAL_MS)
       opts.onOpen?.(socket)
       opts.onStatus({ kind: 'open' })
     })
     socket.addEventListener('message', (ev) => {
+      if (ev.data === 'pong') return // keepalive reply, not a protocol frame
       opts.onMessage(ev)
     })
     socket.addEventListener('close', (ev) => {
+      clearLiveTimers()
       if (closedByClient) return
       if (ev.code === 1000) {
         opts.onStatus({ kind: 'closed' })
@@ -98,6 +123,7 @@ export function createReconnectingWs(opts: ReconnectingWsOptions): ReconnectingW
       }
       attempt += 1
       if (attempt > WS_MAX_RECONNECT_ATTEMPTS) {
+        gaveUp = true
         opts.onStatus({ kind: 'failed' })
         return
       }
@@ -110,12 +136,30 @@ export function createReconnectingWs(opts: ReconnectingWsOptions): ReconnectingW
     })
   }
 
+  // After giving up, try again as soon as the network/tab is back.
+  const revive = () => {
+    if (closedByClient || !gaveUp) return
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+    attempt = 0
+    connect()
+  }
+  const hasWindow = typeof window !== 'undefined' && typeof window.addEventListener === 'function'
+  if (hasWindow) {
+    window.addEventListener('online', revive)
+    document.addEventListener('visibilitychange', revive)
+  }
+
   connect()
 
   return {
     socket: () => ws,
     close: () => {
       closedByClient = true
+      clearLiveTimers()
+      if (hasWindow) {
+        window.removeEventListener('online', revive)
+        document.removeEventListener('visibilitychange', revive)
+      }
       if (retryTimer) {
         clearTimeout(retryTimer)
         retryTimer = null
