@@ -31,11 +31,19 @@ const MAX_ROUTES_PER_FLUSH = 60
 
 type Acc = { count: number; errors: number; samples: number[] }
 
-const ISOLATE_ID = (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Math.random())).slice(0, 8)
+// NOTE: nothing here may run random generation / timers / I/O at module
+// scope — Workers rejects the whole deploy (error 10021: "Disallowed operation
+// called within global scope"). The isolate id and flush clock are lazy.
+let isolateId: string | null = null
+function getIsolateId(): string {
+  isolateId ??= crypto.randomUUID().slice(0, 8)
+  return isolateId
+}
 
 let byBucketRoute = new Map<string, Acc>()
 let live: Acc = { count: 0, errors: 0, samples: [] }
-let lastFlushAt = Date.now()
+/** 0 = not started; set on the first recorded sample (inside a handler). */
+let lastFlushAt = 0
 
 function add(acc: Acc, latencyMs: number, isError: boolean): void {
   acc.count++
@@ -45,6 +53,7 @@ function add(acc: Acc, latencyMs: number, isError: boolean): void {
 
 /** Record one request/span sample. Synchronous and allocation-light. */
 export function recordRequestMetric(route: string, latencyMs: number, isError: boolean, now = Date.now()): void {
+  if (lastFlushAt === 0) lastFlushAt = now
   const bucketTs = Math.floor(now / METRICS_BUCKET_MS) * METRICS_BUCKET_MS
   const key = `${bucketTs}|${route}`
   let acc = byBucketRoute.get(key)
@@ -100,7 +109,7 @@ export async function flushMetricsSnapshot(
         snapshot.rows.map((r) => {
           const sorted = [...r.samples].sort((a, b) => a - b)
           return stmt.bind(
-            `${r.bucketTs}|${r.route}|${ISOLATE_ID}`,
+            `${r.bucketTs}|${r.route}|${getIsolateId()}`,
             r.bucketTs,
             r.route,
             pct(sorted, 0.5),
@@ -130,5 +139,5 @@ export async function flushMetricsSnapshot(
 export function __resetMetricsRollup(): void {
   byBucketRoute = new Map()
   live = { count: 0, errors: 0, samples: [] }
-  lastFlushAt = Date.now()
+  lastFlushAt = 0
 }

@@ -1,7 +1,7 @@
 /**
  * Requirement: ADR-0030 (SLOs & error budgets) — request metrics reach metrics_summary so SLO paging can fire.
  */
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   __resetMetricsRollup,
   flushMetricsSnapshot,
@@ -49,5 +49,20 @@ describe('metrics rollup', () => {
     expect(a[6]).toBe(1) // error_count
     expect(a[7]).toBe(2) // request_count
     expect(kvPuts).toBe(1)
+  })
+})
+
+describe('metrics rollup — Workers global-scope rules', () => {
+  // Workers rejects a deploy that generates random values / starts timers /
+  // does I/O at module scope (error 10021). This broke the PR #1011 deploy.
+  it('does not generate random values when the module is imported', async () => {
+    vi.resetModules()
+    const spy = vi.spyOn(crypto, 'randomUUID')
+    const mathSpy = vi.spyOn(Math, 'random')
+    await import('../../functions/api/lib/metrics-rollup')
+    expect(spy).not.toHaveBeenCalled()
+    expect(mathSpy).not.toHaveBeenCalled()
+    spy.mockRestore()
+    mathSpy.mockRestore()
   })
 })
