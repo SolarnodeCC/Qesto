@@ -2,6 +2,7 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
+import { getDeviceId } from '../lib/device-id'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -171,8 +172,12 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
   const tXr = useT('xr')
 
+  // Per-browser id so participants behind one shared IP stay distinct voters.
+  const deviceId = useMemo(() => getDeviceId(), [])
+
   const { state, sendVote, sendEnergizerAnswer, sendReactionSubmit, sendXrAvatarSync } = useLiveSession(sessionId, {
     enabled: true,
+    fingerprint: deviceId,
     onReactionDelta,
     onXrAvatarSync,
   })

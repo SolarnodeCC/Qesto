@@ -315,6 +315,11 @@ export class IdeateHandler {
     await this.maybeBroadcastRanking()
   }
 
+  /** When the debounced re-cluster is due, or null when none is pending. */
+  async pendingClusterAt(): Promise<number | null> {
+    return (await this.ctx.storage.get<number>(IDEATE_KEYS.clusterPendingAt)) ?? null
+  }
+
   async runPendingCluster(nowMs: number): Promise<boolean> {
     if (!(await this.isEnabled())) return false
     const pendingAt = await this.ctx.storage.get<number>(IDEATE_KEYS.clusterPendingAt)

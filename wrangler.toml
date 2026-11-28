@@ -289,7 +289,7 @@ simple = { limit = 30, period = 60 }
 [[ratelimits]]
 name = "RL_JOIN"
 namespace_id = "1004"
-simple = { limit = 20, period = 60 }
+simple = { limit = 240, period = 60 }
 
 [[ratelimits]]
 name = "RL_PUBLIC_EVENT"

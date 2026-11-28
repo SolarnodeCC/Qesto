@@ -2,8 +2,8 @@
  * CANVAS-ADAPTIVE-VIZ-01 — adaptive viz selection logic unit tests (S88)
  *
  * Tests the selection rule without mounting React:
+ *   - word_cloud / open → WordCloudViz branch (checked first; no options)
  *   - 0 options   → empty/waiting branch
- *   - word_cloud / open → WordCloudViz branch
  *   - 1–2 options → DonutViz branch  (≤ DONUT_MAX = 2)
  *   - 3–6 options → VBarChart branch  (default)
  *   - 7+ options  → HBarChart branch  (> HORIZONTAL_THRESHOLD = 6)
@@ -21,8 +21,9 @@ function selectViz(
   tallyHidden: boolean,
 ): VizKind {
   if (tallyHidden) return 'hidden'
-  if (options.length === 0) return 'empty'
+  // Text kinds come first: they have no options (answers are text-keyed counts).
   if (questionKind === 'word_cloud' || questionKind === 'open') return 'word-cloud'
+  if (options.length === 0) return 'empty'
   if (options.length <= 2) return 'donut'
   if (options.length > 6) return 'hbar'
   return 'vbar'
@@ -39,7 +40,7 @@ describe('Adaptive viz selection rule', () => {
 
   it('returns "word-cloud" for word_cloud kind regardless of option count', () => {
     expect(selectViz(makeOptions(5), 'word_cloud', false)).toBe('word-cloud')
-    expect(selectViz(makeOptions(0), 'word_cloud', false)).toBe('empty') // empty wins first
+    expect(selectViz(makeOptions(0), 'word_cloud', false)).toBe('word-cloud') // text kinds have no options
     expect(selectViz(makeOptions(1), 'word_cloud', false)).toBe('word-cloud')
   })
 

@@ -494,6 +494,19 @@ export class EnergizerHandler {
 
   // ── Alarm: timeout check ──────────────────────────────────────────────────
 
+  /** When the active energizer auto-completes, or null when none is pending. */
+  async pendingTimeoutAt(): Promise<number | null> {
+    const energizer = await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)
+    const activatedAt = await this.ctx.storage.get<number>(K_ENERGIZER_ACTIVATED_AT)
+    if (!energizer || !activatedAt || energizer.status === 'completed') return null
+    return activatedAt + ENERGIZER_TIMEOUT_MS
+  }
+
+  /** True while an answer burst is waiting for the debounced broadcast. */
+  hasPendingBroadcast(): boolean {
+    return this.broadcastDirty
+  }
+
   async handleAlarmTimeout(nowMs: number): Promise<void> {
     const energizer = await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)
     const activatedAt = await this.ctx.storage.get<number>(K_ENERGIZER_ACTIVATED_AT)

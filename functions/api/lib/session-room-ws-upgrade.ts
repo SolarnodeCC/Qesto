@@ -24,7 +24,10 @@ import { sendInit, broadcastParticipants } from './session-room-presenter-init'
 // ── /ws (WebSocket upgrade) ───────────────────────────────────────────────
 export async function handleUpgrade(self: SessionRoomContext, req: Request): Promise<Response> {
   const status = (await self.ctx.storage.get<string>('status')) ?? null
-  if (status !== 'live') {
+  // ENERGIZING is a WebSocket-only phase (warm-up activities are delivered over
+  // the socket), so it must accept connections. Rejecting it made every
+  // participant and the presenter fail 5 reconnects and see "Unable to connect".
+  if (status !== 'live' && status !== 'energizing') {
     return new Response('Session not LIVE', { status: 409 })
   }
   const role = (req.headers.get('x-qesto-role') as 'presenter' | 'voter' | null) ?? 'voter'
@@ -35,18 +38,23 @@ export async function handleUpgrade(self: SessionRoomContext, req: Request): Pro
     return new Response('Missing voter headers', { status: 400 })
   }
 
-  // Per-IP concurrent connection cap (S5).
   if (role === 'voter') {
+    const meta = await self.ctx.storage.get<Meta>(K_META)
+    const plan: PlanTier = meta?.plan ?? 'free'
+    const maxParticipants = PLAN_QUOTAS[plan].maxParticipantsPerSession
+
+    // Per-IP concurrent connection cap (S5). A whole room commonly shares ONE
+    // public IP (corporate NAT, venue/school Wi-Fi), so a fixed cap of 10 locked
+    // out the 11th attendee. The cap now scales to the plan's participant cap;
+    // the per-IP connect rate limit below still bounds a single abusive host.
+    const perIpCap = Math.max(PER_IP_CONCURRENT_CAP, maxParticipants)
     const existing = self.ctx.getWebSockets(`ip:${ipHash}`)
-    if (existing.length >= PER_IP_CONCURRENT_CAP) {
+    if (existing.length >= perIpCap) {
       return new Response('Too many connections from this IP', { status: 429 })
     }
 
     // Per-session participant capacity cap (plan-gated). Counts existing
     // voter sockets (tag role:voter) and rejects new joins at the limit.
-    const meta = await self.ctx.storage.get<Meta>(K_META)
-    const plan: PlanTier = meta?.plan ?? 'free'
-    const maxParticipants = PLAN_QUOTAS[plan].maxParticipantsPerSession
     const currentVoters = self.ctx.getWebSockets('role:voter').length
     if (currentVoters >= maxParticipants) {
       writeEvent(self.env.METRICS_AE, {
@@ -59,7 +67,8 @@ export async function handleUpgrade(self: SessionRoomContext, req: Request): Pro
     }
 
     // Per-IP per-minute rate limiting (SEC-01).
-    const maxPerMin = parseInt(self.env.WS_CONNECT_PER_IP_PER_MIN ?? '15', 10) || 15
+    // Default sized for a full room joining from one NAT within a minute.
+    const maxPerMin = parseInt(self.env.WS_CONNECT_PER_IP_PER_MIN ?? '300', 10) || 300
     const rateLimitExceeded = await self.rateLimiter.checkIpRateLimit(ipHash, maxPerMin)
     if (rateLimitExceeded) {
       return new Response('Rate limit exceeded for this IP', { status: 429 })

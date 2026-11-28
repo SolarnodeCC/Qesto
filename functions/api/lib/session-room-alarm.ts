@@ -35,7 +35,9 @@ export async function runAlarm(self: SessionRoomContext): Promise<void> {
   const nowMs = now()
 
   // Phase 2.2: Flush votes if interval elapsed or on explicit flush request.
-  if (self.state.flushScheduled && nowMs >= self.state.lastFlushAt + FLUSH_INTERVAL_MS) {
+  // Keyed on the buffer, not `flushScheduled`: a failed flush clears the flag
+  // but keeps the votes, and they must still be retried.
+  if (self.state.voteBuffer.length > 0 && nowMs >= self.state.lastFlushAt + FLUSH_INTERVAL_MS) {
     await self.flushVotes()
   }
 
@@ -91,7 +93,53 @@ export async function runAlarm(self: SessionRoomContext): Promise<void> {
       await self.ctx.storage.setAlarm(meta.questionExpiresAt)
     }
   }
+
+  // A DO has exactly one alarm, and every scheduler only ever moves it EARLIER.
+  // The 100ms results-broadcast alarm therefore replaced the 5s vote-flush
+  // alarm; when it fired before the flush interval nothing re-armed, so the
+  // last votes of a burst stayed in memory only and were lost on eviction or
+  // deploy. Re-arm to the earliest outstanding deadline on every run.
+  const next = await nextAlarmDeadline(self, now())
+  if (next !== null) await self.scheduleAlarm(next)
 }
+
+/**
+ * Earliest time the alarm must fire again, or null when nothing is pending.
+ * Exported for tests.
+ */
+export async function nextAlarmDeadline(self: SessionRoomContext, nowMs: number): Promise<number | null> {
+  const deadlines: number[] = []
+  const soon = nowMs + 50
+
+  if (self.state.voteBuffer.length > 0) {
+    self.state.flushScheduled = true
+    deadlines.push(Math.max(soon, self.state.lastFlushAt + FLUSH_INTERVAL_MS))
+  }
+  if (self.state.resultsDirty) deadlines.push(soon)
+  if (self.energizerHandler.hasPendingBroadcast()) deadlines.push(soon)
+
+  const meta = await self.ctx.storage.get<Meta>(K_META)
+  if (meta?.sessionMode === 'fun' && meta.questionExpiresAt) {
+    deadlines.push(Math.max(soon, meta.questionExpiresAt))
+  }
+
+  const energizerTimeout = await self.energizerHandler.pendingTimeoutAt()
+  if (energizerTimeout !== null) deadlines.push(Math.max(soon, energizerTimeout))
+
+  const clusterAt = await self.ideateHandler.pendingClusterAt()
+  if (clusterAt !== null) deadlines.push(Math.max(soon, clusterAt))
+
+  const retry = await self.ctx.storage.get<{ enqueuedAt: number }>(K_SENTIMENT_RETRY_QUEUE)
+  if (retry) deadlines.push(Math.max(soon, retry.enqueuedAt + SENTIMENT_RETRY_DELAY_MS))
+
+  // Periodic R2 recovery snapshot only while clients are connected.
+  if (self.ctx.getWebSockets().length > 0) {
+    deadlines.push(Math.max(soon, self.state.lastSnapshotAt + SNAPSHOT_INTERVAL_MS))
+  }
+
+  return deadlines.length > 0 ? Math.min(...deadlines) : null
+}
+
 
 // Sentiment analysis retry: if a retry job is queued and due, process it.
 async function processSentimentRetry(self: SessionRoomContext, nowMs: number): Promise<void> {

@@ -511,6 +511,7 @@ function PresentInner({
               total={state.results.total}
               questionKind={state.question?.kind}
               tallyHidden={!tallyVisible}
+              textCounts={state.results.counts}
             />
           </div>
 
