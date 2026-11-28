@@ -260,10 +260,13 @@ Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
         if (properNounGateAdmits(nerResponse)) {
           valid.push(q)
         } else {
+          // Never log the detected nouns themselves: they are frequently
+          // people's names (PII) from the source session. Count only.
           const verdict = parseJsonLoose(nerResponse) as { nouns?: unknown } | null
-          const nouns = Array.isArray(verdict?.nouns) ? (verdict.nouns as string[]).join(',') : 'unparseable_verdict'
-          await logDiscard(marketingKv, sessionId, `proper_nouns_found:${nouns}`, q.id)
-          console.log(`[workflow] Discarded Q${q.id}: proper noun scan (${nouns})`)
+          const nounCount = Array.isArray(verdict?.nouns) ? verdict.nouns.length : -1
+          const reason = nounCount >= 0 ? `proper_nouns_found:${nounCount}` : 'proper_nouns_found:unparseable_verdict'
+          await logDiscard(marketingKv, sessionId, reason, q.id)
+          console.log(`[workflow] Discarded Q${q.id}: proper noun scan (${reason})`)
         }
       }
 
@@ -382,7 +385,8 @@ Each array must contain exactly ${enTexts.length} strings, in the same order.`
         }
         return { nl: parsed.nl as string[], de: parsed.de as string[], fr: parsed.fr as string[] }
       } catch (err) {
-        console.warn('[workflow] Translation failed, falling back to English:', err)
+        // Non-fatal: English is a valid template language.
+        logBestEffort(err, { traceId: `workflow-${sessionId}`, route: 'workflow.translate', operation: 'ai.run', reason: 'translation_failed_english_fallback' })
         return fallback
       }
     })
@@ -492,7 +496,8 @@ Each array must contain exactly ${enTexts.length} strings, in the same order.`
             console.warn('[workflow] IndexNow ping skipped or rejected (non-blocking)')
           }
         } catch (err) {
-          console.warn('[workflow] IndexNow ping failed (non-blocking):', err)
+          // Non-blocking: search-engine ping only.
+          logBestEffort(err, { traceId: `workflow-${sessionId}`, route: 'workflow.indexnow', operation: 'fetch', reason: 'indexnow_ping_failed' })
         }
       })
     }

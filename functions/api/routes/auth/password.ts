@@ -1,3 +1,4 @@
+import { background } from '../../lib/background'
 import { z } from 'zod'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { readKvText, writeKvJson, deleteKv } from '../../lib/kv'
@@ -122,14 +123,14 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
 
       const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
-      void recordAuthAuditEvent(c.env.DB, {
+      background(c, recordAuthAuditEvent(c.env.DB, {
         action: 'auth.signup',
         actor_id: userId,
         actor_ip: c.req.header('cf-connecting-ip') ?? null,
         trace_id: c.get('trace_id'),
         subject_id: userId,
         outcome: 'success',
-      })
+      }), 'auth.audit')
       return c.json(
         { ok: true, data: { id: userId, email: normalEmail, token: jwt, email_verified: false }, trace_id: c.get('trace_id') },
         201,
@@ -204,14 +205,14 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       const valid = cred ? await verifyPassword(password, cred.hash) : false
 
       if (!valid) {
-        void recordAuthAuditEvent(c.env.DB, {
+        background(c, recordAuthAuditEvent(c.env.DB, {
           action: 'auth.login_failed',
           actor_ip: c.req.header('cf-connecting-ip') ?? null,
           trace_id: c.get('trace_id'),
           subject_id: normalEmail,
           outcome: 'failure',
           detail: 'invalid_credentials',
-        })
+        }), 'auth.audit')
         return c.json(
           { ok: false, error: { code: 'invalid_credentials', message: 'Invalid email or password' }, trace_id: c.get('trace_id') },
           401,
@@ -241,14 +242,14 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
 
       const jwt = await signJwt({ sub: user!.id, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
-      void recordAuthAuditEvent(c.env.DB, {
+      background(c, recordAuthAuditEvent(c.env.DB, {
         action: 'auth.login',
         actor_id: user!.id,
         actor_ip: c.req.header('cf-connecting-ip') ?? null,
         trace_id: c.get('trace_id'),
         subject_id: user!.id,
         outcome: 'success',
-      })
+      }), 'auth.audit')
       return c.json({ ok: true, data: { id: user!.id, email: normalEmail, token: jwt }, trace_id: c.get('trace_id') })
     } catch (err) {
       return authJsonInternalError(c, err, '[auth] password login')

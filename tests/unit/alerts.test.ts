@@ -11,6 +11,7 @@ import {
   parseGitHubAlertRepo,
   ALERT_THRESHOLDS,
   GITHUB_ALERT_LABEL,
+  __resetAlertDedup,
 } from '../../functions/api/lib/alerts'
 
 describe('Alerts — Threshold Detection', () => {
@@ -101,6 +102,7 @@ describe('dispatchAlert channels', () => {
   const originalFetch = globalThis.fetch
 
   beforeEach(() => {
+    __resetAlertDedup()
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ number: 42 }), { status: 201 })),
@@ -221,5 +223,21 @@ describe('dispatchAlert channels', () => {
     const urls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.map((c) => String(c[0]))
     expect(urls.some((u) => u.endsWith('/issues/99/comments'))).toBe(true)
     expect(urls.some((u) => u.endsWith('/repos/SolarnodeCC/Qesto/issues') && !u.includes('/99'))).toBe(false)
+  })
+})
+
+describe('dispatchAlert dedupe', () => {
+  beforeEach(() => {
+    __resetAlertDedup()
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 200 })))
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('pages the webhook once per fingerprint within the window', async () => {
+    const env = { ALERT_WEBHOOK_URL: 'https://hooks.example/x' }
+    const first = await dispatchAlert(env, criticalAlert('/api/sessions/01HZZZZZZZZZZZZZZZZZZZZZZZ/close', 'Error'), { route: '/api/sessions/01HZZZZZZZZZZZZZZZZZZZZZZZ/close' })
+    const second = await dispatchAlert(env, criticalAlert('/api/sessions/01HYYYYYYYYYYYYYYYYYYYYYYY/close', 'Error'), { route: '/api/sessions/01HYYYYYYYYYYYYYYYYYYYYYYY/close' })
+    expect(first.webhook).toBe(true)
+    expect(second.webhook).toBe(false)
   })
 })

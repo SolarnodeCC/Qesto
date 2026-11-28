@@ -78,6 +78,7 @@
     "check:kv-access": "node scripts/check-kv-access.mjs",
     "check:ai-gateway": "node scripts/check-ai-gateway.mjs",
     "check:ai-models": "node scripts/check-ai-models.mjs",
+    "check:pages-drift": "node scripts/check-pages-config-drift.mjs qesto",
     "check:d1-access": "node scripts/check-d1-access.mjs",
     "check:unbounded-queries": "node scripts/check-unbounded-queries.mjs",
     "check:error-response": "node scripts/check-error-response.mjs",

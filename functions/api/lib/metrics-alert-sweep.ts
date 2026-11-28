@@ -4,6 +4,10 @@
 import { checkAlert } from './alerts'
 import { dispatchOperatorAlert, type AlertPagingEnv } from './alert-paging'
 import type { Env } from '../types'
+import { logEvent } from './log'
+
+/** Minimum requests per route-hour before an SLO breach can page. */
+export const MIN_REQUESTS_TO_JUDGE = 20
 
 export type MetricsSweepResult = {
   scanned: number
@@ -16,14 +20,21 @@ export async function runMetricsAlertSweep(env: Pick<Env, 'DB'> & AlertPagingEnv
   let critical = 0
 
   try {
+    // Rows are per (5-min bucket, route, isolate) — aggregate per route over
+    // the last hour, and ignore routes with too little traffic to judge.
     const { results } = await env.DB.prepare(
-      `SELECT route, request_count, error_count, p95_ms
+      `SELECT route,
+              SUM(request_count) AS request_count,
+              SUM(error_count)   AS error_count,
+              MAX(p95_ms)        AS p95_ms
          FROM metrics_summary
-        WHERE bucket_ts >= ?1 AND request_count > 0
-        ORDER BY bucket_ts DESC
+        WHERE bucket_ts >= ?1
+        GROUP BY route
+       HAVING SUM(request_count) >= ?2
+        ORDER BY SUM(error_count) DESC
         LIMIT 120`,
     )
-      .bind(since1h)
+      .bind(since1h, MIN_REQUESTS_TO_JUDGE)
       .all<{
         route: string
         request_count: number
@@ -43,8 +54,11 @@ export async function runMetricsAlertSweep(env: Pick<Env, 'DB'> & AlertPagingEnv
         await dispatchOperatorAlert(env, alert)
       }
     }
-  } catch {
-    /* metrics_summary optional in local dev */
+  } catch (err) {
+    // Used to be a bare `catch {}` that reported "scanned 0, critical 0" as a
+    // success while paging was silently dead. Surface it so the cron job fails.
+    logEvent({ event: 'metrics_alert_sweep.failed', error: err instanceof Error ? err.message : String(err) }, 'error')
+    throw err
   }
 
   return { scanned, critical }

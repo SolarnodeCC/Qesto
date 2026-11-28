@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api, setAuthToken } from '../api/client'
+import { api, setAuthToken, UNAUTHORIZED_EVENT } from '../api/client'
 import { setUserPreferencesAuthKnown } from '../lib/user-preferences'
 
 export type AuthUser = {
@@ -48,6 +48,9 @@ type AuthApi = AuthState & {
 
 const AuthContext = createContext<AuthApi | null>(null)
 
+/** Routes that require a signed-in user (login redirect on expired session). */
+const AUTHENTICATED_AREAS = /^\/(dashboard|settings|admin|teams|sessions|studio|launchpad|marketing)(\/|$)/
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: 'loading' })
 
@@ -66,6 +69,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  // A 401 on an app API call means the session expired or was revoked. Re-check
+  // /api/auth/me; if it is really gone and the user is inside the signed-in app,
+  // send them to login (with a return path) instead of leaving every page to
+  // show its own error. Public pages (join, display, marketing) are untouched.
+  useEffect(() => {
+    let checking = false
+    const onUnauthorized = () => {
+      if (checking) return
+      checking = true
+      void api<AuthUser>('/api/auth/me').then((me) => {
+        checking = false
+        if (me.ok) return
+        setAuthToken(null)
+        setUserPreferencesAuthKnown(false)
+        setState({ status: 'anonymous' })
+        const { pathname, search } = window.location
+        if (AUTHENTICATED_AREAS.test(pathname)) {
+          window.location.assign(`/login?next=${encodeURIComponent(pathname + search)}`)
+        }
+      })
+    }
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+  }, [])
 
   const requestMagicLink = useCallback(async (email: string): Promise<'sent' | 'invalid' | 'error'> => {
     const result = await api('/api/auth/request', { method: 'POST', body: { email } })

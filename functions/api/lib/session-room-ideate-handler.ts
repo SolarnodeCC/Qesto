@@ -1,6 +1,7 @@
 /**
  * IdeateHandler — live idea board with debounced AI clustering (IDEATE-CLUSTER-01).
  */
+import { logBestEffort } from './log'
 import type { Env } from '../types'
 import { serverMsg, errorMessage } from './session-room-messages'
 import type { DurableContextLike } from './session-room-context'
@@ -353,8 +354,9 @@ export class IdeateHandler {
           vectors.set(idea.id, vector)
           await this.ctx.storage.put(IDEATE_KEYS.embedding(idea.id), { body: idea.body, vector })
         }
-      } catch {
-        /* fallback to token overlap in clusterIdeas */
+      } catch (err) {
+        // Falls back to token overlap in clusterIdeas; log so it is visible.
+        logBestEffort(err, { traceId: 'ideate', route: 'ideate.cluster', operation: 'ai.embed', reason: 'ideate_embedding_failed_token_fallback' })
       }
     }
     return vectors

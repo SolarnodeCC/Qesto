@@ -86,6 +86,20 @@ const REDACTION_PATTERNS: RedactionPattern[] = [
     replace: '$1[REDACTED]',
   },
 
+  // Credential-bearing URL query params (magic links, OAuth codes, signed URLs).
+  {
+    name: 'url_credential_param',
+    pattern: /([?&](?:token|code|key|sig|signature|secret|access_token|refresh_token)=)[^&\s"']+/gi,
+    replace: '$1[REDACTED]',
+  },
+
+  // Bare 64-hex values are overwhelmingly secrets here (magic-link / reset
+  // tokens, API key material). 40-hex git SHAs are deliberately left alone.
+  { name: 'hex64_token', pattern: /\b[a-fA-F0-9]{64}\b/g },
+
+  // IPv4 addresses (participant / caller IPs are personal data under GDPR).
+  { name: 'ipv4', pattern: /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g },
+
   // SAML assertions (XML between tags)
   { name: 'saml_assertion', pattern: /<saml:Assertion[^>]*>.*?<\/saml:Assertion>/gis },
 

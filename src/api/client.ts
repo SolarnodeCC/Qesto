@@ -24,6 +24,19 @@ export type ApiError = {
   code: string
   message: string
   details?: unknown
+  /** Server trace id — quote it in support requests; matches server logs. */
+  traceId?: string
+}
+
+/** Fired on 401 for a non-auth API call so the app can send the user to login. */
+export const UNAUTHORIZED_EVENT = 'qesto:unauthorized'
+
+function newTraceId(): string {
+  try {
+    return crypto.randomUUID()
+  } catch {
+    return `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`
+  }
 }
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; error: ApiError }
@@ -76,6 +89,9 @@ async function request<T>(path: string, opts: Options): Promise<ApiResult<T>> {
   headers['accept-language'] = getLanguageHeader()
   // DD-24: CSRF marker — see functions/api/middleware/csrf.ts CLIENT_MARKER_HEADER.
   headers['x-qesto-client'] = 'web'
+  // Correlate browser requests with server logs (the server echoes/uses it).
+  const traceId = newTraceId()
+  headers['x-trace-id'] = traceId
   const token = getAuthToken()
   if (token) headers['authorization'] = `Bearer ${token}`
 
@@ -94,7 +110,7 @@ async function request<T>(path: string, opts: Options): Promise<ApiResult<T>> {
     return {
       ok: false,
       status: 0,
-      error: { code: 'network', message: (err as Error).message || 'Network error' },
+      error: { code: 'network', message: (err as Error).message || 'Network error', traceId },
     }
   }
 
@@ -114,12 +130,23 @@ async function request<T>(path: string, opts: Options): Promise<ApiResult<T>> {
   // Some routes return `{ error: 'plain string' }` while typed routes return
   // `{ error: { code, message } }`. Normalise both so callers can always rely
   // on result.error.message / result.error.code.
-  const body = json as { ok?: boolean; error?: ApiError | string } | null
+  const body = json as { ok?: boolean; error?: ApiError | string; trace_id?: string } | null
   const rawError = body?.error
-  const error: ApiError =
+  const baseError: ApiError =
     typeof rawError === 'string'
       ? { code: 'api_error', message: rawError }
       : (rawError as ApiError | undefined) ?? { code: 'http_error', message: `HTTP ${res.status}` }
+  const error: ApiError = { ...baseError, traceId: body?.trace_id ?? res.headers.get('x-trace-id') ?? traceId }
+  // Expired/revoked session on an app call: let the app route to login
+  // instead of every page showing its own error. Auth endpoints are excluded
+  // (a 401 from /api/auth/me is the normal "not signed in" answer).
+  if (res.status === 401 && !path.startsWith('/api/auth/')) {
+    try {
+      window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT, { detail: { path } }))
+    } catch {
+      /* non-browser test env */
+    }
+  }
   return { ok: false, status: res.status, error }
 }
 

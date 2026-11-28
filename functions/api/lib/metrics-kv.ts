@@ -210,3 +210,30 @@ export async function writeLiveMetricBucket(
 
   await kv.put(key, JSON.stringify(bucket), { expirationTtl: 7 * 24 * 60 * 60 })
 }
+
+/**
+ * Merge a batch of samples (one isolate's last minute) into the live bucket in
+ * ONE read-modify-write. Replaces the per-request writeLiveMetricBucket path,
+ * which exceeded KV's per-key write rate and lost concurrent updates.
+ */
+export async function mergeLiveMetricBucket(
+  kv: KVNamespace,
+  batch: { count: number; errors: number; samples: number[] },
+  now: Date = new Date(),
+): Promise<void> {
+  const key = liveBucketKey(now)
+  const existing = await kv.get<LiveBucket>(key, 'json')
+  const latencySamples = [...(existing?.latency_samples ?? []), ...batch.samples].slice(-200)
+  const sorted = [...latencySamples].sort((a, b) => a - b)
+  const p95 = sorted[Math.max(0, Math.ceil(0.95 * sorted.length) - 1)] ?? 0
+  const bucket: LiveBucket = {
+    active_sessions: existing?.active_sessions ?? 0,
+    total_participants: existing?.total_participants ?? 0,
+    revenue_24h_cents: existing?.revenue_24h_cents ?? 0,
+    p95_latency_ms: p95,
+    error_count: (existing?.error_count ?? 0) + batch.errors,
+    request_count: (existing?.request_count ?? 0) + batch.count,
+    latency_samples: latencySamples,
+  }
+  await kv.put(key, JSON.stringify(bucket), { expirationTtl: 7 * 24 * 60 * 60 })
+}

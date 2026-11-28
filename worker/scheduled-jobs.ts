@@ -3,8 +3,6 @@
 // Workflow entrypoint (`cloudflare:workers`).
 
 import type { Env } from '../functions/api/types'
-import { safeLogContext } from '../functions/api/lib/log'
-import { alertCritical } from '../functions/api/lib/alerts'
 import type { ScheduledJob } from '../functions/api/lib/scheduled-dispatch'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
 import { runAI } from '../functions/api/lib/ai/ai-gateway'
@@ -27,10 +25,13 @@ const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 // the query embedding model matches the index dimensions, and the index
 // returns matches. (This is exactly the failure mode that silently broke
 // retrieval before — a 384-dim query model against a 1024-dim index.)
-// Never throws — logs and returns so sibling jobs still run.
-export async function runKbHealthWatchdog(env: Env): Promise<void> {
-  const traceId = `kb-health-${Date.now()}`
-  try {
+//
+// Detected failures THROW so the dispatcher (lib/scheduled-dispatch.ts) logs
+// and pages them; sibling jobs still run because each job is its own failure
+// domain. Previously they were logged and swallowed, the dispatcher recorded
+// `cron.job.ok`, and a KB embedded ~175 days ago reported "OK" every night.
+export async function runKbHealthWatchdog(env: Env): Promise<string> {
+  {
     // 1. How many chunks SHOULD be searchable? D1 is the source of truth that
     //    the embed pipeline writes; the Vectorize index mirrors it.
     const row = await env.DB
@@ -40,12 +41,7 @@ export async function runKbHealthWatchdog(env: Env): Promise<void> {
     const lastEmbeddedAt = row?.last ?? 0
 
     if (chunkCount === 0) {
-      safeLogContext(new Error('KB has 0 embedded chunks in D1 — run npm run kb:sync'), {
-        traceId,
-        route: 'worker/kb-health',
-        errorClass: 'KbEmpty',
-      })
-      return
+      throw namedError('KbEmpty', 'KB has 0 embedded chunks in D1 — run npm run kb:sync')
     }
 
     // 2. Embed a sentinel with the SAME model the index was built with and
@@ -53,11 +49,7 @@ export async function runKbHealthWatchdog(env: Env): Promise<void> {
     const aiRes = (await runAI(env, KB_EMBED_MODEL, { text: KB_HEALTH_SENTINEL })) as { data?: number[][] }
     const vector = aiRes?.data?.[0]
     if (!Array.isArray(vector) || vector.length !== KB_EMBED_DIM) {
-      safeLogContext(
-        new Error(`KB query embedding dim ${vector?.length ?? 'none'} != index dim ${KB_EMBED_DIM}`),
-        { traceId, route: 'worker/kb-health', errorClass: 'KbEmbedDimMismatch' },
-      )
-      return
+      throw namedError('KbEmbedDimMismatch', `KB query embedding dim ${vector?.length ?? 'none'} != index dim ${KB_EMBED_DIM}`)
     }
 
     // 3. Functional probe: a populated index returns at least one match for any
@@ -66,32 +58,32 @@ export async function runKbHealthWatchdog(env: Env): Promise<void> {
     const probe = await env.KB_VECTORIZE.query(vector, { topK: 1 })
     const matchCount = probe.matches?.length ?? 0
     if (matchCount === 0) {
-      safeLogContext(
-        new Error(`KB drift: D1 has ${chunkCount} chunks but KB_VECTORIZE returned 0 matches`),
-        { traceId, route: 'worker/kb-health', errorClass: 'KbVectorDrift' },
-      )
-      return
+      throw namedError('KbVectorDrift', `KB drift: D1 has ${chunkCount} chunks but KB_VECTORIZE returned 0 matches`)
     }
 
-    // Healthy. Emit one observability line with a staleness hint.
+    // Retrieval works — but a stale index answers from outdated docs. CI's
+    // kb-sync is the only writer; if it silently stops (e.g. a missing
+    // CLOUDFLARE_API_TOKEN secret) the help assistant drifts for months.
     const ageDays = lastEmbeddedAt > 0 ? Math.floor((Date.now() - lastEmbeddedAt) / 86_400_000) : -1
     const topScore = probe.matches[0]?.score
-    console.log(
-      `[kb-health] OK — ${chunkCount} chunks, index responding ` +
-        `(top score ${typeof topScore === 'number' ? topScore.toFixed(3) : 'n/a'}), ` +
-        `last embed ${ageDays >= 0 ? `${ageDays}d ago` : 'unknown'}`,
-    )
-  } catch (err) {
-    safeLogContext(err, {
-      traceId,
-      route: 'worker/kb-health',
-      errorClass: err instanceof Error ? err.name : 'UnknownError',
-    })
-    await alertCritical(env, 'worker/kb-health', err instanceof Error ? err.name : 'KbHealthFailed', {
-      traceId,
-      errorClass: err instanceof Error ? err.name : 'KbHealthFailed',
-    })
+    const summary =
+      `${chunkCount} chunks, index responding ` +
+      `(top score ${typeof topScore === 'number' ? topScore.toFixed(3) : 'n/a'}), ` +
+      `last embed ${ageDays >= 0 ? `${ageDays}d ago` : 'unknown'}`
+    if (ageDays > KB_STALE_AFTER_DAYS) {
+      throw namedError('KbStale', `KB index stale: ${summary} (> ${KB_STALE_AFTER_DAYS}d) — check the kb-sync CI workflow`)
+    }
+    return `[kb-health] OK — ${summary}`
   }
+}
+
+/** Last successful embed older than this pages ops. */
+export const KB_STALE_AFTER_DAYS = 30
+
+function namedError(name: string, message: string): Error {
+  const err = new Error(message)
+  err.name = name
+  return err
 }
 
 // DD-32: every scheduled job is a row; see lib/scheduled-dispatch.ts. Cron
@@ -104,7 +96,7 @@ export const SCHEDULED_JOBS: readonly ScheduledJob[] = [
     key: 'kb-watchdog',
     cron: '0 2 * * *',
     run: async (env) => {
-      await runKbHealthWatchdog(env)
+      return runKbHealthWatchdog(env)
     },
   },
   {

@@ -15,6 +15,7 @@
 import { ulid } from '../../functions/api/lib/ulid'
 import { runAI } from '../../functions/api/lib/ai/ai-gateway'
 import { AI_MODELS } from '../../functions/api/lib/ai/models'
+import { logCronRun } from '../../functions/api/lib/marketing/cron-log'
 import { createEncryptedTokenStore } from '../../functions/api/lib/integrations/token-store'
 import {
   buildPostPrompt,
@@ -157,7 +158,19 @@ export async function runScheduled(env: SchedulerEnv): Promise<void> {
 
 export default {
   async scheduled(_controller: ScheduledController, env: SchedulerEnv, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(runScheduled(env))
+    // A rejection here used to be unhandled and Cloudflare recorded the run as
+    // successful. Record the outcome in cron_runs (OPS missed-run view) and
+    // rethrow so the platform marks the invocation failed.
+    const startedAt = Date.now()
+    ctx.waitUntil(
+      runScheduled(env).then(
+        () => logCronRun(env.DB, 'linkedin-automation', 'success', undefined, startedAt),
+        async (err) => {
+          await logCronRun(env.DB, 'linkedin-automation', 'failure', errMsg(err), startedAt)
+          throw err
+        },
+      ),
+    )
   },
 
   // Read-only health endpoint (does NOT post). Use `wrangler dev --test-scheduled`

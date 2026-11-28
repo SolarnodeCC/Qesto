@@ -15,6 +15,9 @@ import { alertCritical } from '../functions/api/lib/alerts'
 import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 
+/** Must match wrangler.toml [[queues.consumers]] max_retries. */
+export const QUEUE_MAX_RETRIES = 3
+
 export async function handlePostSessionQueue(
   batch: MessageBatch<PostSessionWorkMessage>,
   env: Env,
@@ -29,17 +32,25 @@ export async function handlePostSessionQueue(
       message.retry()
       const sessionId = message.body?.sessionId || 'unknown'
       const taskType = message.body?.taskType || 'unknown'
+      // Keep the producer's trace id so the close request and its async work
+      // correlate in logs (it used to be replaced with `queue-<sessionId>`).
+      const payloadTrace = message.body?.payload?.traceId
+      const traceId = typeof payloadTrace === 'string' && payloadTrace ? payloadTrace : `queue-${sessionId}`
       safeLogContext(err, {
-        traceId: `queue-${sessionId}`,
+        traceId,
         route: 'worker/queue-consumer',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
         details: { taskType, attempts: message.attempts },
       })
-      await alertCritical(env, 'worker/queue-consumer', err instanceof Error ? err.name : 'QueueTaskFailed', {
-        traceId: `queue-${sessionId}`,
-        errorClass: err instanceof Error ? err.name : 'QueueTaskFailed',
-        details: { taskType },
-      })
+      // Page only when the message is about to go to the DLQ — retries are
+      // expected and used to page on every attempt.
+      if ((message.attempts ?? 1) > QUEUE_MAX_RETRIES) {
+        await alertCritical(env, 'worker/queue-consumer', err instanceof Error ? err.name : 'QueueTaskFailed', {
+          traceId,
+          errorClass: err instanceof Error ? err.name : 'QueueTaskFailed',
+          details: { taskType, attempts: message.attempts },
+        })
+      }
     }
   }
 }

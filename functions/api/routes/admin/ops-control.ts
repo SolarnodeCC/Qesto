@@ -1,3 +1,5 @@
+import { SCHEDULED_JOBS } from '../../../../worker/scheduled-jobs'
+import { runScheduledJobs } from '../../lib/scheduled-dispatch'
 import { logBestEffort } from '../../lib/log'
 // Platformbeheer — Module 4: OPS (operational control + incident management).
 //
@@ -122,17 +124,21 @@ export function mountOpsControlRoutes(
     if (!CRON_REGISTRY.some((j) => j.key === key)) {
       return errorResponse(c, 404, 'not_found', 'Unknown cron job')
     }
-    try {
-      await c.env.DB.prepare(
-        `INSERT INTO cron_runs (id, job, status, started_at, detail) VALUES (?1, ?2, 'running', ?3, 'manual trigger requested')`,
-      )
-        .bind(ulid(), key, Date.now())
-        .run()
-    } catch {
-      /* table optional — still audit the intent */
+    // Actually run the job. This used to only insert a `running` row, which
+    // executed nothing and hid a genuinely missed run for a full interval.
+    const job = SCHEDULED_JOBS.find((j) => j.key === key)
+    if (!job) {
+      return errorResponse(c, 409, 'not_triggerable', 'This job runs in a separate worker and cannot be triggered here')
     }
     await recordAuditEvent(c, { action: 'ops.cron_trigger', subject_type: 'cron', subject_id: key, trace_id })
-    return c.json({ ok: true, data: { job: key, triggered: true }, trace_id }, 200)
+    // runScheduledJobs isolates failures, logs/pages them and writes cron_runs.
+    const run = runScheduledJobs(job.cron, c.env, [job])
+    try {
+      c.executionCtx.waitUntil(run)
+    } catch {
+      await run
+    }
+    return c.json({ ok: true, data: { job: key, triggered: true }, trace_id }, 202)
   })
 
   // ── Secret rotation tracker ────────────────────────────────────────────────
